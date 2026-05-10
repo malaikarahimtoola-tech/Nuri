@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/recipe-studio", "destination": "/recipe-studio.html" },
+    { "source": "/dietician-portal", "destination": "/dietician-portal.html" }
+  ]
+}
