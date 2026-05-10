@@ -717,7 +717,21 @@ function TopNav({ current, onChange }) {
 
 // ── PAGES ─────────────────────────────────────────────────────
 function Welcome({ onStart }) {
-  const previewRecipes = RECIPES.slice(0, 3);
+  const previewCards = [
+    { emoji: '🐟', title: 'Citrus Roasted Salmon', tag: 'PCOS · Endometriosis', gingham: GINGHAM[0] },
+    { emoji: '🥞', title: 'Protein Pancakes', tag: 'PCOS', gingham: GINGHAM[1] },
+    { emoji: '🍛', title: 'Coconut & Butternut Squash Curry', tag: 'PCOS', gingham: GINGHAM[2] },
+  ];
+  const sz = 26;
+  function cardStyle(g) {
+    return {
+      backgroundColor: g.bg,
+      backgroundImage: [
+        `repeating-linear-gradient(transparent 0px,transparent ${sz}px,${g.s} ${sz}px,${g.s} ${sz*2}px)`,
+        `repeating-linear-gradient(90deg,transparent 0px,transparent ${sz}px,${g.s} ${sz}px,${g.s} ${sz*2}px)`,
+      ].join(','),
+    };
+  }
   return (
     <div className="welcome-page">
       <div className="welcome-left">
@@ -733,12 +747,14 @@ function Welcome({ onStart }) {
       </div>
       <div className="welcome-right">
         <div className="welcome-recipe-stack">
-          {previewRecipes.map(r => (
-            <div key={r.id} className="welcome-mini-card">
-              <span className="welcome-mini-emoji">{r.emoji}</span>
+          {previewCards.map((r, i) => (
+            <div key={i} className="welcome-mini-card">
+              <div style={{ width: 48, height: 48, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, ...cardStyle(r.gingham) }}>
+                {r.emoji}
+              </div>
               <div>
                 <div className="welcome-mini-title">{r.title}</div>
-                <div className="welcome-mini-tag">{r.healthLabels.slice(0,2).map(l => LABEL_MAP[l]?.label).filter(Boolean).join(' · ')}</div>
+                <div className="welcome-mini-tag">{r.tag}</div>
               </div>
             </div>
           ))}
@@ -1498,11 +1514,27 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
                 <button className="rd-dash-toggle" onClick={onToggleRD}>Exit RD mode</button>
               </div>
               <div style={{ marginBottom: 12 }}>
-                <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-light)', display: 'block', marginBottom: 6 }}>View as dietician</label>
+                <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-light)', display: 'block', marginBottom: 6 }}>View as dietitian</label>
                 <select style={{ padding: '8px 12px', border: '1.5px solid var(--border)', borderRadius: 8, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text)', background: 'var(--cream)', width: '100%' }}
                   value={rdDieticianId} onChange={e => onSetRDDietician(Number(e.target.value))}>
-                  {ALL_DIETICIANS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  {ALL_DIETICIANS.map(d => <option key={d.id} value={d.id}>{d.name} — {d.credentials} · {d.specialty}</option>)}
                 </select>
+                {(() => {
+                  const selected = ALL_DIETICIANS.find(d => d.id === rdDieticianId);
+                  if (!selected) return null;
+                  return (
+                    <div style={{ marginTop: 10, padding: '10px 14px', background: 'var(--warm-beige)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: selected.avatarColor, backgroundImage: selected.photo ? `url(${selected.photo})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                        {!selected.photo && selected.initials}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{selected.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-light)' }}>{selected.credentials} · {selected.specialty}</div>
+                        {selected.bio && <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 2, lineHeight: 1.4 }}>{selected.bio}</div>}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
               {(() => {
                 const rd = ALL_DIETICIANS.find(d => d.id === rdDieticianId);
@@ -1532,7 +1564,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
                         </div>
                       </div>
                     ))}
-                    <a href="recipe-studio.html" target="_blank" className="rd-portal-btn">
+                    <a href="/dietician-portal" target="_blank" className="rd-portal-btn">
                       ✦ Open Recipe Studio →
                     </a>
                   </>
