@@ -155,9 +155,14 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 <body>
 <div id="app"></div>
 <script>
-const ADMIN_PASSWORD = 'nuri2025'
 const STORAGE_KEY = 'nuri_custom_recipes'
 const RD_STORAGE_KEY = 'nuri_custom_dieticians'
+
+// Approved RDs — add new ones here when onboarded
+const APPROVED_RDS = [
+  { email: 'claire@cpnutrition.com', password: 'claire2025', name: 'Claire Pettitt', id: 3 },
+  { email: 'alysse@nuri.com',        password: 'alysse2025', name: 'Alysse Vocca',  id: 4 },
+]
 
 const HEALTH_LABELS = [
   { id: 'pcos', label: 'PCOS' },
@@ -316,26 +321,40 @@ function renderLogin() {
       <div class="login-card">
         <div class="login-leaf">🌿</div>
         <div class="login-title">Recipe Studio</div>
-        <div class="login-sub" style="font-family:'Lora',serif;font-style:italic;font-size:14px">nuri<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#C47A7A;margin-left:1px;margin-bottom:1px;vertical-align:middle"></span></div>
-        <div class="login-sub" style="margin-top:8px;margin-bottom:32px">Admin access only</div>
-        <input class="login-input" type="password" id="pw-input" placeholder="Enter password" />
+        <div class="login-sub">For nuri. registered dietitians</div>
+        <input class="login-input" type="email" id="pw-email" placeholder="Your email address" style="margin-bottom:10px" />
+        <input class="login-input" type="password" id="pw-input" placeholder="Password" />
         <button class="login-btn" id="pw-btn">Enter Studio →</button>
-        <div class="login-error" id="pw-error" style="display:none">Incorrect password.</div>
+        <div class="login-error" id="pw-error" style="display:none">Incorrect email or password.</div>
       </div>
     </div>`
 }
 
 function bindLogin() {
   const btn = document.getElementById('pw-btn')
-  const input = document.getElementById('pw-input')
+  const emailInput = document.getElementById('pw-email')
+  const pwInput = document.getElementById('pw-input')
   const error = document.getElementById('pw-error')
+
   function tryLogin() {
-    if (input.value === ADMIN_PASSWORD) { isLoggedIn = true; render() }
-    else { error.style.display = 'block'; input.value = ''; input.focus() }
+    const email = emailInput.value.trim().toLowerCase()
+    const pw = pwInput.value
+    const match = APPROVED_RDS.find(r => r.email.toLowerCase() === email && r.password === pw)
+    if (match) {
+      isLoggedIn = true
+      currentRD = match
+      recipeForm.dieticianId = match.id
+      render()
+    } else {
+      error.style.display = 'block'
+      pwInput.value = ''
+      pwInput.focus()
+    }
   }
+
   btn.addEventListener('click', tryLogin)
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin() })
-  input.focus()
+  pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin() })
+  emailInput.focus()
 }
 
 function renderAdmin() {
