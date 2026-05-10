@@ -1572,7 +1572,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
               })()}
             </div>
           ) : (
-            <div className="apply-block">
+                          <div className="apply-block">
               <div className="apply-text">🩺 Are you a registered dietitian? Apply to share your recipes on nuri.</div>
               <button className="apply-btn" onClick={onApply}>Apply as a founding RD ✨</button>
               <button style={{ marginTop: 10, background: 'transparent', border: 'none', fontSize: 12, color: 'var(--text-light)', cursor: 'pointer', fontFamily: 'var(--font-body)', textDecoration: 'underline' }} onClick={onToggleRD}>
@@ -1750,7 +1750,7 @@ function RDApplicationModal({ onClose }) {
 
 // ── APP ───────────────────────────────────────────────────────
 function App() {
-  const [screen, setScreen] = useState(() => ls('tee_onboarded', false) ? 'app' : 'welcome');
+  const [screen, setScreen] = useState('welcome');
   const [tab, setTab] = useState('feed');
   const [healthGoals, setHealthGoals] = useState(() => ls('tee_goals', []));
   const [followed, setFollowed] = useState(() => new Set(ls('tee_followed', [])));
