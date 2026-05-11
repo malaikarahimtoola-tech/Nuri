@@ -5,13 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>nuri. Recipe Studio</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --cream: #FAF6F0; --warm-beige: #F0E8DC; --border: #E4D9CC;
   --brown: #5C3D2E; --tan: #C4A882;
-  --green-dark: #3A6B4A;
-  --sage: #7A9E7E; --rose: #C47A7A; --clay: #B8845A;
+  --green-dark: #3A6B4A; --rose: #C47A7A;
+  --sage: #7A9E7E;
   --text: #2C1810; --text-mid: #6B4D3C; --text-light: #9C7B6A;
   --white: #FFFFFF;
   --shadow: 0 2px 12px rgba(44,24,16,0.08);
@@ -23,146 +26,18 @@
 }
 html { font-size: 16px; -webkit-font-smoothing: antialiased; }
 body { background: var(--cream); color: var(--text); font-family: var(--font-body); min-height: 100vh; }
-
-/* ── NAV ── */
-.nav { position: sticky; top: 0; z-index: 100; background: rgba(250,246,240,0.97); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
-.nav-logo { font-family: var(--font-logo); font-size: 24px; font-style: italic; font-weight: 600; color: var(--green-dark); display: inline-flex; align-items: flex-end; }
-.nav-logo-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--rose); margin-left: 2px; margin-bottom: 2px; }
-.nav-tag { font-family: var(--font-body); font-size: 11px; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); margin-left: 10px; }
-.nav-right { display: flex; align-items: center; gap: 12px; }
-.nav-btn { padding: 8px 18px; border-radius: 50px; font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.18s; }
-.nav-btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--text-mid); }
-.nav-btn-ghost:hover { border-color: var(--brown); color: var(--brown); }
-.nav-btn-primary { background: var(--brown); color: white; }
-.nav-btn-primary:hover { background: #4A3024; }
-
-/* ── LOGIN ── */
-.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.login-card { background: var(--white); border-radius: 20px; padding: 48px; width: 100%; max-width: 400px; box-shadow: var(--shadow-md); text-align: center; }
-.login-leaf { font-size: 40px; margin-bottom: 16px; }
-.login-title { font-family: var(--font-serif); font-size: 32px; font-style: italic; color: var(--text); margin-bottom: 6px; }
-.login-sub { font-size: 13px; color: var(--text-light); margin-bottom: 32px; }
-.login-input { width: 100%; padding: 13px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 15px; color: var(--text); outline: none; margin-bottom: 14px; background: var(--cream); }
-.login-input:focus { border-color: var(--brown); }
-.login-btn { width: 100%; padding: 14px; background: var(--brown); color: white; border: none; border-radius: 50px; font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; }
-.login-btn:hover { background: #4A3024; }
-.login-error { color: #C0392B; font-size: 13px; margin-top: 10px; }
-
-/* ── LAYOUT ── */
-.admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
-.admin-header { margin-bottom: 36px; }
-.admin-header h1 { font-family: var(--font-serif); font-size: 36px; font-style: italic; color: var(--text); margin-bottom: 6px; }
-.admin-header p { color: var(--text-light); font-size: 14px; }
-
-.tabs { display: flex; gap: 8px; margin-bottom: 32px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-.tab { padding: 10px 20px; border: none; background: none; font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--text-light); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
-.tab.active { color: var(--brown); border-bottom-color: var(--brown); font-weight: 600; }
-.tab:hover:not(.active) { color: var(--text-mid); }
-
-/* ── FORM ── */
-.form-card { background: var(--white); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow); }
-.form-section { margin-bottom: 28px; }
-.form-section-title { font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.form-group.full { grid-column: 1 / -1; }
-.form-label { font-size: 11px; font-weight: 600; color: var(--text-mid); letter-spacing: 0.06em; text-transform: uppercase; }
-.form-input, .form-select, .form-textarea {
-  padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-  background: var(--cream); font-family: var(--font-body); font-size: 14px; color: var(--text);
-  outline: none; width: 100%; transition: border-color 0.15s;
-}
-.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--brown); background: white; }
-.form-textarea { resize: vertical; line-height: 1.6; min-height: 90px; }
-.form-hint { font-size: 11px; color: var(--text-light); margin-top: 3px; line-height: 1.5; }
-
-/* ── HEALTH LABELS ── */
-.label-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.label-chip { padding: 7px 14px; border-radius: 50px; border: 1.5px solid var(--border); background: var(--white); font-size: 12px; font-weight: 500; color: var(--text-mid); cursor: pointer; transition: all 0.15s; user-select: none; }
-.label-chip:hover { border-color: var(--tan); }
-.label-chip.active { border-color: var(--brown); background: var(--warm-beige); color: var(--brown); font-weight: 600; }
-
-/* ── DYNAMIC LISTS ── */
-.list-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-.list-num { width: 26px; height: 26px; border-radius: 50%; background: var(--warm-beige); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--brown); flex-shrink: 0; }
-.list-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--tan); flex-shrink: 0; }
-.remove-btn { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); background: white; cursor: pointer; color: var(--text-light); font-size: 14px; flex-shrink: 0; transition: all 0.15s; }
-.remove-btn:hover { border-color: #C0392B; color: #C0392B; }
-.add-btn { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--warm-beige); border: 1.5px dashed var(--border); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-mid); cursor: pointer; font-family: var(--font-body); width: 100%; margin-top: 4px; transition: all 0.15s; }
-.add-btn:hover { border-color: var(--brown); color: var(--brown); }
-
-/* ── EMOJI PICKER ── */
-.emoji-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.emoji-btn { width: 44px; height: 44px; border-radius: 10px; border: 2px solid var(--border); background: var(--white); font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-.emoji-btn:hover { transform: scale(1.1); border-color: var(--tan); }
-.emoji-btn.active { border-color: var(--brown); background: var(--warm-beige); }
-
-/* ── DIETICIAN PICKER ── */
-.rd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-.rd-card { padding: 14px; border-radius: var(--radius-sm); border: 2px solid var(--border); background: var(--white); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 10px; }
-.rd-card:hover { border-color: var(--tan); }
-.rd-card.active { border-color: var(--brown); background: var(--warm-beige); }
-.rd-avatar-sm { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; }
-.rd-name { font-weight: 600; font-size: 14px; color: var(--text); }
-.rd-creds { font-size: 11px; color: var(--text-light); }
-
-/* ── SUBMIT ── */
-.submit-row { display: flex; gap: 12px; align-items: center; justify-content: flex-end; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
-.submit-btn { padding: 13px 36px; background: var(--brown); color: white; border: none; border-radius: 50px; font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.submit-btn:hover { background: #4A3024; transform: translateY(-1px); }
-.submit-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
-.cancel-btn { padding: 13px 24px; background: transparent; border: 1.5px solid var(--border); color: var(--text-mid); border-radius: 50px; font-family: var(--font-body); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
-.cancel-btn:hover { border-color: var(--brown); color: var(--brown); }
-
-/* ── TOAST ── */
-.toast { position: fixed; bottom: 32px; right: 32px; background: var(--green-dark); color: white; padding: 14px 24px; border-radius: 50px; font-size: 14px; font-weight: 500; box-shadow: var(--shadow-md); animation: slideUp 0.3s ease; z-index: 999; }
-@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-
-/* ── RECIPE LIST ── */
-.recipe-list { display: flex; flex-direction: column; gap: 12px; }
-.recipe-row { background: var(--white); border-radius: var(--radius-sm); padding: 18px 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); }
-.recipe-emoji { font-size: 28px; flex-shrink: 0; }
-.recipe-info { flex: 1; min-width: 0; }
-.recipe-title { font-family: var(--font-serif); font-size: 17px; font-style: italic; font-weight: 600; color: var(--text); }
-.recipe-meta { font-size: 12px; color: var(--text-light); margin-top: 3px; }
-.recipe-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-.recipe-tag { padding: 2px 10px; border-radius: 50px; font-size: 11px; font-weight: 500; background: var(--warm-beige); color: var(--text-mid); }
-.recipe-source { font-size: 11px; padding: 3px 10px; border-radius: 50px; background: var(--warm-beige); color: var(--text-light); flex-shrink: 0; }
-.recipe-source.custom { background: #C8E6C4; color: #2E6B3E; font-weight: 600; }
-.action-btn { padding: 7px 14px; border: 1.5px solid var(--border); border-radius: 50px; background: white; color: var(--text-light); font-size: 12px; font-weight: 500; cursor: pointer; flex-shrink: 0; font-family: var(--font-body); transition: all 0.15s; }
-.action-btn:hover { border-color: var(--brown); color: var(--brown); }
-.action-btn.danger:hover { border-color: #C0392B; color: #C0392B; }
-.empty-state { text-align: center; padding: 48px; color: var(--text-light); font-size: 14px; }
-
-/* ── COLOUR SWATCHES ── */
-.color-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-.color-swatch { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.15s; }
-.color-swatch.active { border-color: var(--brown); box-shadow: 0 0 0 2px var(--brown); }
-
-/* ── IMAGE PREVIEW ── */
-.img-preview { width: 100%; height: 160px; object-fit: cover; border-radius: var(--radius-sm); border: 1.5px solid var(--border); margin-top: 8px; display: none; }
-.img-preview.visible { display: block; }
-
-@media (max-width: 640px) {
-  .form-grid { grid-template-columns: 1fr; }
-  .admin-wrap { padding: 24px 16px 80px; }
-  .rd-grid { grid-template-columns: 1fr 1fr; }
-  .tabs { gap: 4px; }
-  .tab { padding: 8px 12px; font-size: 13px; }
-}
+#root { min-height: 100vh; }
 </style>
 </head>
 <body>
-<div id="app"></div>
-<script>
-const STORAGE_KEY = 'nuri_custom_recipes'
-const RD_STORAGE_KEY = 'nuri_custom_dieticians'
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
 
-// Approved RDs — add new ones here when onboarded
 const APPROVED_RDS = [
-  { email: 'claire@cpnutrition.com', password: 'claire2025', name: 'Claire Pettitt', id: 3 },
-  { email: 'alysse@nuri.com',        password: 'alysse2025', name: 'Alysse Vocca',  id: 4 },
-]
+  { email: 'claire@cpnutrition.com', password: 'claire2025', name: 'Claire Pettitt', id: 3, credentials: 'PhD, RD', avatarColor: '#7A9E7E' },
+  { email: 'alysse@nuri.com',        password: 'alysse2025', name: 'Alysse Vocca',  id: 4, credentials: 'RD', avatarColor: '#C47A7A' },
+];
 
 const HEALTH_LABELS = [
   { id: 'pcos', label: 'PCOS' },
@@ -177,20 +52,7 @@ const HEALTH_LABELS = [
   { id: 'menopause', label: 'Menopause' },
   { id: 'anti-inflammatory', label: 'Anti-Inflammatory' },
   { id: 'high-protein', label: 'High Protein' },
-  { id: 'gut-friendly', label: 'Gut-Friendly' },
-]
-
-const EMOJIS = ['🥗','🍲','🥣','🍳','🥘','🫐','🍞','🥙','🌮','🍜','🥬','🐟','🍛','🫙','🧆','🍵','🥤','🍫','⚡','💜','✨','🌿','🍋','🥑','🎃','🥕','🥞','🍆','🥚','🔴','🍰','🌶️','🍂','🥭','🥜','🌈','🍝','🖤']
-
-const AVATAR_COLORS = ['#7A9E7E','#C47A7A','#C4A882','#B8845A','#9B7BAA','#8FA888','#D4A5A5','#B8A0C8','#A0B8D4','#C8A060']
-
-// Built-in RDs — must match IDs in index.html
-const BUILT_IN_RDS = [
-  { id: 1, name: 'Emily', credentials: 'Co-founder', specialty: "Women's Health Nutrition", avatarColor: '#C4A882' },
-  { id: 2, name: 'Malaika', credentials: 'Co-founder', specialty: "Women's Health Nutrition", avatarColor: '#8FA888' },
-  { id: 3, name: 'Claire Pettitt', credentials: 'PhD, RD', specialty: 'PCOS & Women\'s Health', avatarColor: '#7A9E7E' },
-  { id: 4, name: 'Alysse Vocca', credentials: 'RD', specialty: 'Eating Disorders & Women\'s Health', avatarColor: '#C47A7A' },
-]
+];
 
 const GINGHAM_COLORS = [
   { label: 'Sage',  bg: '#A8C4A8', s: 'rgba(58,107,74,0.32)' },
@@ -198,615 +60,363 @@ const GINGHAM_COLORS = [
   { label: 'Tan',   bg: '#D4B87A', s: 'rgba(140,95,20,0.34)' },
   { label: 'Clay',  bg: '#C8A080', s: 'rgba(140,80,30,0.32)' },
   { label: 'Plum',  bg: '#BBA8CC', s: 'rgba(90,50,130,0.28)' },
-  { label: 'Cream', bg: '#EDD9A3', s: 'rgba(140,95,20,0.28)' },
+  { label: 'Wheat', bg: '#EDD9A3', s: 'rgba(140,95,20,0.28)' },
   { label: 'Blush', bg: '#EDCACA', s: 'rgba(155,52,68,0.30)' },
   { label: 'Sky',   bg: '#B6CAE0', s: 'rgba(20,48,108,0.26)' },
-]
+];
 
-// ── STATE ──
-let isLoggedIn = false
-let activeTab = 'add'
-let toast = null
-let editingId = null
+const EMOJIS = ['🥗','🍲','🥣','🍳','🥘','🫐','🍞','🥙','🌮','🍜','🥬','🐟','🍛','🫙','🧆','🍵','🥤','🍫','⚡','💜','✨','🌿','🍋','🥑','🎃','🥕','🥞','🍆','🥚','🔴','🍰','🌶️','🍂','🥭','🥜','🌈','🍝'];
 
-let recipeForm = emptyRecipeForm()
-let rdForm = emptyRdForm()
-
-function emptyRecipeForm() {
-  return {
-    title: '', subtitle: '', emoji: '🥗',
-    dieticianId: 3, // default to Claire
-    healthLabels: ['pcos'], // default to PCOS
-    prepTime: '', cookTime: '', servings: '',
-    ginghamBg: GINGHAM_COLORS[0].bg,
-    ginghamS: GINGHAM_COLORS[0].s,
-    photoUrl: '',
-    ingredients: [''],
-    instructions: [''],
-    note: '',
-  }
+function Logo() {
+  return (
+    <span style={{fontFamily:'var(--font-logo)',fontSize:24,fontStyle:'italic',fontWeight:600,color:'var(--green-dark)',display:'inline-flex',alignItems:'flex-end',lineHeight:1}}>
+      nuri<span style={{display:'inline-block',width:7,height:7,borderRadius:'50%',background:'var(--rose)',marginLeft:2,marginBottom:2,flexShrink:0}}/>
+    </span>
+  );
 }
 
-function emptyRdForm() {
-  return { name: '', credentials: '', specialty: '', bio: '', initials: '', avatarColor: AVATAR_COLORS[0], tags: [] }
-}
+// ── LOGIN ─────────────────────────────────────────────────────
+function Login({ onLogin }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-function getCustomRecipes() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') } catch { return [] }
-}
-function getCustomRDs() {
-  try { return JSON.parse(localStorage.getItem(RD_STORAGE_KEY) || '[]') } catch { return [] }
-}
-
-function saveRecipe() {
-  let recipes = getCustomRecipes()
-  if (editingId) {
-    recipes = recipes.map(r => r.id === editingId ? { ...recipeForm, id: editingId, custom: true } : r)
-    showToast('Recipe updated ✓')
-    editingId = null
-  } else {
-    recipes.push({ ...recipeForm, id: Date.now(), custom: true })
-    showToast('Recipe added to app ✓')
-  }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes))
-  recipeForm = emptyRecipeForm()
-  activeTab = 'recipes'
-  render()
-}
-
-function editRecipe(id) {
-  const recipe = getCustomRecipes().find(r => r.id === id)
-  if (!recipe) return
-  editingId = id
-  recipeForm = {
-    title: recipe.title || '',
-    subtitle: recipe.subtitle || '',
-    emoji: recipe.emoji || '🥗',
-    dieticianId: recipe.dieticianId || 3,
-    healthLabels: recipe.healthLabels || ['pcos'],
-    prepTime: recipe.prepTime || '',
-    cookTime: recipe.cookTime || '',
-    servings: recipe.servings || '',
-    ginghamBg: recipe.ginghamBg || GINGHAM_COLORS[0].bg,
-    ginghamS: recipe.ginghamS || GINGHAM_COLORS[0].s,
-    photoUrl: recipe.photoUrl || '',
-    ingredients: recipe.ingredients?.length ? recipe.ingredients : [''],
-    instructions: recipe.instructions?.length ? recipe.instructions : [''],
-    note: recipe.note || '',
-  }
-  activeTab = 'add'
-  render()
-  window.scrollTo(0, 0)
-}
-
-function deleteRecipe(id) {
-  if (!confirm('Delete this recipe?')) return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(getCustomRecipes().filter(r => r.id !== id)))
-  render()
-}
-
-function saveRD() {
-  const rds = getCustomRDs()
-  rds.push({ ...rdForm, id: Date.now(), custom: true, followers: 0, following: 0, recipeIds: [] })
-  localStorage.setItem(RD_STORAGE_KEY, JSON.stringify(rds))
-  rdForm = emptyRdForm()
-  showToast('Dietitian added ✓')
-  activeTab = 'dieticians'
-  render()
-}
-
-function deleteRD(id) {
-  if (!confirm('Delete this dietitian?')) return
-  localStorage.setItem(RD_STORAGE_KEY, JSON.stringify(getCustomRDs().filter(r => r.id !== id)))
-  render()
-}
-
-function showToast(msg) {
-  toast = msg
-  render()
-  setTimeout(() => { toast = null; render() }, 3000)
-}
-
-// ── RENDER ──
-function render() {
-  const app = document.getElementById('app')
-  if (!isLoggedIn) { app.innerHTML = renderLogin(); bindLogin(); return }
-  app.innerHTML = renderAdmin()
-  bindAdmin()
-}
-
-function renderLogin() {
-  return `
-    <div class="login-wrap">
-      <div class="login-card">
-        <div class="login-leaf">🌿</div>
-        <div class="login-title">Recipe Studio</div>
-        <div class="login-sub">For nuri. registered dietitians</div>
-        <input class="login-input" type="email" id="pw-email" placeholder="Your email address" style="margin-bottom:10px" />
-        <input class="login-input" type="password" id="pw-input" placeholder="Password" />
-        <button class="login-btn" id="pw-btn">Enter Studio →</button>
-        <div class="login-error" id="pw-error" style="display:none">Incorrect email or password.</div>
-      </div>
-    </div>`
-}
-
-function bindLogin() {
-  const btn = document.getElementById('pw-btn')
-  const emailInput = document.getElementById('pw-email')
-  const pwInput = document.getElementById('pw-input')
-  const error = document.getElementById('pw-error')
-
-  if (!btn || !emailInput || !pwInput) return
-
-  function tryLogin() {
-    const email = (emailInput.value || '').trim().toLowerCase()
-    const pw = (pwInput.value || '').trim()
-    const match = APPROVED_RDS.find(r => r.email.toLowerCase() === email && r.password === pw)
+  const handleLogin = () => {
+    const match = APPROVED_RDS.find(
+      r => r.email.toLowerCase() === email.trim().toLowerCase() && r.password === password.trim()
+    );
     if (match) {
-      isLoggedIn = true
-      currentRD = match
-      recipeForm = emptyRecipeForm()
-      render()
+      onLogin(match);
     } else {
-      if (error) {
-        error.style.display = 'block'
-        error.textContent = 'Incorrect email or password.'
-      }
-      pwInput.value = ''
-      pwInput.focus()
+      setError('Incorrect email or password.');
+      setPassword('');
     }
+  };
+
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--cream)',padding:20}}>
+      <div style={{background:'var(--white)',borderRadius:20,padding:48,width:'100%',maxWidth:420,boxShadow:'var(--shadow-md)',textAlign:'center'}}>
+        <div style={{fontSize:40,marginBottom:16}}>🌿</div>
+        <Logo />
+        <div style={{fontFamily:'var(--font-body)',fontSize:11,fontWeight:300,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--tan)',marginTop:6,marginBottom:32}}>
+          Recipe Studio
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:12,textAlign:'left'}}>
+          <div>
+            <label style={{fontSize:11,fontWeight:600,color:'var(--text-mid)',letterSpacing:'0.06em',textTransform:'uppercase',display:'block',marginBottom:6}}>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => { setEmail(e.target.value); setError(''); }}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              placeholder="your@email.com"
+              style={{width:'100%',padding:'12px 16px',border:`1.5px solid ${error ? '#C0392B' : 'var(--border)'}`,borderRadius:8,fontFamily:'var(--font-body)',fontSize:14,color:'var(--text)',outline:'none',background:'var(--cream)'}}
+            />
+          </div>
+          <div>
+            <label style={{fontSize:11,fontWeight:600,color:'var(--text-mid)',letterSpacing:'0.06em',textTransform:'uppercase',display:'block',marginBottom:6}}>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => { setPassword(e.target.value); setError(''); }}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              placeholder="••••••••"
+              style={{width:'100%',padding:'12px 16px',border:`1.5px solid ${error ? '#C0392B' : 'var(--border)'}`,borderRadius:8,fontFamily:'var(--font-body)',fontSize:14,color:'var(--text)',outline:'none',background:'var(--cream)'}}
+            />
+          </div>
+          {error && <div style={{color:'#C0392B',fontSize:13}}>{error}</div>}
+          <button
+            onClick={handleLogin}
+            style={{width:'100%',padding:14,background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:15,fontWeight:600,cursor:'pointer',marginTop:8,transition:'all 0.2s'}}
+          >
+            Enter Studio →
+          </button>
+        </div>
+        <p style={{fontSize:12,color:'var(--text-light)',marginTop:16,lineHeight:1.5}}>
+          For approved nuri. dietitians only.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── MAIN STUDIO ───────────────────────────────────────────────
+function Studio({ rd, onLogout }) {
+  const [tab, setTab] = useState('add');
+  const [recipes, setRecipes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('nuri_custom_recipes') || '[]').filter(r => r.dieticianId === rd.id); } catch { return []; }
+  });
+  const [form, setForm] = useState(emptyForm());
+  const [editingId, setEditingId] = useState(null);
+  const [toast, setToast] = useState('');
+
+  function emptyForm() {
+    return { title:'', subtitle:'', emoji:'🥗', healthLabels:['pcos'], prepTime:'', cookTime:'', servings:'', ginghamBg: GINGHAM_COLORS[0].bg, ginghamS: GINGHAM_COLORS[0].s, photoUrl:'', ingredients:[''], instructions:[''], note:'' };
   }
 
-  btn.onclick = tryLogin
-  pwInput.onkeydown = e => { if (e.key === 'Enter') tryLogin() }
-  emailInput.onkeydown = e => { if (e.key === 'Enter') pwInput.focus() }
-  emailInput.focus()
-}
+  function saveToStorage(updated) {
+    try {
+      const all = JSON.parse(localStorage.getItem('nuri_custom_recipes') || '[]').filter(r => r.dieticianId !== rd.id);
+      localStorage.setItem('nuri_custom_recipes', JSON.stringify([...all, ...updated]));
+    } catch {}
+  }
 
-function renderAdmin() {
-  const customRecipes = getCustomRecipes().filter(r => r.dieticianId === currentRD.id)
-  const customRDs = getCustomRDs()
-  const allRDs = getAllRDs()
+  function showToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3000);
+  }
 
-  return `
-    <nav class="nav">
-      <div style="display:flex;align-items:center;gap:4px">
-        <span class="nav-logo">nuri<span class="nav-logo-dot"></span></span>
-        <span class="nav-tag">Recipe Studio</span>
-      </div>
-      <div class="nav-right">
-        <a href="index.html" target="_blank"><button class="nav-btn nav-btn-ghost">View app ↗</button></a>
-        <button class="nav-btn nav-btn-ghost" onclick="isLoggedIn=false;render()">Sign out</button>
-      </div>
-    </nav>
+  function handleSave() {
+    if (!form.title.trim()) { alert('Please add a recipe title.'); return; }
+    if (!form.healthLabels.length) { alert('Please select at least one health condition.'); return; }
+    let updated;
+    if (editingId) {
+      updated = recipes.map(r => r.id === editingId ? { ...form, id: editingId, dieticianId: rd.id } : r);
+      showToast('Recipe updated ✓');
+    } else {
+      updated = [...recipes, { ...form, id: Date.now(), dieticianId: rd.id }];
+      showToast('Recipe added ✓');
+    }
+    setRecipes(updated);
+    saveToStorage(updated);
+    setForm(emptyForm());
+    setEditingId(null);
+    setTab('recipes');
+  }
 
-    <div class="admin-wrap">
-      <div class="admin-header">
-        <h1>${editingId ? 'Editing Recipe' : 'Recipe Studio'}</h1>
-        <p>Add and manage recipes that appear in the nuri. app — no code needed.</p>
-      </div>
+  function handleEdit(r) {
+    setForm({ title:r.title||'', subtitle:r.subtitle||'', emoji:r.emoji||'🥗', healthLabels:r.healthLabels||['pcos'], prepTime:r.prepTime||'', cookTime:r.cookTime||'', servings:r.servings||'', ginghamBg:r.ginghamBg||GINGHAM_COLORS[0].bg, ginghamS:r.ginghamS||GINGHAM_COLORS[0].s, photoUrl:r.photoUrl||'', ingredients:r.ingredients?.length?r.ingredients:[''], instructions:r.instructions?.length?r.instructions:[''], note:r.note||'' });
+    setEditingId(r.id);
+    setTab('add');
+    window.scrollTo(0,0);
+  }
 
-      <div class="tabs">
-        <button class="tab ${activeTab==='add'?'active':''}" onclick="editingId=null;recipeForm=emptyRecipeForm();activeTab='add';render()">
-          ${editingId ? '✏️ Editing' : '➕ Add Recipe'}
-        </button>
-        <button class="tab ${activeTab==='paste'?'active':''}" onclick="activeTab='paste';render()">📋 Paste Recipe</button>
-        <button class="tab ${activeTab==='recipes'?'active':''}" onclick="activeTab='recipes';render()">🗂 My Recipes (${customRecipes.length})</button>
-      </div>
+  function handleDelete(id) {
+    if (!confirm('Delete this recipe?')) return;
+    const updated = recipes.filter(r => r.id !== id);
+    setRecipes(updated);
+    saveToStorage(updated);
+  }
 
-      ${activeTab==='add'     ? renderAddRecipe(allRDs) : ''}
-      ${activeTab==='paste'   ? renderPaste() : ''}
-      ${activeTab==='recipes' ? renderRecipeList(customRecipes, allRDs) : ''}
-      ${activeTab==='dieticians' ? renderRDList(customRDs) : ''}
-      ${activeTab==='add-rd'  ? renderAddRD() : ''}
-    </div>
+  const updateForm = (key, val) => setForm(f => ({ ...f, [key]: val }));
+  const toggleLabel = id => updateForm('healthLabels', form.healthLabels.includes(id) ? form.healthLabels.filter(l => l !== id) : [...form.healthLabels, id]);
+  const updateList = (key, i, val) => { const n = [...form[key]]; n[i] = val; updateForm(key, n); };
+  const addToList = key => updateForm(key, [...form[key], '']);
+  const removeFromList = (key, i) => updateForm(key, form[key].filter((_,idx) => idx !== i));
 
-    ${toast ? `<div class="toast">${toast}</div>` : ''}
-  `
-}
+  const btnStyle = (active) => ({
+    padding:'10px 20px', border:'none', background:'none', fontFamily:'var(--font-body)', fontSize:14, fontWeight: active ? 600 : 500,
+    color: active ? 'var(--brown)' : 'var(--text-light)', cursor:'pointer',
+    borderBottom: active ? '2px solid var(--brown)' : '2px solid transparent', marginBottom:-1,
+  });
 
-function renderAddRecipe(allRDs) {
-  const selectedGingham = GINGHAM_COLORS.find(g => g.bg === recipeForm.ginghamBg) || GINGHAM_COLORS[0]
-  const previewStyle = `background-color:${selectedGingham.bg};background-image:repeating-linear-gradient(transparent 0px,transparent 26px,${selectedGingham.s} 26px,${selectedGingham.s} 52px),repeating-linear-gradient(90deg,transparent 0px,transparent 26px,${selectedGingham.s} 26px,${selectedGingham.s} 52px);`
+  const inputStyle = (extra={}) => ({ padding:'10px 14px', border:'1.5px solid var(--border)', borderRadius:8, background:'var(--white)', fontFamily:'var(--font-body)', fontSize:14, color:'var(--text)', outline:'none', width:'100%', ...extra });
+  const labelStyle = { fontSize:11, fontWeight:600, color:'var(--text-mid)', letterSpacing:'0.06em', textTransform:'uppercase', display:'block', marginBottom:6 };
+  const sectionStyle = { marginBottom:32 };
+  const sectionTitleStyle = { fontFamily:'var(--font-serif)', fontSize:18, fontWeight:600, color:'var(--text)', marginBottom:16, paddingBottom:10, borderBottom:'1px solid var(--border)' };
 
-  return `
-  <div class="form-card">
-
-    <div class="form-section">
-      <div class="form-section-title">🥗 Recipe Details</div>
-      <div class="form-grid">
-        <div class="form-group full">
-          <label class="form-label">Recipe Title *</label>
-          <input class="form-input" id="f-title" placeholder="e.g. PCOS Berry Hormone Bowl" value="${esc(recipeForm.title)}" />
+  return (
+    <div style={{minHeight:'100vh',background:'var(--cream)'}}>
+      {/* Nav */}
+      <nav style={{position:'sticky',top:0,zIndex:100,background:'rgba(250,246,240,0.97)',backdropFilter:'blur(16px)',borderBottom:'1px solid var(--border)',padding:'0 32px',height:64,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <Logo />
+          <span style={{width:1,height:20,background:'var(--border)',display:'inline-block'}}/>
+          <span style={{fontFamily:'var(--font-body)',fontSize:11,fontWeight:300,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--tan)'}}>Recipe Studio</span>
+          <span style={{fontSize:12,color:'var(--text-light)',marginLeft:8}}>👤 {rd.name}</span>
         </div>
-        <div class="form-group full">
-          <label class="form-label">Subtitle</label>
-          <input class="form-input" id="f-subtitle" placeholder="e.g. Inositol-rich & anti-androgenic" value="${esc(recipeForm.subtitle)}" />
+        <button onClick={onLogout} style={{padding:'8px 18px',borderRadius:50,border:'1.5px solid var(--border)',background:'transparent',fontFamily:'var(--font-body)',fontSize:13,fontWeight:500,color:'var(--text-mid)',cursor:'pointer'}}>Sign out</button>
+      </nav>
+
+      <div style={{maxWidth:900,margin:'0 auto',padding:'40px 24px 80px'}}>
+        <div style={{marginBottom:36}}>
+          <h1 style={{fontFamily:'var(--font-serif)',fontSize:32,fontStyle:'italic',color:'var(--text)',marginBottom:6}}>
+            Welcome, {rd.name.split(' ')[0]} 👋
+          </h1>
+          <p style={{color:'var(--text-light)',fontSize:14}}>Add and manage your recipes for the nuri. app.</p>
         </div>
-        <div class="form-group">
-          <label class="form-label">Prep Time</label>
-          <input class="form-input" id="f-prep" placeholder="e.g. 10 min" value="${esc(recipeForm.prepTime)}" />
+
+        {/* Tabs */}
+        <div style={{display:'flex',borderBottom:'1px solid var(--border)',marginBottom:32}}>
+          <button style={btnStyle(tab==='add')} onClick={() => { setForm(emptyForm()); setEditingId(null); setTab('add'); }}>
+            {editingId ? '✏️ Editing' : '➕ Add Recipe'}
+          </button>
+          <button style={btnStyle(tab==='recipes')} onClick={() => setTab('recipes')}>
+            🗂 My Recipes ({recipes.length})
+          </button>
         </div>
-        <div class="form-group">
-          <label class="form-label">Cook Time</label>
-          <input class="form-input" id="f-cook" placeholder="e.g. 25 min" value="${esc(recipeForm.cookTime)}" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Servings</label>
-          <input class="form-input" id="f-servings" placeholder="e.g. 2" value="${esc(recipeForm.servings)}" />
-        </div>
-      </div>
-    </div>
 
-    <div class="form-section">
-      <div class="form-section-title">🩺 Dietitian</div>
-      <div class="rd-grid">
-        ${allRDs.map(rd => `
-          <div class="rd-card ${recipeForm.dieticianId==rd.id?'active':''}" onclick="recipeForm.dieticianId=${rd.id};syncForm();render()">
-            <div class="rd-avatar-sm" style="background:${rd.avatarColor||'#C4A882'}">${(rd.name||'?').slice(0,2).toUpperCase()}</div>
-            <div>
-              <div class="rd-name">${rd.name}</div>
-              <div class="rd-creds">${rd.credentials}</div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
+        {/* ADD FORM */}
+        {tab === 'add' && (
+          <div style={{background:'var(--white)',borderRadius:14,padding:32,boxShadow:'var(--shadow)'}}>
 
-    <div class="form-section">
-      <div class="form-section-title">🏷️ Health Conditions</div>
-      <div class="label-grid">
-        ${HEALTH_LABELS.map(l => `
-          <div class="label-chip ${recipeForm.healthLabels.includes(l.id)?'active':''}" onclick="toggleLabel('${l.id}')">${l.label}</div>
-        `).join('')}
-      </div>
-      <p class="form-hint" style="margin-top:10px">Select all that apply. Only tag conditions that Claire explicitly mentions in her recipe notes.</p>
-    </div>
-
-    <div class="form-section">
-      <div class="form-section-title">🎨 Card Style</div>
-      <label class="form-label" style="display:block;margin-bottom:10px">Emoji</label>
-      <div class="emoji-grid" style="margin-bottom:20px">
-        ${EMOJIS.map(e => `
-          <button class="emoji-btn ${recipeForm.emoji===e?'active':''}" onclick="recipeForm.emoji='${e}';syncForm();render()">${e}</button>
-        `).join('')}
-      </div>
-
-      <label class="form-label" style="display:block;margin-bottom:10px">Card Background (Checkerboard)</label>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-        ${GINGHAM_COLORS.map(g => `
-          <div onclick="recipeForm.ginghamBg='${g.bg}';recipeForm.ginghamS='${g.s}';syncForm();render()"
-            style="width:48px;height:36px;border-radius:8px;cursor:pointer;border:3px solid ${recipeForm.ginghamBg===g.bg?'#5C3D2E':'transparent'};transition:all 0.15s;background-color:${g.bg};background-image:repeating-linear-gradient(transparent 0px,transparent 8px,${g.s} 8px,${g.s} 16px),repeating-linear-gradient(90deg,transparent 0px,transparent 8px,${g.s} 8px,${g.s} 16px)"
-            title="${g.label}"></div>
-        `).join('')}
-      </div>
-
-      <div style="height:80px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:8px;${previewStyle}">
-        ${recipeForm.emoji}
-      </div>
-      <p class="form-hint">Preview of the recipe card background with your selected emoji.</p>
-    </div>
-
-    <div class="form-section">
-      <div class="form-section-title">📸 Photo URL</div>
-      <div class="form-group">
-        <label class="form-label">Image URL (optional)</label>
-        <input class="form-input" id="f-photo" placeholder="https://images.squarespace-cdn.com/..." value="${esc(recipeForm.photoUrl)}" oninput="recipeForm.photoUrl=this.value;updatePhotoPreview()" />
-        <p class="form-hint">Paste the image URL from Claire's site (the og:image URL). Leave blank to use the checkerboard + emoji instead.</p>
-        <img id="photo-preview" class="img-preview ${recipeForm.photoUrl?'visible':''}" src="${esc(recipeForm.photoUrl)}" alt="preview" onerror="this.style.display='none'" />
-      </div>
-    </div>
-
-    <div class="form-section">
-      <div class="form-section-title">🧾 Ingredients</div>
-      <div id="ingredients-list">
-        ${recipeForm.ingredients.map((ing, i) => `
-          <div class="list-row">
-            <div class="list-dot"></div>
-            <input class="form-input" id="ing-${i}" placeholder="e.g. 1 cup Greek yogurt" value="${esc(ing)}" oninput="recipeForm.ingredients[${i}]=this.value" />
-            ${recipeForm.ingredients.length>1 ? `<button class="remove-btn" onclick="removeIngredient(${i})">×</button>` : ''}
-          </div>
-        `).join('')}
-      </div>
-      <button class="add-btn" onclick="addIngredient()">+ Add ingredient</button>
-    </div>
-
-    <div class="form-section">
-      <div class="form-section-title">📋 Instructions</div>
-      <div id="instructions-list">
-        ${recipeForm.instructions.map((step, i) => `
-          <div class="list-row" style="align-items:flex-start">
-            <div class="list-num" style="margin-top:8px">${i+1}</div>
-            <textarea class="form-textarea" id="step-${i}" placeholder="Describe this step..." oninput="recipeForm.instructions[${i}]=this.value" style="min-height:60px">${esc(step)}</textarea>
-            ${recipeForm.instructions.length>1 ? `<button class="remove-btn" style="margin-top:8px" onclick="removeInstruction(${i})">×</button>` : ''}
-          </div>
-        `).join('')}
-      </div>
-      <button class="add-btn" onclick="addInstruction()">+ Add step</button>
-    </div>
-
-    <div class="form-section">
-      <div class="form-section-title">💡 Dietitian's Note</div>
-      <div class="form-group">
-        <textarea class="form-textarea" id="f-note" placeholder="e.g. Flaxseed is key for oestrogen balance. Eat within 20 minutes of making." style="min-height:80px">${esc(recipeForm.note)}</textarea>
-        <p class="form-hint">Optional — a science tip or personal note from the RD. Appears at the bottom of the recipe in the app.</p>
-      </div>
-    </div>
-
-    <div class="submit-row">
-      <button class="cancel-btn" onclick="editingId=null;recipeForm=emptyRecipeForm();render()">Clear form</button>
-      <button class="submit-btn" onclick="submitRecipe()">${editingId?'Save changes ✓':'Add to app ✓'}</button>
-    </div>
-
-  </div>`
-}
-
-function renderPaste() {
-  return `
-  <div class="form-card">
-    <div class="form-section">
-      <div class="form-section-title">📋 Paste a Recipe</div>
-      <p style="font-size:14px;color:var(--text-light);margin-bottom:16px;line-height:1.6">
-        Copy a recipe from anywhere — a website, notes app, or type it out — and paste it below. nuri. will auto-fill the form for you.
-      </p>
-      <textarea class="form-textarea" id="paste-input" placeholder="Paste your recipe here...
-
-Example:
-PCOS Hormone Bowl
-Inositol-rich & anti-androgenic
-
-Ingredients
-1 cup frozen berries
-½ banana
-½ cup Greek yogurt
-
-Instructions
-1. Blend all ingredients until smooth
-2. Pour into a bowl and add toppings
-
-Note: Eat within 20 minutes of making." style="min-height:320px;font-size:13px"></textarea>
-    </div>
-    <div class="submit-row">
-      <button class="cancel-btn" onclick="document.getElementById('paste-input').value=''">Clear</button>
-      <button class="submit-btn" onclick="parseRecipeText(document.getElementById('paste-input').value)">Auto-fill form ✨</button>
-    </div>
-  </div>`
-}
-
-function renderRecipeList(recipes, allRDs) {
-  if (!recipes.length) return `
-    <div class="form-card">
-      <div class="empty-state">
-        <div style="font-size:40px;margin-bottom:12px">🌱</div>
-        <div style="font-weight:600;margin-bottom:6px">No custom recipes yet</div>
-        <div>Use the "Add Recipe" tab to add your first one.</div>
-      </div>
-    </div>`
-
-  return `
-    <div class="recipe-list">
-      ${recipes.map(r => {
-        const rd = allRDs.find(d => d.id == r.dieticianId) || {}
-        return `
-          <div class="recipe-row">
-            <div class="recipe-emoji">${r.emoji||'🥗'}</div>
-            <div class="recipe-info">
-              <div class="recipe-title">${r.title}</div>
-              <div class="recipe-meta">${rd.name||'Unknown'} · ${r.prepTime||'?'} prep · ${r.servings||'?'} servings</div>
-              <div class="recipe-tags">
-                ${(r.healthLabels||[]).map(l => {
-                  const lbl = HEALTH_LABELS.find(h=>h.id===l)
-                  return lbl ? `<span class="recipe-tag">${lbl.label}</span>` : ''
-                }).join('')}
+            {/* Details */}
+            <div style={sectionStyle}>
+              <div style={sectionTitleStyle}>🥗 Recipe Details</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                <div style={{gridColumn:'1/-1'}}>
+                  <label style={labelStyle}>Title *</label>
+                  <input style={inputStyle()} value={form.title} onChange={e => updateForm('title', e.target.value)} placeholder="e.g. PCOS Berry Hormone Bowl" />
+                </div>
+                <div style={{gridColumn:'1/-1'}}>
+                  <label style={labelStyle}>Subtitle</label>
+                  <input style={inputStyle()} value={form.subtitle} onChange={e => updateForm('subtitle', e.target.value)} placeholder="e.g. Inositol-rich & anti-androgenic" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Prep Time</label>
+                  <input style={inputStyle()} value={form.prepTime} onChange={e => updateForm('prepTime', e.target.value)} placeholder="e.g. 10 min" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Cook Time</label>
+                  <input style={inputStyle()} value={form.cookTime} onChange={e => updateForm('cookTime', e.target.value)} placeholder="e.g. 25 min" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Servings</label>
+                  <input style={inputStyle()} value={form.servings} onChange={e => updateForm('servings', e.target.value)} placeholder="e.g. 4" />
+                </div>
               </div>
             </div>
-            <span class="recipe-source custom">custom</span>
-            <button class="action-btn" onclick="editRecipe(${r.id})">Edit</button>
-            <button class="action-btn danger" onclick="deleteRecipe(${r.id})">Delete</button>
-          </div>`
-      }).join('')}
-    </div>`
-}
 
-function renderRDList(rds) {
-  const builtInHtml = BUILT_IN_RDS.map(rd => `
-    <div class="recipe-row">
-      <div style="width:42px;height:42px;border-radius:50%;background:${rd.avatarColor};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0">${rd.name.slice(0,2).toUpperCase()}</div>
-      <div class="recipe-info">
-        <div class="recipe-title">${rd.name}</div>
-        <div class="recipe-meta">${rd.credentials} · ${rd.specialty}</div>
+            {/* Health Labels */}
+            <div style={sectionStyle}>
+              <div style={sectionTitleStyle}>🏷️ Health Conditions</div>
+              <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+                {HEALTH_LABELS.map(l => (
+                  <button key={l.id} onClick={() => toggleLabel(l.id)}
+                    style={{padding:'7px 14px',borderRadius:50,border:`1.5px solid ${form.healthLabels.includes(l.id) ? 'var(--brown)' : 'var(--border)'}`,background:form.healthLabels.includes(l.id) ? 'var(--warm-beige)' : 'var(--white)',color:form.healthLabels.includes(l.id) ? 'var(--brown)' : 'var(--text-mid)',fontSize:12,fontWeight:form.healthLabels.includes(l.id) ? 600 : 500,cursor:'pointer',fontFamily:'var(--font-body)'}}>
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Card Style */}
+            <div style={sectionStyle}>
+              <div style={sectionTitleStyle}>🎨 Card Style</div>
+              <label style={labelStyle}>Emoji</label>
+              <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:20}}>
+                {EMOJIS.map(e => (
+                  <button key={e} onClick={() => updateForm('emoji', e)}
+                    style={{width:44,height:44,borderRadius:10,border:`2px solid ${form.emoji===e ? 'var(--brown)' : 'var(--border)'}`,background:form.emoji===e ? 'var(--warm-beige)' : 'var(--white)',fontSize:22,cursor:'pointer'}}>
+                    {e}
+                  </button>
+                ))}
+              </div>
+              <label style={labelStyle}>Background</label>
+              <div style={{display:'flex',flexWrap:'wrap',gap:10}}>
+                {GINGHAM_COLORS.map(g => {
+                  const sz = 8;
+                  const style = {backgroundColor:g.bg,backgroundImage:[`repeating-linear-gradient(transparent 0px,transparent ${sz}px,${g.s} ${sz}px,${g.s} ${sz*2}px)`,`repeating-linear-gradient(90deg,transparent 0px,transparent ${sz}px,${g.s} ${sz}px,${g.s} ${sz*2}px)`].join(',')};
+                  return (
+                    <div key={g.label} onClick={() => { updateForm('ginghamBg', g.bg); updateForm('ginghamS', g.s); }}
+                      style={{width:48,height:36,borderRadius:8,cursor:'pointer',border:`3px solid ${form.ginghamBg===g.bg ? 'var(--brown)' : 'transparent'}`,transition:'all 0.15s',...style}}
+                      title={g.label}/>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Photo */}
+            <div style={sectionStyle}>
+              <div style={sectionTitleStyle}>📸 Photo URL</div>
+              <label style={labelStyle}>Image URL (optional)</label>
+              <input style={inputStyle()} value={form.photoUrl} onChange={e => updateForm('photoUrl', e.target.value)} placeholder="https://..." />
+              {form.photoUrl && <img src={form.photoUrl} alt="preview" style={{width:'100%',height:160,objectFit:'cover',borderRadius:8,marginTop:10}} onError={e=>e.target.style.display='none'} />}
+            </div>
+
+            {/* Ingredients */}
+            <div style={sectionStyle}>
+              <div style={sectionTitleStyle}>🧾 Ingredients</div>
+              {form.ingredients.map((ing, i) => (
+                <div key={i} style={{display:'flex',gap:8,marginBottom:8,alignItems:'center'}}>
+                  <div style={{width:6,height:6,borderRadius:'50%',background:'var(--tan)',flexShrink:0}}/>
+                  <input style={inputStyle()} value={ing} onChange={e => updateList('ingredients', i, e.target.value)} placeholder={`Ingredient ${i+1}`} />
+                  {form.ingredients.length > 1 && <button onClick={() => removeFromList('ingredients', i)} style={{width:28,height:28,borderRadius:'50%',border:'1.5px solid var(--border)',background:'white',cursor:'pointer',color:'var(--text-light)',fontSize:14,flexShrink:0}}>×</button>}
+                </div>
+              ))}
+              <button onClick={() => addToList('ingredients')} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 14px',background:'var(--warm-beige)',border:'1.5px dashed var(--border)',borderRadius:8,fontSize:13,color:'var(--text-mid)',cursor:'pointer',fontFamily:'var(--font-body)',width:'100%',marginTop:4}}>
+                + Add ingredient
+              </button>
+            </div>
+
+            {/* Instructions */}
+            <div style={sectionStyle}>
+              <div style={sectionTitleStyle}>📋 Instructions</div>
+              {form.instructions.map((step, i) => (
+                <div key={i} style={{display:'flex',gap:8,marginBottom:8,alignItems:'flex-start'}}>
+                  <div style={{width:24,height:24,borderRadius:'50%',background:'var(--warm-beige)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'var(--brown)',flexShrink:0,marginTop:8}}>{i+1}</div>
+                  <textarea value={step} onChange={e => updateList('instructions', i, e.target.value)} placeholder={`Step ${i+1}`} style={{...inputStyle(),minHeight:60,resize:'vertical',lineHeight:1.5}} />
+                  {form.instructions.length > 1 && <button onClick={() => removeFromList('instructions', i)} style={{width:28,height:28,borderRadius:'50%',border:'1.5px solid var(--border)',background:'white',cursor:'pointer',color:'var(--text-light)',fontSize:14,flexShrink:0,marginTop:8}}>×</button>}
+                </div>
+              ))}
+              <button onClick={() => addToList('instructions')} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 14px',background:'var(--warm-beige)',border:'1.5px dashed var(--border)',borderRadius:8,fontSize:13,color:'var(--text-mid)',cursor:'pointer',fontFamily:'var(--font-body)',width:'100%',marginTop:4}}>
+                + Add step
+              </button>
+            </div>
+
+            {/* Note */}
+            <div style={sectionStyle}>
+              <div style={sectionTitleStyle}>💡 Dietitian's Note</div>
+              <textarea value={form.note} onChange={e => updateForm('note', e.target.value)} placeholder="Add a nutritional note or tip..." style={{...inputStyle(),minHeight:80,resize:'vertical',lineHeight:1.5}} />
+            </div>
+
+            {/* Submit */}
+            <div style={{display:'flex',gap:12,justifyContent:'flex-end',paddingTop:24,borderTop:'1px solid var(--border)'}}>
+              <button onClick={() => { setForm(emptyForm()); setEditingId(null); }} style={{padding:'13px 24px',background:'transparent',border:'1.5px solid var(--border)',color:'var(--text-mid)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:14,cursor:'pointer'}}>
+                Clear
+              </button>
+              <button onClick={handleSave} style={{padding:'13px 36px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:15,fontWeight:600,cursor:'pointer'}}>
+                {editingId ? 'Save changes ✓' : 'Add to app ✓'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* RECIPE LIST */}
+        {tab === 'recipes' && (
+          <div>
+            {recipes.length === 0 ? (
+              <div style={{textAlign:'center',padding:80,color:'var(--text-light)'}}>
+                <div style={{fontSize:48,marginBottom:16}}>🌱</div>
+                <div style={{fontFamily:'var(--font-serif)',fontSize:22,fontStyle:'italic',marginBottom:8}}>No recipes yet</div>
+                <div style={{fontSize:14}}>Use the Add Recipe tab to get started.</div>
+              </div>
+            ) : recipes.map(r => (
+              <div key={r.id} style={{background:'var(--white)',borderRadius:12,padding:'18px 20px',display:'flex',alignItems:'center',gap:16,boxShadow:'var(--shadow)',marginBottom:12}}>
+                <div style={{fontSize:28,flexShrink:0}}>{r.emoji}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontFamily:'var(--font-serif)',fontSize:17,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>{r.title}</div>
+                  <div style={{fontSize:12,color:'var(--text-light)',marginTop:3}}>{r.prepTime||'?'} prep · {r.servings||'?'} servings</div>
+                  <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:6}}>
+                    {(r.healthLabels||[]).map(l => {
+                      const lbl = HEALTH_LABELS.find(h => h.id === l);
+                      return lbl ? <span key={l} style={{padding:'2px 10px',borderRadius:50,fontSize:11,fontWeight:500,background:'var(--warm-beige)',color:'var(--text-mid)'}}>{lbl.label}</span> : null;
+                    })}
+                  </div>
+                </div>
+                <button onClick={() => handleEdit(r)} style={{padding:'7px 14px',border:'1.5px solid var(--tan)',borderRadius:50,background:'white',color:'var(--tan)',fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:'var(--font-body)'}}>Edit</button>
+                <button onClick={() => handleDelete(r.id)} style={{padding:'7px 14px',border:'1.5px solid var(--border)',borderRadius:50,background:'white',color:'var(--text-light)',fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:'var(--font-body)'}}>Delete</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-      <span class="recipe-source">built-in</span>
-    </div>`).join('')
 
-  const customHtml = rds.length ? rds.map(rd => `
-    <div class="recipe-row">
-      <div style="width:42px;height:42px;border-radius:50%;background:${rd.avatarColor};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0">${rd.initials||rd.name.slice(0,2).toUpperCase()}</div>
-      <div class="recipe-info">
-        <div class="recipe-title">${rd.name}</div>
-        <div class="recipe-meta">${rd.credentials} · ${rd.specialty}</div>
-      </div>
-      <span class="recipe-source custom">custom</span>
-      <button class="action-btn danger" onclick="deleteRD(${rd.id})">Delete</button>
-    </div>`).join('') : ''
-
-  return `
-    <div style="margin-bottom:12px;font-size:13px;color:var(--text-light);font-style:italic">
-      Built-in dietitians are always available. Add more using the "Add Dietitian" tab.
-    </div>
-    <div class="recipe-list">
-      ${builtInHtml}
-      ${customHtml}
-    </div>`
-}
-
-function renderAddRD() {
-  return `
-  <div class="form-card">
-    <div class="form-section">
-      <div class="form-section-title">👩‍⚕️ Dietitian Profile</div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">Full Name *</label>
-          <input class="form-input" id="rd-name" placeholder="e.g. Dr. Sarah Mills" value="${esc(rdForm.name)}" oninput="rdForm.name=this.value;autoInitials()" />
+      {toast && (
+        <div style={{position:'fixed',bottom:32,right:32,background:'var(--green-dark)',color:'white',padding:'14px 24px',borderRadius:50,fontSize:14,fontWeight:500,boxShadow:'var(--shadow-md)',zIndex:999}}>
+          {toast}
         </div>
-        <div class="form-group">
-          <label class="form-label">Credentials *</label>
-          <input class="form-input" id="rd-creds" placeholder="e.g. RD, MSc" value="${esc(rdForm.credentials)}" oninput="rdForm.credentials=this.value" />
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Specialty</label>
-          <input class="form-input" id="rd-specialty" placeholder="e.g. PCOS & Hormonal Health" value="${esc(rdForm.specialty)}" oninput="rdForm.specialty=this.value" />
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Short Bio</label>
-          <textarea class="form-textarea" id="rd-bio" placeholder="A short description of who they are and what they specialise in..." oninput="rdForm.bio=this.value">${esc(rdForm.bio)}</textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Initials (for avatar)</label>
-          <input class="form-input" id="rd-initials" placeholder="e.g. SM" maxlength="2" value="${esc(rdForm.initials)}" oninput="rdForm.initials=this.value.toUpperCase()" style="text-transform:uppercase" />
-        </div>
-      </div>
+      )}
     </div>
-
-    <div class="form-section">
-      <div class="form-section-title">🎨 Avatar Colour</div>
-      <div class="color-grid">
-        ${AVATAR_COLORS.map(c => `
-          <div class="color-swatch ${rdForm.avatarColor===c?'active':''}" style="background:${c}" onclick="rdForm.avatarColor='${c}';render()"></div>
-        `).join('')}
-      </div>
-    </div>
-
-    <div class="form-section">
-      <div class="form-section-title">🏷️ Specialises In</div>
-      <div class="label-grid">
-        ${HEALTH_LABELS.map(l => `
-          <div class="label-chip ${rdForm.tags.includes(l.id)?'active':''}" onclick="toggleRdTag('${l.id}')">${l.label}</div>
-        `).join('')}
-      </div>
-    </div>
-
-    <div class="submit-row">
-      <button class="cancel-btn" onclick="rdForm=emptyRdForm();render()">Clear</button>
-      <button class="submit-btn" onclick="submitRD()">Add dietitian ✓</button>
-    </div>
-  </div>`
+  );
 }
 
-// ── HELPERS ──
-function esc(str) {
-  return String(str||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+function App() {
+  const [rd, setRd] = useState(null);
+  return rd ? <Studio rd={rd} onLogout={() => setRd(null)} /> : <Login onLogin={setRd} />;
 }
 
-function updatePhotoPreview() {
-  const img = document.getElementById('photo-preview')
-  const input = document.getElementById('f-photo')
-  if (!img || !input) return
-  const url = input.value.trim()
-  if (url) {
-    img.src = url
-    img.classList.add('visible')
-    img.style.display = 'block'
-  } else {
-    img.classList.remove('visible')
-    img.style.display = 'none'
-  }
-}
-
-function syncForm() {
-  const map = [['f-title','title'],['f-subtitle','subtitle'],['f-prep','prepTime'],['f-cook','cookTime'],['f-servings','servings'],['f-note','note'],['f-photo','photoUrl']]
-  map.forEach(([id, key]) => { const el = document.getElementById(id); if (el) recipeForm[key] = el.value })
-  recipeForm.ingredients.forEach((_, i) => { const el = document.getElementById(`ing-${i}`); if (el) recipeForm.ingredients[i] = el.value })
-  recipeForm.instructions.forEach((_, i) => { const el = document.getElementById(`step-${i}`); if (el) recipeForm.instructions[i] = el.value })
-}
-
-function submitRecipe() {
-  syncForm()
-  if (!recipeForm.title.trim()) { alert('Please add a recipe title.'); return }
-  if (!recipeForm.healthLabels.length) { alert('Please select at least one health condition.'); return }
-  saveRecipe()
-}
-
-function submitRD() {
-  if (!rdForm.name.trim()) { alert('Please add a name.'); return }
-  if (!rdForm.credentials.trim()) { alert('Please add credentials.'); return }
-  saveRD()
-}
-
-function toggleLabel(id) {
-  syncForm()
-  recipeForm.healthLabels = recipeForm.healthLabels.includes(id)
-    ? recipeForm.healthLabels.filter(l => l !== id)
-    : [...recipeForm.healthLabels, id]
-  render()
-}
-
-function toggleRdTag(id) {
-  rdForm.tags = rdForm.tags.includes(id) ? rdForm.tags.filter(t => t !== id) : [...rdForm.tags, id]
-  render()
-}
-
-function addIngredient() {
-  syncForm(); recipeForm.ingredients.push(''); render()
-  setTimeout(() => { const els = document.querySelectorAll('[id^="ing-"]'); if (els.length) els[els.length-1].focus() }, 50)
-}
-function removeIngredient(i) { syncForm(); recipeForm.ingredients.splice(i,1); render() }
-function addInstruction() {
-  syncForm(); recipeForm.instructions.push(''); render()
-  setTimeout(() => { const els = document.querySelectorAll('[id^="step-"]'); if (els.length) els[els.length-1].focus() }, 50)
-}
-function removeInstruction(i) { syncForm(); recipeForm.instructions.splice(i,1); render() }
-
-function autoInitials() {
-  const name = document.getElementById('rd-name')?.value || ''
-  const parts = name.trim().split(' ').filter(Boolean)
-  rdForm.initials = parts.length >= 2
-    ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
-    : parts[0]?.slice(0,2).toUpperCase() || ''
-  rdForm.name = name
-  const el = document.getElementById('rd-initials')
-  if (el) el.value = rdForm.initials
-}
-
-function parseRecipeText(text) {
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
-  if (!lines.length) return
-  let title='', subtitle='', ingredients=[], instructions=[], note='', prepTime='', cookTime='', servings=''
-  let mode = 'title'
-  const ingKw = /^(ingredients|what you need|you('ll| will) need)/i
-  const instKw = /^(instructions|method|directions|steps|how to)/i
-  const noteKw = /^(note|tip|chef'?s? note|rd'?s? note|dietitian'?s? note)/i
-  lines.forEach((line, i) => {
-    if (/prep.{0,10}time/i.test(line)) { prepTime = line.replace(/.*:/,'').trim(); return }
-    if (/cook.{0,10}time/i.test(line)) { cookTime = line.replace(/.*:/,'').trim(); return }
-    if (/serves?|servings?/i.test(line) && /\d/.test(line)) { servings = line.match(/\d+/)?.[0]||''; return }
-    if (i===0) { title=line; return }
-    if (i===1 && line.length<80 && !ingKw.test(line) && !instKw.test(line)) { subtitle=line; return }
-    if (ingKw.test(line)) { mode='ingredients'; return }
-    if (instKw.test(line)) { mode='instructions'; return }
-    if (noteKw.test(line)) { mode='note'; return }
-    const clean = line.replace(/^[-•*·▪◦]\s*/,'').replace(/^\d+\.\s*/,'')
-    if (mode==='ingredients' && clean) ingredients.push(clean)
-    else if (mode==='instructions' && clean) instructions.push(clean)
-    else if (mode==='note') note += (note?' ':'')+line
-  })
-  if (title) recipeForm.title = title
-  if (subtitle) recipeForm.subtitle = subtitle
-  if (ingredients.length) recipeForm.ingredients = ingredients
-  if (instructions.length) recipeForm.instructions = instructions
-  if (note) recipeForm.note = note
-  if (prepTime) recipeForm.prepTime = prepTime
-  if (cookTime) recipeForm.cookTime = cookTime
-  if (servings) recipeForm.servings = servings
-  showToast('Auto-filled — check and adjust ✓')
-  activeTab = 'add'
-  render()
-}
-
-function bindAdmin() { /* all via inline onclick */ }
-
-render()
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 </body>
 </html>
