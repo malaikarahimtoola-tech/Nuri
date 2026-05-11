@@ -6,7 +6,7 @@
 <title>nuri.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -27,7 +27,7 @@
   --radius: 14px;
   --radius-sm: 8px;
   --font-serif: 'Playfair Display', Georgia, serif;
-  --font-logo: 'Lora', Georgia, serif;
+  --font-logo: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
   --max: 1200px;
   /* ── brand palette ── */
@@ -63,7 +63,7 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 }
 .top-nav-brand { cursor: pointer; }
 .top-nav-sub { font-family: var(--font-body); font-size: 11px; font-weight: 300; letter-spacing: 0.08em; color: var(--tan); display: block; line-height: 1; margin-bottom: 2px; }
-.top-nav-logo { font-family: var(--font-logo); font-size: 22px; font-weight: 700; color: var(--green-dark); line-height: 1; display: inline-flex; align-items: flex-end; }
+.top-nav-logo { font-family: var(--font-logo); font-size: 26px; font-style: italic; font-weight: 600; color: var(--green-dark); line-height: 1; display: inline-flex; align-items: flex-end; }
 .logo-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--rose); margin-left: 2px; margin-bottom: 2px; flex-shrink: 0; }
 .top-nav-links { display: flex; align-items: center; gap: 4px; }
 .top-nav-link {
@@ -553,7 +553,7 @@ const CP = 'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a101
 
 const RECIPES = [
   { id:1,  dieticianId:3, title:'Pumpkin, Orange & Zaatar Soup', subtitle:'Middle Eastern twist on a winter warmer', emoji:'🎃', photo:`${CP}6955a58e920e3020578746fb/1770821699612/soup+2.jpg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'75 min', servings:4, ingredients:['1 pumpkin, cut into large chunks','2 tbsp zaatar','1 white onion, peeled and diced','1 tsp sumac','Juice of 2 oranges','500 ml vegetable stock','2 tbsp cream or crème fraîche','Olive oil, salt & pepper'], instructions:['Preheat oven to 185°C.','Cut pumpkin into roughly 8 large pieces. Lay on a baking tray, drizzle with olive oil, zaatar, salt and pepper.','Roast for 45–60 minutes until flesh is soft.','Remove seeds and peel from the pumpkin.','Heat oil in a pan and fry the onion until soft. Add sumac and a pinch of salt.','Add pumpkin and 500 ml stock. Pour in orange juice and mix.','Bring to the boil, then simmer for 10 minutes.','Blend with a hand blender. Stir in cream or crème fraîche.'], note:'Keeps in the fridge for 2 days or freeze for up to 2 months. Reheat well before serving.' },
-  { id:2,  dieticianId:3, title:'Soft & Chewy Oatmeal Chocolate Chip Cookies', subtitle:'Blood sugar-friendly bake with beta-glucan oats', emoji:'🍪', photo:`${CP}682624cad29e5148a3cdf047/1750963301821/13cc14cf-97c3-44ee-9645-6dd73ca26231.jpg?format=800w`, healthLabels:['pcos'], prepTime:'10 min', cookTime:'25 min', servings:12, ingredients:['¼ cup vanilla protein powder (plant-based)','2 eggs','1 ripe banana, mashed','1 tsp baking powder','1 tsp ground cinnamon','1 tbsp vanilla extract','1 cup rolled oats','½ cup brown sugar','½ cup softened butter','½ cup chocolate chips','Pinch of salt'], instructions:['Preheat oven to 175°C. Line a baking tray with parchment.','Beat softened butter and brown sugar until light and fluffy.','Mix in vanilla extract and eggs until well combined.','In a separate bowl, whisk together oats, protein powder, baking powder, cinnamon and salt.','Gradually add dry ingredients to wet mixture and stir.','Fold in chocolate chips.','Add mashed banana and mix until just combined.','Scoop 1.5 tablespoons of dough per cookie onto the tray, spacing 5 cm apart.','Bake 12–15 minutes until edges are golden. Cool before serving.'], note:'Oats are rich in beta-glucan fibre which helps stabilise blood sugar — ideal for PCOS management.' },
+  { id:2,  dieticianId:3, title:'Soft & Chewy Oatmeal Chocolate Chip Cookies', subtitle:'Blood sugar-friendly bake with beta-glucan oats', emoji:'🍪', photo:`${CP}682624cad29e5148a3cdf047/1750963301821/13cc14cf-97c3-44ee-9645-6dd73ca26231.jpg?format=800w`, healthLabels:['pcos','hormones'], prepTime:'10 min', cookTime:'25 min', servings:12, ingredients:['¼ cup vanilla protein powder (plant-based)','2 eggs','1 ripe banana, mashed','1 tsp baking powder','1 tsp ground cinnamon','1 tbsp vanilla extract','1 cup rolled oats','½ cup brown sugar','½ cup softened butter','½ cup chocolate chips','Pinch of salt'], instructions:['Preheat oven to 175°C. Line a baking tray with parchment.','Beat softened butter and brown sugar until light and fluffy.','Mix in vanilla extract and eggs until well combined.','In a separate bowl, whisk together oats, protein powder, baking powder, cinnamon and salt.','Gradually add dry ingredients to wet mixture and stir.','Fold in chocolate chips.','Add mashed banana and mix until just combined.','Scoop 1.5 tablespoons of dough per cookie onto the tray, spacing 5 cm apart.','Bake 12–15 minutes until edges are golden. Cool before serving.'], note:'Oats are rich in beta-glucan fibre which helps stabilise blood sugar — ideal for PCOS management.' },
   { id:3,  dieticianId:3, title:'Citrus Roasted Salmon', subtitle:'Omega-3 rich with Middle Eastern spices', emoji:'🐟', photo:`${CP}66bdab540360b04c1e129d61/1723795250313/Feature+image.jpeg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'40 min', servings:2, ingredients:['2 salmon fillets (or 1 large fillet)','1 orange, zested & juiced, then sliced into rounds','1 lemon, zested & juiced, then sliced into rounds','1 tsp sumac','1 tsp zaatar','Small bunch fresh parsley, chopped','1 red chilli, finely chopped','1 tbsp pomegranate molasses','2 tbsp olive oil','Salt & black pepper'], instructions:['Preheat oven to 180°C.','Zest and juice the orange and lemon. Slice remaining fruit into 2–3 cm rounds.','Mix citrus juice and zest, sumac, zaatar, parsley, chilli, pomegranate molasses and olive oil in a bowl. Season.','Line a baking sheet with parchment. Arrange citrus slices to form a bed.','Place salmon over the citrus. Pour marinade over the top.','Bake for 20–40 minutes depending on fillet size, checking every 10 minutes after the 20-minute mark.','Serve with rice, quinoa, or grains alongside vegetables.'], note:'Salmon is rich in omega-3 fatty acids, particularly beneficial for PCOS and endometriosis.' },
   { id:4,  dieticianId:3, title:'Moroccan Inspired Traybake', subtitle:'Cinnamon-spiced veg with tahini drizzle', emoji:'🥕', photo:`${CP}654fb1f084fd254ec1e6c616/1706264040640/Blog+Feature+Image.jpeg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'40 min', servings:4, ingredients:['1 sweet potato, cubed','2 carrots, chopped','1 beetroot, chopped','1 courgette, chopped','1 red pepper, chopped','2 tsp cinnamon','1 tsp cumin','1 tsp paprika','Olive oil, salt & pepper','For tahini drizzle: 3 tbsp tahini, juice of ½ lemon, 1–2 tbsp water, pinch of salt'], instructions:['Preheat oven to 200°C.','Place sweet potato, carrots and beetroot in one bowl; courgette and peppers in another.','Drizzle both with olive oil and toss to coat.','Sprinkle cinnamon, cumin and paprika over all vegetables. Season with salt and pepper.','Spread on a large baking tray and roast for 35–40 minutes until golden and tender.','While roasting, whisk tahini, lemon juice, water and salt until smooth.','Allow vegetables to cool slightly before drizzling with tahini sauce.'], note:'Cinnamon has shown benefits in improving insulin sensitivity in PCOS. Great for meal prep — leftovers work well in salads and wraps.' },
   { id:5,  dieticianId:3, title:'Protein Pancakes', subtitle:'High-protein breakfast — 3 simple ingredients', emoji:'🥞', photo:`${CP}64d5fb2c2d8da932d1d8ca75/1695730700022/Blog+feature+image+Protein+pancakes.jpeg?format=800w`, healthLabels:['pcos'], prepTime:'5 min', cookTime:'15 min', servings:2, ingredients:['¼ cup vanilla protein powder (plant-based pea protein)','2 eggs','1 ripe banana, mashed','1 tsp baking powder','1 tsp ground cinnamon','1 tbsp vanilla extract'], instructions:['In a medium bowl, whisk together eggs and protein powder until smooth and creamy.','Add mashed banana, baking powder, cinnamon and vanilla extract. Whisk until combined.','Leave batter for 5–10 minutes until bubbles form on the surface.','Heat a non-stick pan over medium-low heat with a little oil.','Use a ¼ cup measure to pour pancakes onto the pan.','Cook 3–5 minutes until bubbles form on the surface, then flip.','Cook the other side for 2–3 minutes until golden.'], note:'Can be made with any protein powder. If batter is too thick, loosen with 2–4 tbsp milk. Best eaten fresh but keeps 3 days in the fridge.' },
@@ -701,7 +701,9 @@ function TopNav({ current, onChange }) {
       <div className="top-nav-inner">
         <div className="top-nav-brand" onClick={() => onChange('feed')}>
           <span className="top-nav-sub">food that works for your body</span>
-          <span className="top-nav-logo">nuri<span className="logo-dot" /></span>
+          <span className="top-nav-logo" style={{fontFamily:'var(--font-logo)',fontStyle:'italic',fontWeight:600,color:'var(--green-dark)'}}>
+            nuri<span className="logo-dot" />
+          </span>
         </div>
         <nav className="top-nav-links">
           {links.map(l => (
@@ -736,7 +738,7 @@ function Welcome({ onStart }) {
     <div className="welcome-page">
       <div className="welcome-left">
         <div className="welcome-brand-line">food that works for your body</div>
-        <h1 className="welcome-headline" style={{fontFamily:'var(--font-logo)',fontStyle:'normal',fontWeight:700,color:'var(--green-dark)',display:'inline-flex',alignItems:'flex-end'}}>
+        <h1 style={{fontFamily:'var(--font-logo)',fontStyle:'italic',fontWeight:600,fontSize:52,color:'var(--green-dark)',lineHeight:1.1,marginBottom:20,display:'inline-flex',alignItems:'flex-end'}}>
           nuri<span style={{display:'inline-block',width:12,height:12,borderRadius:'50%',background:'var(--rose)',marginLeft:3,marginBottom:3,flexShrink:0}} />
         </h1>
         <p className="welcome-sub">
@@ -1274,7 +1276,7 @@ function SavedTab({ saved, onRecipeClick, onDieticianClick, onToggleSave }) {
           display:'flex', alignItems:'center', justifyContent:'center',
         }}>
           <span style={{
-            fontFamily:'var(--font-serif)', fontSize:11, fontStyle:'italic', color:'rgba(255,255,255,0.7)',
+            fontFamily:'var(--font-logo)', fontSize:11, fontStyle:'italic', fontWeight:600, color:'rgba(255,255,255,0.7)',
             writingMode:'vertical-rl', textOrientation:'mixed', letterSpacing:'0.12em',
           }}>nuri.</span>
         </div>
