@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>nuri. Recipe Studio</title>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -18,7 +18,7 @@
   --shadow-md: 0 4px 24px rgba(44,24,16,0.12);
   --radius: 14px; --radius-sm: 8px;
   --font-serif: 'Playfair Display', Georgia, serif;
-  --font-logo: 'Lora', Georgia, serif;
+  --font-logo: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
 }
 html { font-size: 16px; -webkit-font-smoothing: antialiased; }
@@ -26,7 +26,7 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 
 /* ── NAV ── */
 .nav { position: sticky; top: 0; z-index: 100; background: rgba(250,246,240,0.97); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
-.nav-logo { font-family: var(--font-logo); font-size: 22px; font-weight: 700; color: var(--green-dark); display: inline-flex; align-items: flex-end; }
+.nav-logo { font-family: var(--font-logo); font-size: 24px; font-style: italic; font-weight: 600; color: var(--green-dark); display: inline-flex; align-items: flex-end; }
 .nav-logo-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--rose); margin-left: 2px; margin-bottom: 2px; }
 .nav-tag { font-family: var(--font-body); font-size: 11px; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); margin-left: 10px; }
 .nav-right { display: flex; align-items: center; gap: 12px; }
@@ -358,9 +358,9 @@ function bindLogin() {
 }
 
 function renderAdmin() {
-  const customRecipes = getCustomRecipes()
+  const customRecipes = getCustomRecipes().filter(r => r.dieticianId === currentRD.id)
   const customRDs = getCustomRDs()
-  const allRDs = [...BUILT_IN_RDS, ...customRDs.map(r => ({ id: r.id, name: r.name, credentials: r.credentials, specialty: r.specialty, avatarColor: r.avatarColor }))]
+  const allRDs = getAllRDs()
 
   return `
     <nav class="nav">
@@ -385,9 +385,7 @@ function renderAdmin() {
           ${editingId ? '✏️ Editing' : '➕ Add Recipe'}
         </button>
         <button class="tab ${activeTab==='paste'?'active':''}" onclick="activeTab='paste';render()">📋 Paste Recipe</button>
-        <button class="tab ${activeTab==='recipes'?'active':''}" onclick="activeTab='recipes';render()">🗂 Recipes (${customRecipes.length})</button>
-        <button class="tab ${activeTab==='dieticians'?'active':''}" onclick="activeTab='dieticians';render()">👩‍⚕️ Dietitians</button>
-        <button class="tab ${activeTab==='add-rd'?'active':''}" onclick="activeTab='add-rd';render()">➕ Add Dietitian</button>
+        <button class="tab ${activeTab==='recipes'?'active':''}" onclick="activeTab='recipes';render()">🗂 My Recipes (${customRecipes.length})</button>
       </div>
 
       ${activeTab==='add'     ? renderAddRecipe(allRDs) : ''}
