@@ -1,4 +1,4 @@
-<!-- v115 --> <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -539,7 +539,7 @@ const DIETICIANS = [
   { id:1, name:'Emily', credentials:'Co-founder', specialty:'Women\'s Health Nutrition', bio:'Co-founder of nuri. Building a recipe platform for women managing chronic conditions.', initials:'EY', avatarColor:'#C4A882', followers:0, following:0, tags:['pcos','gut','hormones'], recipeIds:[] },
   { id:2, name:'Malaika', credentials:'Co-founder', specialty:'Women\'s Health Nutrition', bio:'Co-founder of nuri. Building a recipe platform for women managing chronic conditions.', initials:'MR', avatarColor:'#8FA888', followers:0, following:0, tags:['pcos','hormones','endometriosis'], recipeIds:[] },
   { id:3, name:'Claire Pettitt', credentials:'PhD, RD', specialty:'PCOS & Women\'s Health', bio:'🇬🇧 PhD Registered Dietitian with 13 years of clinical experience across the NHS and private practice. Specialises in PCOS, endometriosis, fertility and gut health.', photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/t/5f7e58211578215f0166d324/1602115640084/img_1516.jpg?format=500w', initials:'CP', avatarColor:'#7A9E7E', followers:5752, following:0, tags:['pcos','hormones','period','gut','fertility','endometriosis'], recipeIds:[] },
-  { id:4, name:'Alysse Vocca', credentials:'RD', specialty:'Eating Disorders & Women\'s Health', bio:'🇺🇸 Registered Dietitian specialising in eating disorders and women\'s health. Brings clinical expertise in PCOS, hormonal nutrition and a non-diet approach to food and body.', initials:'AV', avatarColor:'#C47A7A', followers:0, following:0, tags:['pcos','hormones','period','endometriosis'], recipeIds:[] },
+  { id:4, name:'Alysse Vocca', credentials:'RD', specialty:'Eating Disorders & Women\'s Health', bio:'🇺🇸 Registered Dietitian specialising in women\'s health, eating disorders and sustainable nutrition for chronic conditions including PCOS. Helps women build a healthier relationship with food while supporting hormone balance, blood sugar stability and energy — without restriction or rigid dieting.', initials:'AV', avatarColor:'#C47A7A', followers:0, following:0, tags:['pcos','hormones','period','endometriosis','energy'], recipeIds:[] },
 ];
 
 const PHOTO_IDS = [
@@ -994,6 +994,16 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
             ))}
           </ol>
           {recipe.note && <div className="recipe-note">💡 {recipe.note}</div>}
+          {recipe.nutritionNote && (
+            <div style={{ marginTop: 16, padding: '16px 18px', background: '#F0F7F0', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--sage)' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--sage)', marginBottom: 10 }}>🌿 Nutrition Notes</div>
+              {recipe.nutritionNote.split(' · ').map((n, i) => (
+                <div key={i} style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.6, paddingLeft: 12, borderLeft: '1px solid #C4DEB8', marginBottom: 6 }}>
+                  {n}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       {/* Tried + community photos */}
