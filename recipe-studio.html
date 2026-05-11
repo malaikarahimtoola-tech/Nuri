@@ -6,7 +6,7 @@
 <title>nuri. Admin Recipe Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -23,8 +23,8 @@
   --shadow-md: 0 4px 24px rgba(44,24,16,0.13);
   --shadow-lg: 0 12px 48px rgba(44,24,16,0.18);
   --radius: 14px; --radius-sm: 8px;
+  --font-logo: 'Cormorant Garamond', Georgia, serif;
   --font-serif: 'Playfair Display', Georgia, serif;
-  --font-logo: 'Lora', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
 }
 html { font-size: 16px; -webkit-font-smoothing: antialiased; }
@@ -40,7 +40,7 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
   display: flex; align-items: center; justify-content: space-between;
 }
 .studio-bar-brand { display: flex; align-items: center; gap: 12px; }
-.studio-bar-logo { font-family: var(--font-logo); font-size: 20px; font-weight: 700; color: var(--green-dark); display: inline-flex; align-items: flex-end; }
+.studio-bar-logo { font-family: var(--font-logo); font-size: 24px; font-style: italic; font-weight: 600; color: var(--green-dark); display: inline-flex; align-items: flex-end; }
 .studio-bar-logo-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--rose); margin-left: 2px; margin-bottom: 2px; }
 .studio-bar-divider { width: 1px; height: 20px; background: var(--border); }
 .studio-bar-title { font-family: var(--font-body); font-size: 11px; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); }
