@@ -1,4 +1,3 @@
-V2103 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -667,6 +666,18 @@ function photoUrl(id) {
 }
 function ls(k, fb) { try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : fb; } catch { return fb; } }
 function lsSave(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+
+// ── ONE-TIME MIGRATION: clear stale localStorage from old builds ──
+(function() {
+  const CURRENT_VERSION = '2';
+  if (localStorage.getItem('nuri_build_version') !== CURRENT_VERSION) {
+    ['tee_onboarded','tee_goals','tee_followed','tee_saved','tee_tried',
+     'tee_triedphotos','tee_comments','tee_rdmode','tee_rdid',
+     'tee_community_dieticians','tee_community_recipes',
+     'nuri_custom_recipes','nuri_custom_dieticians'].forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('nuri_build_version', CURRENT_VERSION);
+  }
+})();
 
 // ── SMALL COMPONENTS ──────────────────────────────────────────
 function HealthTag({ label }) {
