@@ -1566,9 +1566,15 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
                         </div>
                       </div>
                     ))}
-                    <a href="/dietician-portal" target="_blank" className="rd-portal-btn">
-                      ✦ Open Recipe Studio →
-                    </a>
+                    {ALL_DIETICIANS.find(d => d.id === rdDieticianId)?.name === 'Emily' || ALL_DIETICIANS.find(d => d.id === rdDieticianId)?.name === 'Malaika' ? (
+                      <a href="https://nuri-recipes.vercel.app/recipe-studio" target="_blank" className="rd-portal-btn">
+                        ✦ Recipe Studio (Admin) →
+                      </a>
+                    ) : (
+                      <a href="https://nuri-recipes.vercel.app/dietician-portal" target="_blank" className="rd-portal-btn">
+                        ✦ Open Recipe Studio →
+                      </a>
+                    )}
                   </>
                 );
               })()}
