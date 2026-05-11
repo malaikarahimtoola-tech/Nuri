@@ -336,24 +336,30 @@ function bindLogin() {
   const pwInput = document.getElementById('pw-input')
   const error = document.getElementById('pw-error')
 
+  if (!btn || !emailInput || !pwInput) return
+
   function tryLogin() {
-    const email = emailInput.value.trim().toLowerCase()
-    const pw = pwInput.value
+    const email = (emailInput.value || '').trim().toLowerCase()
+    const pw = (pwInput.value || '').trim()
     const match = APPROVED_RDS.find(r => r.email.toLowerCase() === email && r.password === pw)
     if (match) {
       isLoggedIn = true
       currentRD = match
-      recipeForm.dieticianId = match.id
+      recipeForm = emptyRecipeForm()
       render()
     } else {
-      error.style.display = 'block'
+      if (error) {
+        error.style.display = 'block'
+        error.textContent = 'Incorrect email or password.'
+      }
       pwInput.value = ''
       pwInput.focus()
     }
   }
 
-  btn.addEventListener('click', tryLogin)
-  pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin() })
+  btn.onclick = tryLogin
+  pwInput.onkeydown = e => { if (e.key === 'Enter') tryLogin() }
+  emailInput.onkeydown = e => { if (e.key === 'Enter') pwInput.focus() }
   emailInput.focus()
 }
 
