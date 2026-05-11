@@ -395,46 +395,45 @@ function ListEditor({ items, onChange, placeholder, numbered }) {
   );
 }
 
+const ADMIN_PASSWORD = 'nuri2025';
+
 function SignIn({ onSignIn }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [creds, setCreds] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = () => {
+    if (password.trim() === ADMIN_PASSWORD) {
+      onSignIn({ name: 'Admin', email: 'admin@nuri.com', creds: 'nuri.', initials: 'N', avatarColor: '#3A6B4A' });
+    } else {
+      setError('Incorrect password.');
+      setPassword('');
+    }
+  };
+
   return (
     <div className="signin-page">
       <div className="signin-left">
-        <div className="signin-eyebrow">welcome to your</div>
+        <div className="signin-eyebrow">welcome to the</div>
         <h1 className="signin-headline">Recipe Studio</h1>
-        <p className="signin-sub">Design beautiful recipe cards and publish them directly to the nuri. feed. Your community is waiting.</p>
+        <p className="signin-sub">Design beautiful recipe cards and publish them directly to the nuri. feed.</p>
         <div className="signin-form">
           <div className="form-group">
-            <label className="form-label">Your full name</label>
-            <input className="form-input" type="text" placeholder="Dr. Jane Smith" value={name} onChange={e=>setName(e.target.value)} />
+            <label className="form-label">Password</label>
+            <input className="form-input" type="password" placeholder="••••••••" value={password}
+              onChange={e=>{setPassword(e.target.value);setError('');}}
+              onKeyDown={e=>e.key==='Enter'&&handleLogin()}
+              style={{borderColor: error ? '#C0392B' : undefined}} />
           </div>
-          <div className="form-group">
-            <label className="form-label">Email</label>
-            <input className="form-input" type="email" placeholder="jane@clinic.com" value={email} onChange={e=>setEmail(e.target.value)} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Your credentials</label>
-            <input className="form-input" type="text" placeholder="e.g. RD, MSc" value={creds} onChange={e=>setCreds(e.target.value)} />
-          </div>
-          <button className="signin-btn" disabled={!name||!email} onClick={() => {
-            const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-            const colors = ['#7A9E7E','#C47A7A','#C4A882','#B8845A','#9B7BAA','#8FA888'];
-            const colorIdx = Math.abs(email.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % colors.length;
-            const rd = { id:'rd_'+email.replace(/[^a-z0-9]/gi,'').slice(0,12), name, credentials:creds, email, initials, avatarColor:colors[colorIdx], specialty:'Registered Dietitian', bio:'Registered Dietitian sharing evidence-based recipes on nuri.', followers:0, following:0, tags:[], recipeIds:[] };
-            try {
-              const ex = JSON.parse(localStorage.getItem('tee_community_dieticians')||'[]');
-              localStorage.setItem('tee_community_dieticians', JSON.stringify([...ex.filter(d=>d.email!==email), rd]));
-            } catch {}
-            onSignIn({name,email,creds});
-          }}>Enter Studio →</button>
-          <p className="signin-note">Only approved dietitians can publish. Your account is verified by our team.</p>
+          {error && <div style={{color:'#C0392B',fontSize:13,lineHeight:1.4}}>{error}</div>}
+          <button className="signin-btn" disabled={!password} onClick={handleLogin}>
+            Enter Studio →
+          </button>
+          <p className="signin-note">Admin access only.</p>
         </div>
       </div>
       <div className="signin-right">
         <div className="signin-preview-card">
-          <div style={{fontFamily:'var(--font-logo)',fontSize:20,fontWeight:700,color:'var(--green-dark)',display:'inline-flex',alignItems:'flex-end',marginBottom:8}}>
+          <div style={{fontFamily:'var(--font-logo)',fontSize:22,fontWeight:600,fontStyle:'italic',color:'var(--green-dark)',display:'inline-flex',alignItems:'flex-end',marginBottom:8}}>
             nuri<span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'var(--rose)',marginLeft:2,marginBottom:2}}/>
           </div>
           <div style={{fontFamily:'var(--font-serif)',fontSize:20,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:8}}>Your recipes, beautifully presented</div>
