@@ -576,7 +576,7 @@ const RECIPES = [
 ];
 
 // ── COMMUNITY DATA (from portal) ─────────────────────────────
-const communityDieticians = (() => { try { return JSON.parse(localStorage.getItem('tee_community_dieticians') || '[]'); } catch { return []; } })();
+const communityDieticians = (() => { try { return JSON.parse(localStorage.getItem('tee_community_dieticians') || '[]').filter(d => d.name && d.name.length > 2 && !d.name.match(/^[a-z]{1,3}$/i)); } catch { return []; } })();
 const communityRecipes    = (() => { try { return JSON.parse(localStorage.getItem('tee_community_recipes')    || '[]'); } catch { return []; } })();
 const adminRecipes        = (() => { try { return JSON.parse(localStorage.getItem('nuri_custom_recipes')      || '[]'); } catch { return []; } })();
 const adminDieticians     = (() => { try { return JSON.parse(localStorage.getItem('nuri_custom_dieticians')   || '[]'); } catch { return []; } })();
