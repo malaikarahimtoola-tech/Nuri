@@ -613,7 +613,11 @@ const communityDieticians = (() => { try { return JSON.parse(localStorage.getIte
 const communityRecipes    = (() => { try { return JSON.parse(localStorage.getItem('tee_community_recipes')    || '[]'); } catch { return []; } })();
 const adminRecipes        = (() => { try { return JSON.parse(localStorage.getItem('nuri_custom_recipes')      || '[]'); } catch { return []; } })();
 const adminDieticians     = (() => { try { return JSON.parse(localStorage.getItem('nuri_custom_dieticians')   || '[]'); } catch { return []; } })();
-const ALL_DIETICIANS = [...DIETICIANS, ...communityDieticians, ...adminDieticians];
+// Deduplicate: only add community/admin dieticians whose id isn't already in DIETICIANS
+const hardcodedIds = new Set(DIETICIANS.map(d => d.id));
+const filteredCommunity = communityDieticians.filter(d => !hardcodedIds.has(d.id));
+const filteredAdmin = adminDieticians.filter(d => !hardcodedIds.has(d.id));
+const ALL_DIETICIANS = [...DIETICIANS, ...filteredCommunity, ...filteredAdmin];
 const ALL_RECIPES    = [...RECIPES,    ...communityRecipes,    ...adminRecipes];
 
 const getD = (id) => ALL_DIETICIANS.find(d => d.id === id);
@@ -1612,8 +1616,8 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
                         </div>
                       </div>
                     ))}
-                    <a href={[1,2].includes(rd.id) ? 'recipe-studio.html' : 'portal.html'} target="_blank" className="rd-portal-btn">
-                      ✦ {[1,2].includes(rd.id) ? 'Recipe Studio (Admin)' : 'Recipe Studio'} →
+                    <a href={(rd.id === 1 || rd.id === 2) ? 'recipe-studio.html' : 'portal.html'} target="_blank" className="rd-portal-btn">
+                      ✦ {(rd.id === 1 || rd.id === 2) ? 'Recipe Studio (Admin)' : 'Recipe Studio'} →
                     </a>
                   </>
                 );
@@ -1798,7 +1802,7 @@ function RDApplicationModal({ onClose }) {
 
 // ── APP ───────────────────────────────────────────────────────
 function App() {
-  const [screen, setScreen] = useState(() => ls('tee_onboarded', false) ? 'app' : 'welcome');
+  const [screen, setScreen] = useState('welcome');
   const [tab, setTab] = useState('feed');
   const [healthGoals, setHealthGoals] = useState(() => ls('tee_goals', []));
   const [followed, setFollowed] = useState(() => new Set(ls('tee_followed', [])));
