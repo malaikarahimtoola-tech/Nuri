@@ -496,6 +496,96 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .kitchen-photo { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); box-shadow: var(--shadow); }
 .kitchen-empty-slot { aspect-ratio: 1; border: 2px dashed var(--border); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--border); }
 
+/* ── AUTH MODAL ──────────────────────────────────────────── */
+.auth-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(44,24,16,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.auth-modal { background: var(--cream); border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 24px 80px rgba(44,24,16,0.24); animation: slideIn 0.28s ease; overflow: hidden; }
+.auth-modal-inner { padding: 40px; }
+.auth-logo { font-family: var(--font-logo); font-size: 32px; font-style: italic; font-weight: 600; color: var(--green-dark); display: inline-flex; align-items: flex-end; margin-bottom: 6px; }
+.auth-logo-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--rose); margin-left: 2px; margin-bottom: 3px; }
+.auth-tagline { font-size: 13px; color: var(--text-light); margin-bottom: 28px; }
+.auth-title { font-family: var(--font-serif); font-size: 24px; font-style: italic; font-weight: 600; color: var(--text); margin-bottom: 20px; }
+.auth-field { margin-bottom: 14px; }
+.auth-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-mid); display: block; margin-bottom: 6px; }
+.auth-input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--white); font-family: var(--font-body); font-size: 14px; color: var(--text); outline: none; transition: border-color 0.18s; }
+.auth-input:focus { border-color: var(--brown); }
+.auth-btn { width: 100%; padding: 14px; background: var(--brown); color: white; border: none; border-radius: 50px; font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s; margin-top: 8px; }
+.auth-btn:hover { background: #4A3024; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+.auth-divider-line { flex: 1; height: 1px; background: var(--border); }
+.auth-divider-text { font-size: 12px; color: var(--text-light); }
+.auth-switch { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-light); }
+.auth-switch-btn { background: none; border: none; color: var(--brown); font-weight: 600; cursor: pointer; font-size: 13px; font-family: var(--font-body); text-decoration: underline; }
+.auth-error { background: #FFF0F0; border: 1px solid #F4C4C4; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: #8B2020; margin-bottom: 14px; }
+.auth-gingham { height: 6px; background-color: #A8C4A8; background-image: repeating-linear-gradient(90deg, transparent 0px, transparent 16px, rgba(58,107,74,0.4) 16px, rgba(58,107,74,0.4) 32px); }
+
+/* ── GROCERY LIST ─────────────────────────────────────────── */
+.saved-tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--border); margin-bottom: 32px; }
+.saved-tab-btn { padding: 12px 24px; background: none; border: none; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--text-light); cursor: pointer; transition: all 0.18s; }
+.saved-tab-btn.active { color: var(--brown); border-bottom-color: var(--brown); font-weight: 600; }
+.grocery-section { margin-bottom: 28px; }
+.grocery-section-title { font-family: var(--font-serif); font-size: 18px; font-style: italic; color: var(--brown); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+.grocery-recipe-badge { font-size: 11px; font-style: normal; font-weight: 500; background: var(--warm-beige); color: var(--text-mid); padding: 3px 10px; border-radius: 50px; font-family: var(--font-body); }
+.grocery-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--radius-sm); cursor: pointer; transition: background 0.15s; }
+.grocery-item:hover { background: var(--warm-beige); }
+.grocery-item.checked { opacity: 0.45; }
+.grocery-check { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; background: var(--white); }
+.grocery-check.done { background: var(--brown); border-color: var(--brown); color: white; font-size: 11px; }
+.grocery-item-text { font-size: 14px; color: var(--text); line-height: 1.4; }
+.grocery-item.checked .grocery-item-text { text-decoration: line-through; }
+.grocery-actions { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+.grocery-action-btn { padding: 9px 18px; border-radius: 50px; border: 1.5px solid var(--border); background: var(--white); font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--text-mid); cursor: pointer; transition: all 0.18s; }
+.grocery-action-btn:hover { border-color: var(--tan); color: var(--text); }
+.grocery-action-btn.primary { background: var(--brown); border-color: var(--brown); color: white; }
+.grocery-action-btn.primary:hover { background: #4A3024; }
+
+/* ── LOCKED RECIPE CARD ──────────────────────────────────── */
+.card-lock-badge { position: absolute; top: 10px; left: 10px; z-index: 4; background: rgba(44,24,16,0.72); backdrop-filter: blur(4px); border-radius: 50px; padding: 4px 10px; display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9); letter-spacing: 0.04em; }
+.recipe-card.locked { cursor: pointer; }
+.recipe-card.locked .recipe-card-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(44,24,16,0.55) 100%); z-index: 2; }
+.recipe-card.locked .recipe-card-body { filter: blur(3px); user-select: none; pointer-events: none; }
+.locked-prompt { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(to top, rgba(44,24,16,0.88) 0%, transparent 100%); }
+.locked-prompt-text { font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 500; }
+.locked-prompt-btn { font-size: 12px; font-weight: 700; color: white; background: var(--brown); border: none; border-radius: 50px; padding: 5px 14px; cursor: pointer; font-family: var(--font-body); flex-shrink: 0; }
+
+/* ── SIGN-IN GATE (feed banner) ───────────────────────────── */
+.signin-gate { background: var(--white); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 28px; border-left: 3px solid var(--tan); flex-wrap: wrap; }
+.signin-gate-text { font-family: var(--font-serif); font-size: 17px; font-style: italic; color: var(--text); }
+.signin-gate-sub { font-size: 13px; color: var(--text-light); margin-top: 3px; }
+.signin-gate-btn { padding: 12px 28px; background: var(--brown); color: white; border: none; border-radius: 50px; font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: all 0.18s; }
+.signin-gate-btn:hover { background: #4A3024; transform: translateY(-1px); }
+
+/* ── ABOUT ───────────────────────────────────────────────── */
+.about-hero { background: linear-gradient(135deg, #3A6B4A 0%, #2A5038 100%); padding: 80px 40px; text-align: center; position: relative; overflow: hidden; }
+.about-hero::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(transparent 0px, transparent 32px, rgba(255,255,255,0.06) 32px, rgba(255,255,255,0.06) 64px), repeating-linear-gradient(90deg, transparent 0px, transparent 32px, rgba(255,255,255,0.06) 32px, rgba(255,255,255,0.06) 64px); }
+.about-hero-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }
+.about-hero-logo { font-family: var(--font-logo); font-size: 56px; font-style: italic; font-weight: 600; color: white; line-height: 1; display: inline-flex; align-items: flex-end; margin-bottom: 16px; }
+.about-hero-dot { display: inline-block; width: 13px; height: 13px; border-radius: 50%; background: var(--rose); margin-left: 3px; margin-bottom: 4px; }
+.about-hero-sub { font-size: 18px; color: rgba(255,255,255,0.82); line-height: 1.6; font-family: var(--font-serif); font-style: italic; }
+.about-body { max-width: 860px; margin: 0 auto; padding: 64px 32px 80px; }
+.about-section { margin-bottom: 64px; }
+.about-section-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); margin-bottom: 8px; }
+.about-section-title { font-family: var(--font-serif); font-size: 32px; font-style: italic; font-weight: 600; color: var(--text); margin-bottom: 16px; line-height: 1.2; }
+.about-section-text { font-size: 16px; color: var(--text-mid); line-height: 1.7; margin-bottom: 14px; }
+.about-pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 32px; }
+@media (max-width: 700px) { .about-pillars { grid-template-columns: 1fr; } }
+.about-pillar { background: var(--white); border-radius: var(--radius); padding: 28px 24px; box-shadow: var(--shadow); }
+.about-pillar-icon { font-size: 32px; margin-bottom: 12px; }
+.about-pillar-title { font-family: var(--font-serif); font-size: 18px; font-style: italic; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.about-pillar-text { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
+.about-team { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px; }
+@media (max-width: 600px) { .about-team { grid-template-columns: 1fr; } }
+.about-team-card { background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.about-team-banner { height: 80px; display: flex; align-items: flex-end; padding: 0 24px; }
+.about-team-avatar { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--cream); font-size: 22px; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; margin-bottom: -22px; box-shadow: var(--shadow); flex-shrink: 0; }
+.about-team-body { padding: 28px 24px 24px; }
+.about-team-name { font-family: var(--font-serif); font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.about-team-role { font-size: 12px; color: var(--tan); font-weight: 600; margin-bottom: 10px; }
+.about-team-bio { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
+.about-divider { height: 1px; background: var(--border); margin: 48px 0; }
+.about-cta { background: var(--warm-beige); border-radius: var(--radius); padding: 40px; text-align: center; border: 1px solid var(--border); }
+.about-cta-title { font-family: var(--font-serif); font-size: 26px; font-style: italic; color: var(--text); margin-bottom: 10px; }
+.about-cta-text { font-size: 15px; color: var(--text-mid); margin-bottom: 24px; }
+
 /* ── RD DASHBOARD ─────────────────────────────────────────── */
 .rd-dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .rd-dash-toggle { padding: 7px 16px; border-radius: 50px; border: 1.5px solid var(--brown); background: transparent; color: var(--brown); font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
@@ -579,7 +669,7 @@ const CP = 'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a101
 const RECIPES = [
   { id:1,  dieticianId:3, title:'Pumpkin, Orange & Zaatar Soup', subtitle:'Middle Eastern twist on a winter warmer', emoji:'🎃', photo:`${CP}6955a58e920e3020578746fb/1770821699612/soup+2.jpg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'75 min', servings:4, ingredients:['1 pumpkin, cut into large chunks','2 tbsp zaatar','1 white onion, peeled and diced','1 tsp sumac','Juice of 2 oranges','500 ml vegetable stock','2 tbsp cream or crème fraîche','Olive oil, salt & pepper'], instructions:['Preheat oven to 185°C.','Cut pumpkin into roughly 8 large pieces. Lay on a baking tray, drizzle with olive oil, zaatar, salt and pepper.','Roast for 45–60 minutes until flesh is soft.','Remove seeds and peel from the pumpkin.','Heat oil in a pan and fry the onion until soft. Add sumac and a pinch of salt.','Add pumpkin and 500 ml stock. Pour in orange juice and mix.','Bring to the boil, then simmer for 10 minutes.','Blend with a hand blender. Stir in cream or crème fraîche.'], note:'Keeps in the fridge for 2 days or freeze for up to 2 months. Reheat well before serving.' },
   { id:2,  dieticianId:3, title:'Soft & Chewy Oatmeal Chocolate Chip Cookies', subtitle:'Blood sugar-friendly bake with beta-glucan oats', emoji:'🍪', photo:`${CP}682624cad29e5148a3cdf047/1750963301821/13cc14cf-97c3-44ee-9645-6dd73ca26231.jpg?format=800w`, healthLabels:['pcos'], prepTime:'10 min', cookTime:'25 min', servings:12, ingredients:['¼ cup vanilla protein powder (plant-based)','2 eggs','1 ripe banana, mashed','1 tsp baking powder','1 tsp ground cinnamon','1 tbsp vanilla extract','1 cup rolled oats','½ cup brown sugar','½ cup softened butter','½ cup chocolate chips','Pinch of salt'], instructions:['Preheat oven to 175°C. Line a baking tray with parchment.','Beat softened butter and brown sugar until light and fluffy.','Mix in vanilla extract and eggs until well combined.','In a separate bowl, whisk together oats, protein powder, baking powder, cinnamon and salt.','Gradually add dry ingredients to wet mixture and stir.','Fold in chocolate chips.','Add mashed banana and mix until just combined.','Scoop 1.5 tablespoons of dough per cookie onto the tray, spacing 5 cm apart.','Bake 12–15 minutes until edges are golden. Cool before serving.'], note:'Oats are rich in beta-glucan fibre which helps stabilise blood sugar — ideal for PCOS management.' },
-  { id:3,  dieticianId:3, title:'Citrus Roasted Salmon', subtitle:'Omega-3 rich with Middle Eastern spices', emoji:'🐟', photo:`${CP}66bdab540360b04c1e129d61/1723795250313/Feature+image.jpeg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'40 min', servings:2, ingredients:['2 salmon fillets (or 1 large fillet)','1 orange, zested & juiced, then sliced into rounds','1 lemon, zested & juiced, then sliced into rounds','1 tsp sumac','1 tsp zaatar','Small bunch fresh parsley, chopped','1 red chilli, finely chopped','1 tbsp pomegranate molasses','2 tbsp olive oil','Salt & black pepper'], instructions:['Preheat oven to 180°C.','Zest and juice the orange and lemon. Slice remaining fruit into 2–3 cm rounds.','Mix citrus juice and zest, sumac, zaatar, parsley, chilli, pomegranate molasses and olive oil in a bowl. Season.','Line a baking sheet with parchment. Arrange citrus slices to form a bed.','Place salmon over the citrus. Pour marinade over the top.','Bake for 20–40 minutes depending on fillet size, checking every 10 minutes after the 20-minute mark.','Serve with rice, quinoa, or grains alongside vegetables.'], note:'Salmon is rich in omega-3 fatty acids, particularly beneficial for PCOS and endometriosis.' },
+  { id:3,  dieticianId:3, title:'Citrus Roasted Salmon', subtitle:'Omega-3 rich with Middle Eastern spices', emoji:'🐟', photo:`${CP}66bdab540360b04c1e129d61/1723795250313/Feature+image.jpeg?format=800w`, healthLabels:['pcos','endometriosis'], prepTime:'15 min', cookTime:'40 min', servings:2, ingredients:['2 salmon fillets (or 1 large fillet)','1 orange, zested & juiced, then sliced into rounds','1 lemon, zested & juiced, then sliced into rounds','1 tsp sumac','1 tsp zaatar','Small bunch fresh parsley, chopped','1 red chilli, finely chopped','1 tbsp pomegranate molasses','2 tbsp olive oil','Salt & black pepper'], instructions:['Preheat oven to 180°C.','Zest and juice the orange and lemon. Slice remaining fruit into 2–3 cm rounds.','Mix citrus juice and zest, sumac, zaatar, parsley, chilli, pomegranate molasses and olive oil in a bowl. Season.','Line a baking sheet with parchment. Arrange citrus slices to form a bed.','Place salmon over the citrus. Pour marinade over the top.','Bake for 20–40 minutes depending on fillet size, checking every 10 minutes after the 20-minute mark.','Serve with rice, quinoa, or grains alongside vegetables.'], note:'Salmon is rich in omega-3 fatty acids, particularly beneficial for PCOS and endometriosis.' },
   { id:4,  dieticianId:3, title:'Moroccan Inspired Traybake', subtitle:'Cinnamon-spiced veg with tahini drizzle', emoji:'🥕', photo:`${CP}654fb1f084fd254ec1e6c616/1706264040640/Blog+Feature+Image.jpeg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'40 min', servings:4, ingredients:['1 sweet potato, cubed','2 carrots, chopped','1 beetroot, chopped','1 courgette, chopped','1 red pepper, chopped','2 tsp cinnamon','1 tsp cumin','1 tsp paprika','Olive oil, salt & pepper','For tahini drizzle: 3 tbsp tahini, juice of ½ lemon, 1–2 tbsp water, pinch of salt'], instructions:['Preheat oven to 200°C.','Place sweet potato, carrots and beetroot in one bowl; courgette and peppers in another.','Drizzle both with olive oil and toss to coat.','Sprinkle cinnamon, cumin and paprika over all vegetables. Season with salt and pepper.','Spread on a large baking tray and roast for 35–40 minutes until golden and tender.','While roasting, whisk tahini, lemon juice, water and salt until smooth.','Allow vegetables to cool slightly before drizzling with tahini sauce.'], note:'Cinnamon has shown benefits in improving insulin sensitivity in PCOS. Great for meal prep — leftovers work well in salads and wraps.' },
   { id:5,  dieticianId:3, title:'Protein Pancakes', subtitle:'High-protein breakfast — 3 simple ingredients', emoji:'🥞', photo:`${CP}64d5fb2c2d8da932d1d8ca75/1695730700022/Blog+feature+image+Protein+pancakes.jpeg?format=800w`, healthLabels:['pcos'], prepTime:'5 min', cookTime:'15 min', servings:2, ingredients:['¼ cup vanilla protein powder (plant-based pea protein)','2 eggs','1 ripe banana, mashed','1 tsp baking powder','1 tsp ground cinnamon','1 tbsp vanilla extract'], instructions:['In a medium bowl, whisk together eggs and protein powder until smooth and creamy.','Add mashed banana, baking powder, cinnamon and vanilla extract. Whisk until combined.','Leave batter for 5–10 minutes until bubbles form on the surface.','Heat a non-stick pan over medium-low heat with a little oil.','Use a ¼ cup measure to pour pancakes onto the pan.','Cook 3–5 minutes until bubbles form on the surface, then flip.','Cook the other side for 2–3 minutes until golden.'], note:'Can be made with any protein powder. If batter is too thick, loosen with 2–4 tbsp milk. Best eaten fresh but keeps 3 days in the fridge.' },
   { id:6,  dieticianId:3, title:'Chickpea & Aubergine Stew', subtitle:'Lebanese-inspired maghmour — fibre-packed & versatile', emoji:'🍆', photo:null, healthLabels:['pcos'], prepTime:'15 min', cookTime:'30 min', servings:4, ingredients:['2 aubergines, chopped into medium pieces','1 x 400g tin chickpeas, drained','2 bell peppers, chopped','1 red chilli (optional)','2 tbsp red pepper paste','2 tbsp tomato paste','1 x 400g tin chopped tomatoes','2 cups water','Olive oil, salt & pepper'], instructions:['Preheat oven to 180°C. Toss aubergine with olive oil and roast for 7–10 minutes until golden.','In a large saucepan, sauté the peppers (and optional chilli) in olive oil for 5 minutes. Season.','Add red pepper paste and tomato paste. Cook for 2–3 minutes.','Pour in chopped tomatoes and 2 cups of water. Stir to combine.','Add chickpeas. Cover and simmer for 10 minutes.','Add roasted aubergine and simmer a final 10 minutes until sauce thickens.','Garnish with parsley and pomegranate seeds.'], note:'Serve warm with rice or cold with bread as a dip. Perfect for meal prep.' },
@@ -694,12 +784,16 @@ function Avatar({ initials, color, cls = 'avatar-sm', photo }) {
   return <div className={cls} style={{ background: color }}>{initials}</div>;
 }
 
-function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggleSave }) {
+function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggleSave, isLocked, onSignIn }) {
   const d = getD(recipe.dieticianId);
   const [imgFailed, setImgFailed] = useState(false);
+
+  const handleClick = () => { if (isLocked) { onSignIn(); } else { onRecipeClick(recipe); } };
+
   return (
-    <div className="recipe-card fade-up" onClick={() => onRecipeClick(recipe)}>
+    <div className={`recipe-card fade-up ${isLocked ? 'locked' : ''}`} onClick={handleClick} style={{ position:'relative' }}>
       <div className="recipe-card-img" style={getRecipeGingham(recipe)}>
+        {isLocked && <div className="card-lock-badge">🔒 Sign in</div>}
         {recipe.illusSvg ? (
           <div className="recipe-card-fallback">
             <div style={{ width: 80, height: 80 }} dangerouslySetInnerHTML={{ __html: recipe.illusSvg }} />
@@ -716,12 +810,19 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
             <div className="fallback-title">{recipe.title}</div>
           </div>
         )}
-        <button className="card-save-btn" onClick={e => { e.stopPropagation(); onToggleSave(recipe.id); }}>
-          {isSaved ? '❤️' : '🤍'}
-        </button>
+        {isLocked ? (
+          <div className="locked-prompt">
+            <span className="locked-prompt-text">Free preview</span>
+            <button className="locked-prompt-btn" onClick={e => { e.stopPropagation(); onSignIn(); }}>Sign in to view →</button>
+          </div>
+        ) : (
+          <button className="card-save-btn" onClick={e => { e.stopPropagation(); onToggleSave(recipe.id); }}>
+            {isSaved ? '❤️' : '🤍'}
+          </button>
+        )}
       </div>
       <div className="recipe-card-body">
-        <div className="card-dietician" onClick={e => { e.stopPropagation(); onDieticianClick(d); }}>
+        <div className="card-dietician" onClick={e => { e.stopPropagation(); if (!isLocked) onDieticianClick(d); }}>
           <Avatar initials={d.initials} color={d.avatarColor} photo={d.photo} cls="avatar-sm" />
           <div>
             <div className="dietician-name-sm">{d.name}</div>
@@ -741,11 +842,12 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
   );
 }
 
-function TopNav({ current, onChange }) {
+function TopNav({ current, onChange, user, onSignIn, onSignOut }) {
   const links = [
     { id:'feed', label:'Feed' },
     { id:'explore', label:'Explore' },
     { id:'saved', label:'Saved ♡' },
+    { id:'about', label:'About' },
     { id:'you', label:'You' },
   ];
   return (
@@ -761,6 +863,15 @@ function TopNav({ current, onChange }) {
               {l.id === 'saved' ? (current === 'saved' ? 'Saved ❤️' : 'Saved 🤍') : l.label}
             </button>
           ))}
+          {user ? (
+            <button className="top-nav-link" style={{ background:'var(--warm-beige)', color:'var(--brown)', fontWeight:600, marginLeft:4 }} onClick={onSignOut}>
+              {(user.name || user.email || '').split(/[@\s]/)[0]} · Sign out
+            </button>
+          ) : (
+            <button className="top-nav-link" style={{ background:'var(--brown)', color:'white', fontWeight:600, marginLeft:4 }} onClick={onSignIn}>
+              Sign in
+            </button>
+          )}
         </nav>
       </div>
     </header>
@@ -846,7 +957,9 @@ function interleaveByAuthor(recipes) {
   return result;
 }
 
-function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave }) {
+const FREE_PREVIEW_COUNT = 3;
+
+function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn }) {
   const [active, setActive] = useState(healthGoals?.length > 0 ? healthGoals[0] : 'all');
   const filtered = useMemo(() => {
     const base = active === 'all' ? ALL_RECIPES : ALL_RECIPES.filter(r => r.healthLabels.includes(active));
@@ -864,6 +977,15 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
           {active === 'all' ? 'Condition-specific recipes, built by registered dietitians' : `Recipes to support ${goalLabel?.label.toLowerCase()}`}
         </p>
       </div>
+      {!user && (
+        <div className="signin-gate">
+          <div>
+            <div className="signin-gate-text">🔒 Sign in to unlock all recipes</div>
+            <div className="signin-gate-sub">Previewing {FREE_PREVIEW_COUNT} of {filtered.length} recipes — create a free account to access everything.</div>
+          </div>
+          <button className="signin-gate-btn" onClick={onSignIn}>Sign in / Sign up →</button>
+        </div>
+      )}
       <div className="filter-row">
         {ALL.map(f => (
           <button key={f.id} className={`filter-chip ${active === f.id ? 'active' : ''}`} onClick={() => setActive(f.id)}>{f.label}</button>
@@ -873,7 +995,10 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
         <div className="empty-state"><div className="empty-icon">🌱</div><div className="empty-title">No recipes yet</div><div className="empty-text">Our dietitians are working on recipes for this condition. Check back soon!</div></div>
       ) : (
         <div className="recipe-grid">
-          {filtered.map(r => <RecipeCard key={r.id} recipe={r} onRecipeClick={onRecipeClick} onDieticianClick={onDieticianClick} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} />)}
+          {filtered.map((r, i) => {
+            const locked = !user && i >= FREE_PREVIEW_COUNT;
+            return <RecipeCard key={r.id} recipe={r} onRecipeClick={onRecipeClick} onDieticianClick={onDieticianClick} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} isLocked={locked} onSignIn={onSignIn} />;
+          })}
         </div>
       )}
     </div>
@@ -1115,7 +1240,7 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
   );
 }
 
-function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFollow, saved, onToggleSave }) {
+function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFollow, saved, onToggleSave, user, onSignIn }) {
   const dRecipes = getRecipesByD(d.id);
   const focusGoals = d.tags.map(t => HEALTH_GOALS.find(g => g.id === t)).filter(Boolean);
   return (
@@ -1145,8 +1270,20 @@ function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFo
         </div>
         <div>
           <div className="profile-recipes-title">Recipes</div>
+          {!user && (
+            <div className="signin-gate" style={{ marginBottom: 24 }}>
+              <div>
+                <div className="signin-gate-text">🔒 Sign in to unlock all recipes</div>
+                <div className="signin-gate-sub">Previewing {FREE_PREVIEW_COUNT} of {dRecipes.length} recipes.</div>
+              </div>
+              <button className="signin-gate-btn" onClick={onSignIn}>Sign in →</button>
+            </div>
+          )}
           <div className="recipe-grid">
-            {dRecipes.map(r => <RecipeCard key={r.id} recipe={r} onRecipeClick={onRecipeClick} onDieticianClick={() => {}} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} />)}
+            {dRecipes.map((r, i) => {
+              const locked = !user && i >= FREE_PREVIEW_COUNT;
+              return <RecipeCard key={r.id} recipe={r} onRecipeClick={onRecipeClick} onDieticianClick={() => {}} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} isLocked={locked} onSignIn={onSignIn} />;
+            })}
           </div>
         </div>
       </div>
@@ -1307,7 +1444,72 @@ function downloadBook(savedRecipes) {
   w.document.close();
 }
 
+function GroceryList({ savedRecipes }) {
+  const [checked, setChecked] = useState(() => ls('nuri_grocery_checked', []));
+  useEffect(() => { lsSave('nuri_grocery_checked', checked); }, [checked]);
+
+  const toggle = key => setChecked(p => p.includes(key) ? p.filter(x => x !== key) : [...p, key]);
+  const clearChecked = () => setChecked([]);
+  const checkAll = () => {
+    const all = savedRecipes.flatMap(r => r.ingredients.map((_, i) => `${r.id}:${i}`));
+    setChecked(all);
+  };
+
+  const totalItems = savedRecipes.reduce((n, r) => n + r.ingredients.length, 0);
+  const doneCount = checked.length;
+
+  const copyList = () => {
+    const lines = savedRecipes.flatMap(r => [`\n${r.title}`, ...r.ingredients.map(ing => `  • ${ing}`)]);
+    navigator.clipboard.writeText(lines.join('\n').trim()).catch(() => {});
+  };
+
+  if (savedRecipes.length === 0) {
+    return <div className="empty-state"><div className="empty-icon">🛒</div><div className="empty-title">No recipes saved</div><div className="empty-text">Save recipes to automatically generate a grocery list.</div></div>;
+  }
+
+  return (
+    <div>
+      <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:24 }}>
+        <div style={{ flex:1 }}>
+          <div style={{ fontFamily:'var(--font-body)', fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--tan)', marginBottom:4 }}>
+            {doneCount} of {totalItems} items checked
+          </div>
+          <div style={{ height:6, background:'var(--warm-beige)', borderRadius:50, overflow:'hidden', maxWidth:280 }}>
+            <div style={{ height:'100%', width:`${totalItems ? (doneCount/totalItems)*100 : 0}%`, background:'linear-gradient(90deg, var(--tan), var(--brown))', borderRadius:50, transition:'width 0.4s ease' }} />
+          </div>
+        </div>
+      </div>
+      <div className="grocery-actions">
+        <button className="grocery-action-btn primary" onClick={copyList}>📋 Copy list</button>
+        <button className="grocery-action-btn" onClick={checkAll}>✓ Check all</button>
+        <button className="grocery-action-btn" onClick={clearChecked}>↺ Uncheck all</button>
+      </div>
+      {savedRecipes.map(r => (
+        <div key={r.id} className="grocery-section">
+          <div className="grocery-section-title">
+            {r.emoji} {r.title}
+            <span className="grocery-recipe-badge">{r.ingredients.length} items</span>
+          </div>
+          <div style={{ background:'var(--white)', borderRadius:'var(--radius)', overflow:'hidden', boxShadow:'var(--shadow)' }}>
+            {r.ingredients.map((ing, i) => {
+              const key = `${r.id}:${i}`;
+              const done = checked.includes(key);
+              return (
+                <div key={key} className={`grocery-item ${done ? 'checked' : ''}`} onClick={() => toggle(key)}>
+                  <div className={`grocery-check ${done ? 'done' : ''}`}>{done ? '✓' : ''}</div>
+                  <span className="grocery-item-text">{ing}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SavedTab({ saved, onRecipeClick, onDieticianClick, onToggleSave }) {
+  const [view, setView] = useState('recipes');
   const savedRecipes = ALL_RECIPES.filter(r => saved.has(r.id));
 
   if (savedRecipes.length === 0) {
@@ -1324,107 +1526,120 @@ function SavedTab({ saved, onRecipeClick, onDieticianClick, onToggleSave }) {
 
   return (
     <div className="page-wrap">
-      <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom: 40, flexWrap:'wrap', gap:16 }}>
+      <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom: 24, flexWrap:'wrap', gap:16 }}>
         <div className="page-hero" style={{ marginBottom:0 }}>
           <div className="page-hero-script">your collection</div>
-          <h1 className="page-hero-title">Recipe Book</h1>
+          <h1 className="page-hero-title">{view === 'grocery' ? 'Grocery List' : 'Recipe Book'}</h1>
           <p className="page-hero-sub">{savedRecipes.length} recipe{savedRecipes.length !== 1 ? 's' : ''} saved</p>
         </div>
-        <button
-          onClick={() => downloadBook(savedRecipes)}
-          style={{
-            display:'flex', alignItems:'center', gap:8,
-            padding:'12px 24px', background:'var(--brown)', color:'white',
-            border:'none', borderRadius:50, fontSize:14, fontWeight:600,
-            cursor:'pointer', fontFamily:'var(--font-body)', flexShrink:0,
-            boxShadow:'var(--shadow-md)', transition:'opacity 0.15s',
-          }}
-          onMouseEnter={e=>e.currentTarget.style.opacity='0.85'}
-          onMouseLeave={e=>e.currentTarget.style.opacity='1'}
-        >
-          ↓ Download Recipe Book
-        </button>
+        {view === 'recipes' && (
+          <button
+            onClick={() => downloadBook(savedRecipes)}
+            style={{
+              display:'flex', alignItems:'center', gap:8,
+              padding:'12px 24px', background:'var(--brown)', color:'white',
+              border:'none', borderRadius:50, fontSize:14, fontWeight:600,
+              cursor:'pointer', fontFamily:'var(--font-body)', flexShrink:0,
+              boxShadow:'var(--shadow-md)', transition:'opacity 0.15s',
+            }}
+            onMouseEnter={e=>e.currentTarget.style.opacity='0.85'}
+            onMouseLeave={e=>e.currentTarget.style.opacity='1'}
+          >
+            ↓ Download Recipe Book
+          </button>
+        )}
       </div>
 
-      <div style={{
-        borderRadius:20, overflow:'hidden', marginBottom:40,
-        boxShadow:'0 8px 40px rgba(44,24,16,0.18)',
-        display:'flex', maxWidth:900,
-      }}>
-        <div style={{
-          width:32, flexShrink:0,
-          background:'var(--brown)',
-          display:'flex', alignItems:'center', justifyContent:'center',
-        }}>
-          <span style={{
-            fontFamily:'var(--font-serif)', fontSize:11, fontStyle:'italic', color:'rgba(255,255,255,0.7)',
-            writingMode:'vertical-rl', textOrientation:'mixed', letterSpacing:'0.12em',
-          }}>nuri.</span>
-        </div>
-        <div style={{
-          flex:1, padding:'48px 56px',
-          ...getGingham(1),
-          display:'flex', alignItems:'center',
-        }}>
+      <div className="saved-tabs">
+        <button className={`saved-tab-btn ${view === 'recipes' ? 'active' : ''}`} onClick={() => setView('recipes')}>📖 Recipe Book</button>
+        <button className={`saved-tab-btn ${view === 'grocery' ? 'active' : ''}`} onClick={() => setView('grocery')}>🛒 Grocery List</button>
+      </div>
+
+      {view === 'grocery' ? (
+        <GroceryList savedRecipes={savedRecipes} />
+      ) : (
+        <>
           <div style={{
-            background:'rgba(250,246,240,0.95)', borderRadius:16,
-            padding:'40px 48px', maxWidth:480,
-            boxShadow:'0 4px 24px rgba(44,24,16,0.14)',
+            borderRadius:20, overflow:'hidden', marginBottom:40,
+            boxShadow:'0 8px 40px rgba(44,24,16,0.18)',
+            display:'flex', maxWidth:900,
           }}>
-            <div style={{ fontFamily:'var(--font-body)', fontSize:11, fontWeight:300, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--tan)', marginBottom:6 }}>a personal collection</div>
-            <div style={{ fontFamily:'var(--font-serif)', fontSize:44, fontStyle:'italic', fontWeight:600, color:'var(--text)', lineHeight:1.1, marginBottom:8 }}>
-              My Recipe<br/>Book
+            <div style={{
+              width:32, flexShrink:0,
+              background:'var(--brown)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+            }}>
+              <span style={{
+                fontFamily:'var(--font-serif)', fontSize:11, fontStyle:'italic', color:'rgba(255,255,255,0.7)',
+                writingMode:'vertical-rl', textOrientation:'mixed', letterSpacing:'0.12em',
+              }}>nuri.</span>
             </div>
-            <div style={{ width:40, height:2, background:'var(--tan)', borderRadius:2, margin:'16px 0' }}></div>
-            <div style={{ fontSize:13, color:'var(--text-light)' }}>
-              {savedRecipes.length} recipe{savedRecipes.length !== 1 ? 's' : ''} · nuri.
+            <div style={{
+              flex:1, padding:'48px 56px',
+              ...getGingham(1),
+              display:'flex', alignItems:'center',
+            }}>
+              <div style={{
+                background:'rgba(250,246,240,0.95)', borderRadius:16,
+                padding:'40px 48px', maxWidth:480,
+                boxShadow:'0 4px 24px rgba(44,24,16,0.14)',
+              }}>
+                <div style={{ fontFamily:'var(--font-body)', fontSize:11, fontWeight:300, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--tan)', marginBottom:6 }}>a personal collection</div>
+                <div style={{ fontFamily:'var(--font-serif)', fontSize:44, fontStyle:'italic', fontWeight:600, color:'var(--text)', lineHeight:1.1, marginBottom:8 }}>
+                  My Recipe<br/>Book
+                </div>
+                <div style={{ width:40, height:2, background:'var(--tan)', borderRadius:2, margin:'16px 0' }}></div>
+                <div style={{ fontSize:13, color:'var(--text-light)' }}>
+                  {savedRecipes.length} recipe{savedRecipes.length !== 1 ? 's' : ''} · nuri.
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div style={{ maxWidth:640 }}>
-        <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text-light)', marginBottom:16 }}>
-          Contents
-        </div>
-        {savedRecipes.map((r, i) => {
-          const d = getD(r.dieticianId);
-          return (
-            <div
-              key={r.id}
-              onClick={() => onRecipeClick(r)}
-              style={{
-                display:'flex', alignItems:'center', gap:16,
-                padding:'14px 0', borderBottom:'1px solid var(--border)',
-                cursor:'pointer',
-              }}
-              onMouseEnter={e=>e.currentTarget.style.background='var(--warm-beige)'}
-              onMouseLeave={e=>e.currentTarget.style.background=''}
-            >
-              <div style={{
-                width:32, height:32, borderRadius:'50%', flexShrink:0,
-                display:'flex', alignItems:'center', justifyContent:'center',
-                fontFamily:'var(--font-serif)', fontWeight:600, fontSize:13,
-                background:'var(--warm-beige)', color:'var(--tan)', border:'1.5px solid var(--border)',
-              }}>
-                {i + 1}
-              </div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontFamily:'var(--font-serif)', fontSize:18, fontStyle:'italic', fontWeight:600, color:'var(--text)' }}>
-                  {r.title}
-                </div>
-                {d && <div style={{ fontSize:12, color:'var(--text-light)', marginTop:2 }}>{d.name} · {d.credentials}</div>}
-              </div>
-              <div style={{ fontSize:22, flexShrink:0 }}>{r.emoji}</div>
-              <button
-                onClick={e => { e.stopPropagation(); onToggleSave(r.id); }}
-                style={{ background:'none', border:'none', cursor:'pointer', fontSize:16, flexShrink:0, padding:4 }}
-                title="Remove from saved"
-              >❤️</button>
+          <div style={{ maxWidth:640 }}>
+            <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text-light)', marginBottom:16 }}>
+              Contents
             </div>
-          );
-        })}
-      </div>
+            {savedRecipes.map((r, i) => {
+              const d = getD(r.dieticianId);
+              return (
+                <div
+                  key={r.id}
+                  onClick={() => onRecipeClick(r)}
+                  style={{
+                    display:'flex', alignItems:'center', gap:16,
+                    padding:'14px 0', borderBottom:'1px solid var(--border)',
+                    cursor:'pointer',
+                  }}
+                  onMouseEnter={e=>e.currentTarget.style.background='var(--warm-beige)'}
+                  onMouseLeave={e=>e.currentTarget.style.background=''}
+                >
+                  <div style={{
+                    width:32, height:32, borderRadius:'50%', flexShrink:0,
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    fontFamily:'var(--font-serif)', fontWeight:600, fontSize:13,
+                    background:'var(--warm-beige)', color:'var(--tan)', border:'1.5px solid var(--border)',
+                  }}>
+                    {i + 1}
+                  </div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontFamily:'var(--font-serif)', fontSize:18, fontStyle:'italic', fontWeight:600, color:'var(--text)' }}>
+                      {r.title}
+                    </div>
+                    {d && <div style={{ fontSize:12, color:'var(--text-light)', marginTop:2 }}>{d.name} · {d.credentials}</div>}
+                  </div>
+                  <div style={{ fontSize:22, flexShrink:0 }}>{r.emoji}</div>
+                  <button
+                    onClick={e => { e.stopPropagation(); onToggleSave(r.id); }}
+                    style={{ background:'none', border:'none', cursor:'pointer', fontSize:16, flexShrink:0, padding:4 }}
+                    title="Remove from saved"
+                  >❤️</button>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -1611,7 +1826,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
                 return (
                   <>
                     <div style={{ display: 'flex', gap: 20, marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>
-                      {[{ num: myRecipes.length, lbl: 'Recipes' }, { num: fmt(rd.followers), lbl: 'Followers' }, { num: totalSaves, lbl: 'Saves' }].map((s,i) => (
+                      {[{ num: myRecipes.length, lbl: 'Recipes' }, { num: totalSaves, lbl: 'Saves' }].map((s,i) => (
                         <div key={i}>
                           <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 600, color: 'var(--text)' }}>{s.num}</div>
                           <div style={{ fontSize: 11, color: 'var(--text-light)' }}>{s.lbl}</div>
@@ -1815,6 +2030,146 @@ function RDApplicationModal({ onClose }) {
   );
 }
 
+// ── AUTH MODAL ────────────────────────────────────────────────
+function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
+  const [mode, setMode] = useState(defaultMode);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = () => {
+    setError('');
+    if (!email.trim() || !password.trim()) { setError('Please fill in all fields.'); return; }
+    if (mode === 'signup' && !name.trim()) { setError('Please enter your name.'); return; }
+    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    const users = JSON.parse(localStorage.getItem('nuri_users') || '[]');
+    if (mode === 'signup') {
+      if (users.find(u => u.email === email.trim().toLowerCase())) { setError('An account with this email already exists.'); return; }
+      const u = { id: 'u_' + Date.now(), name: name.trim(), email: email.trim().toLowerCase(), password };
+      localStorage.setItem('nuri_users', JSON.stringify([...users, u]));
+      onAuth(u);
+    } else {
+      const match = users.find(u => u.email === email.trim().toLowerCase() && u.password === password);
+      if (!match) { setError('Incorrect email or password.'); return; }
+      onAuth(match);
+    }
+  };
+
+  const handleKey = e => { if (e.key === 'Enter') handleSubmit(); };
+
+  return (
+    <div className="auth-modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="auth-modal">
+        <div className="auth-gingham" />
+        <div className="auth-modal-inner">
+          <div className="auth-logo">nuri<span className="auth-logo-dot" /></div>
+          <div className="auth-tagline">food that works for your body</div>
+          <div className="auth-title">{mode === 'signup' ? 'Create your account' : 'Welcome back'}</div>
+          {error && <div className="auth-error">{error}</div>}
+          {mode === 'signup' && (
+            <div className="auth-field">
+              <label className="auth-label">Name</label>
+              <input className="auth-input" type="text" placeholder="Your first name" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKey} autoFocus />
+            </div>
+          )}
+          <div className="auth-field">
+            <label className="auth-label">Email</label>
+            <input className="auth-input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={handleKey} autoFocus={mode === 'signin'} />
+          </div>
+          <div className="auth-field">
+            <label className="auth-label">Password</label>
+            <input className="auth-input" type="password" placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'} value={password} onChange={e => setPassword(e.target.value)} onKeyDown={handleKey} />
+          </div>
+          <button className="auth-btn" onClick={handleSubmit}>{mode === 'signup' ? 'Create account' : 'Sign in'}</button>
+          <div className="auth-switch">
+            {mode === 'signin' ? (
+              <>Don't have an account? <button className="auth-switch-btn" onClick={() => { setMode('signup'); setError(''); }}>Sign up</button></>
+            ) : (
+              <>Already have an account? <button className="auth-switch-btn" onClick={() => { setMode('signin'); setError(''); }}>Sign in</button></>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ABOUT TAB ─────────────────────────────────────────────────
+function AboutTab({ onApply }) {
+  return (
+    <div>
+      <div className="about-hero">
+        <div className="about-hero-inner">
+          <div className="about-hero-logo">nuri<span className="about-hero-dot" /></div>
+          <p className="about-hero-sub">Recipes built by registered dietitians — for the conditions that matter most to women.</p>
+        </div>
+      </div>
+      <div className="about-body">
+        <div className="about-section">
+          <div className="about-section-eyebrow">our mission</div>
+          <h2 className="about-section-title">Good food, grounded in real science.</h2>
+          <p className="about-section-text">nuri. was born from a simple frustration: the internet is flooded with wellness noise, but genuinely useful, condition-specific nutrition advice is buried behind expensive consultations or buried in jargon.</p>
+          <p className="about-section-text">We believe every woman deserves access to recipes that are designed for her body — not just generic "healthy eating" content. Every recipe on nuri. is created and reviewed by a registered dietitian with specialist expertise in women's health.</p>
+          <div className="about-pillars">
+            {[
+              { icon:'🩺', title:'Clinically grounded', text:'Every recipe comes from a verified registered dietitian. No influencers, no wellness gurus — just qualified clinicians.' },
+              { icon:'🌸', title:'Condition-specific', text:'From PCOS to endometriosis, perimenopause to postpartum — recipes designed around your actual diagnosis, not a vague wellness goal.' },
+              { icon:'🍽', title:'Actually delicious', text:'Therapeutic nutrition doesn\'t mean bland. Our RDs create recipes that are as good to eat as they are good for you.' },
+            ].map(p => (
+              <div key={p.title} className="about-pillar">
+                <div className="about-pillar-icon">{p.icon}</div>
+                <div className="about-pillar-title">{p.title}</div>
+                <p className="about-pillar-text">{p.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="about-divider" />
+
+        <div className="about-section">
+          <div className="about-section-eyebrow">who we are</div>
+          <h2 className="about-section-title">Built by women, for women.</h2>
+          <p className="about-section-text">nuri. was co-founded by Emily and Malaika — two women who experienced first-hand how hard it is to find reliable, actionable nutrition guidance for chronic conditions.</p>
+          <div className="about-team">
+            {[
+              { name:'Emily', role:'Co-founder', initials:'EY', color:'#C4A882', bio:'Passionate about making clinical nutrition accessible to every woman, regardless of budget or background. Building nuri. to close the gap between dietitian expertise and everyday kitchens.' },
+              { name:'Malaika', role:'Co-founder', initials:'MR', color:'#8FA888', bio:'Believes nutrition is one of the most powerful tools women have — and that it should feel empowering, not restrictive. Focused on community, content and the science of eating well.' },
+            ].map(m => (
+              <div key={m.name} className="about-team-card">
+                <div className="about-team-banner" style={{ background:`linear-gradient(135deg, ${m.color}88, ${m.color}33)` }}>
+                  <div className="about-team-avatar" style={{ background: m.color }}>{m.initials}</div>
+                </div>
+                <div className="about-team-body">
+                  <div className="about-team-name">{m.name}</div>
+                  <div className="about-team-role">{m.role}</div>
+                  <p className="about-team-bio">{m.bio}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="about-divider" />
+
+        <div className="about-section">
+          <div className="about-section-eyebrow">our dietitians</div>
+          <h2 className="about-section-title">Verified. Specialist. Trusted.</h2>
+          <p className="about-section-text">Every RD on nuri. goes through a verification process — we check credentials, registration status, and specialist expertise before they can publish. We only accept dietitians with documented experience in women's health conditions.</p>
+          <p className="about-section-text">Our founding dietitians include Claire Pettitt (PhD, RD) with 13 years of NHS and private practice experience specialising in PCOS and endometriosis, and Alysse Vocca (RD) specialising in eating disorders and hormone health.</p>
+        </div>
+
+        <div className="about-cta">
+          <div className="about-cta-title">Are you a registered dietitian?</div>
+          <p className="about-cta-text">We're always looking for specialist RDs to join our founding team. Apply to share your recipes with thousands of women managing chronic conditions.</p>
+          <button className="welcome-cta" onClick={onApply}>Apply as a founding RD ✨</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── APP ───────────────────────────────────────────────────────
 function App() {
   const [screen, setScreen] = useState('welcome');
@@ -1824,6 +2179,8 @@ function App() {
   const [saved, setSaved] = useState(() => new Set(ls('tee_saved', [])));
   const [view, setView] = useState(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [user, setUser] = useState(() => ls('nuri_current_user', null));
 
   const [tried, setTried] = useState(() => new Set(ls('tee_tried', [])));
   const [triedPhotos, setTriedPhotos] = useState(() => ls('tee_triedphotos', {}));
@@ -1839,8 +2196,15 @@ function App() {
   useEffect(() => { lsSave('tee_comments', comments); }, [comments]);
   useEffect(() => { lsSave('tee_rdmode', isRD); }, [isRD]);
   useEffect(() => { lsSave('tee_rdid', rdDieticianId); }, [rdDieticianId]);
+  useEffect(() => { lsSave('nuri_current_user', user); }, [user]);
 
-  const navigate = (type, data) => { setView({ type, data }); window.scrollTo(0, 0); };
+  const handleAuth = u => { setUser(u); setShowAuthModal(false); };
+  const handleSignOut = () => setUser(null);
+
+  const navigate = (type, data) => {
+    if (type === 'recipe' && !user) { setShowAuthModal(true); return; }
+    setView({ type, data }); window.scrollTo(0, 0);
+  };
   const goBack = () => { setView(null); window.scrollTo(0, 0); };
   const toggleFollow = id => setFollowed(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const toggleSave = id => setSaved(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -1861,34 +2225,41 @@ function App() {
   if (screen === 'welcome') return <Welcome onStart={() => setScreen('onboarding')} />;
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} />;
 
+  const navProps = { user, onSignIn: () => setShowAuthModal(true), onSignOut: handleSignOut };
+
   const sharedProps = {
     onRecipeClick: r => navigate('recipe', r),
     onDieticianClick: d => navigate('profile', d),
     saved, onToggleSave: toggleSave,
+    user, onSignIn: () => setShowAuthModal(true),
   };
 
   if (view?.type === 'recipe') return (
     <>
-      <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} />
+      <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
       <RecipeDetail recipe={view.data} onBack={goBack} onDieticianClick={d => navigate('profile', d)} followed={followed.has(view.data.dieticianId)} onToggleFollow={toggleFollow} isSaved={saved.has(view.data.id)} onToggleSave={toggleSave} tried={tried} onToggleTried={toggleTried} triedPhotos={triedPhotos} comments={comments} onAddComment={addComment} />
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} />}
     </>
   );
 
   if (view?.type === 'profile') return (
     <>
-      <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} />
-      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} />
+      <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
+      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={() => setShowAuthModal(true)} />
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} />}
     </>
   );
 
   return (
     <>
-      <TopNav current={tab} onChange={setTab} />
+      <TopNav current={tab} onChange={setTab} {...navProps} />
       {tab === 'feed'    && <FeedTab healthGoals={healthGoals} {...sharedProps} />}
       {tab === 'explore' && <ExploreTab followed={followed} onToggleFollow={toggleFollow} onDieticianClick={d => navigate('profile', d)} />}
       {tab === 'saved'   && <SavedTab {...sharedProps} />}
+      {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} />}
       {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} />}
       {showApplyModal && <RDApplicationModal onClose={() => setShowApplyModal(false)} />}
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} />}
     </>
   );
 }
