@@ -534,6 +534,8 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .auth-switch { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-light); }
 .auth-switch-btn { background: none; border: none; color: var(--brown); font-weight: 600; cursor: pointer; font-size: 13px; font-family: var(--font-body); text-decoration: underline; }
 .auth-error { background: #FFF0F0; border: 1px solid #F4C4C4; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: #8B2020; margin-bottom: 14px; }
+.auth-google-btn { width: 100%; padding: 12px 16px; background: var(--white); border: 1.5px solid var(--border); border-radius: 50px; font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.18s; margin-bottom: 4px; }
+.auth-google-btn:hover { border-color: #4285F4; background: #F8F9FF; }
 .auth-gingham { height: 6px; background-color: #A8C4A8; background-image: repeating-linear-gradient(90deg, transparent 0px, transparent 16px, rgba(58,107,74,0.4) 16px, rgba(58,107,74,0.4) 32px); }
 
 /* ── GROCERY LIST ─────────────────────────────────────────── */
@@ -1914,7 +1916,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
 
         <div>
           {isRD ? (
-            <div className="card-block" style={{ borderLeft: '3px solid var(--brown)' }}>
+            <div className="card-block">
               <div className="rd-dash-header">
                 <div>
                   <div style={{ fontFamily: 'var(--font-serif)', fontSize: 18, fontStyle: 'italic', fontWeight: 600, color: 'var(--text)' }}>🩺 RD Dashboard</div>
@@ -1924,7 +1926,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
               </div>
               <div style={{ marginBottom: 16 }}>
                 <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-light)', display: 'block', marginBottom: 6 }}>View as dietitian</label>
-                <select style={{ padding: '8px 12px', border: '1.5px solid var(--border)', borderRadius: 8, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text)', background: 'var(--cream)', width: '100%' }}
+                <select style={{ padding: '8px 12px', border: '1.5px solid var(--border)', borderRadius: 8, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text)', background: 'var(--cream)', width: '100%', outline: 'none', cursor: 'pointer' }}
                   value={rdDieticianId} onChange={e => onSetRDDietician(Number(e.target.value))}>
                   {ALL_DIETICIANS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </select>
@@ -1960,20 +1962,27 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
 
                 return (
                   <>
-                    {/* ── Overview stats ── */}
-                    <div style={{ display: 'flex', gap: 16, marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border)', flexWrap: 'wrap' }}>
-                      {[
-                        { num: myRecipes.length, lbl: 'Recipes', icon: '📖' },
-                        { num: totalSaves, lbl: 'Total saves', icon: '❤️' },
-                        { num: followCount, lbl: 'Followers', icon: '👥' },
-                        { num: allConditions.length, lbl: 'Conditions', icon: '🏷' },
-                      ].map((s, i) => (
-                        <div key={i} style={{ flex: '1 1 80px', background: 'var(--warm-beige)', borderRadius: 12, padding: '14px 16px' }}>
-                          <div style={{ fontSize: 18, marginBottom: 4 }}>{s.icon}</div>
-                          <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 600, color: 'var(--text)' }}>{s.num}</div>
-                          <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 2 }}>{s.lbl}</div>
+                    {/* ── Compact RD summary ── */}
+                    <div style={{ background: 'var(--warm-beige)', borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: rd.avatarColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>{rd.initials}</div>
+                        <div>
+                          <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>{rd.name}</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-light)' }}>{rd.credentials}</div>
                         </div>
-                      ))}
+                      </div>
+                      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                        {[
+                          { num: myRecipes.length, lbl: 'Recipes' },
+                          { num: totalSaves, lbl: 'Saves' },
+                          { num: followCount, lbl: 'Followers' },
+                        ].map((s, i) => (
+                          <div key={i} style={{ textAlign: 'center' }}>
+                            <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 600, color: 'var(--text)' }}>{s.num}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-light)' }}>{s.lbl}</div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
                     {/* ── Condition breakdown chart ── */}
@@ -2010,27 +2019,6 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
                             })}
                         </div>
                       )}
-                    </div>
-
-                    {/* ── Top recipes ── */}
-                    <div style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-light)', marginBottom: 12 }}>Your recipes</div>
-                      {sortedRecipes.map((r, i) => (
-                        <div key={r.id} className="rd-recipe-row" onClick={() => onRecipeClick(r)} style={{ cursor: 'pointer' }}>
-                          <div style={{ width: 24, textAlign: 'center', fontFamily: 'var(--font-serif)', fontSize: 13, color: 'var(--text-light)', flexShrink: 0 }}>{i + 1}</div>
-                          <div className="rd-recipe-emoji">{r.emoji}</div>
-                          <div className="rd-recipe-info" style={{ flex: 1 }}>
-                            <div className="rd-recipe-title">{r.title}</div>
-                            <div className="rd-recipe-stats">
-                              {r.healthLabels.slice(0, 2).map(l => {
-                                const g = HEALTH_GOALS.find(x => x.id === l);
-                                return <span key={l} className="rd-stat">{g?.icon} {g?.label || l}</span>;
-                              })}
-                            </div>
-                          </div>
-                          <div style={{ flexShrink: 0, fontSize: 16 }}>{saved.has(r.id) ? '❤️' : '🤍'}</div>
-                        </div>
-                      ))}
                     </div>
 
                     <a href={(rd.id === 1 || rd.id === 2) ? 'recipe-studio.html' : 'dietician-portal.html'} target="_blank" className="rd-portal-btn">
@@ -2290,6 +2278,23 @@ function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
           <button className="auth-btn" onClick={handleSubmit} disabled={loading}>
             {loading ? 'Please wait…' : mode === 'signup' ? 'Create account' : 'Sign in'}
           </button>
+          <div className="auth-divider"><div className="auth-divider-line"/><span className="auth-divider-text">or</span><div className="auth-divider-line"/></div>
+          <button className="auth-google-btn" onClick={async () => {
+            setLoading(true);
+            const { error } = await db.auth.signInWithOAuth({
+              provider: 'google',
+              options: { redirectTo: window.location.href }
+            });
+            if (error) { setError(error.message); setLoading(false); }
+          }} disabled={loading}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
+              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+              <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
+              <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.548 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+            </svg>
+            Continue with Google
+          </button>
           <div className="auth-switch">
             {mode === 'signin' ? (
               <>Don't have an account? <button className="auth-switch-btn" onClick={() => { setMode('signup'); setError(''); }}>Sign up</button></>
@@ -2457,6 +2462,9 @@ function App() {
     if (type === 'profile' && window._ph) window._ph.capture('dietitian_profile_viewed', {
       dietitian_id: data.id, dietitian_name: data.name,
     });
+    // Log view to Supabase
+    if (type === 'recipe') window._supa.from('views').insert({ entity_type: 'recipe', entity_id: data.id, user_id: user?.id || null });
+    if (type === 'profile') window._supa.from('views').insert({ entity_type: 'dietitian', entity_id: data.id, user_id: user?.id || null });
     setView({ type, data }); window.scrollTo(0, 0);
   };
   const goBack = () => { setView(null); window.scrollTo(0, 0); };
