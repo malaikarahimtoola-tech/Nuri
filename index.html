@@ -2067,20 +2067,24 @@ function RDApplicationModal({ onClose }) {
     e.preventDefault();
     setSubmitting(true);
     setError('');
-    const body = new URLSearchParams({
-      'form-name': 'rd-application',
-      ...fields,
-      specialties: specialties.join(', '),
-    });
     try {
-      const res = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() });
-      if (res.ok) {
-        setSubmitted(true);
-      } else {
-        setError('Something went wrong. Please email us directly at hello@theeatingedit.com');
-      }
+      const { error: dbError } = await window._supa.from('rd_applications').insert({
+        full_name: fields['full-name'],
+        email: fields['email'],
+        credentials: fields['credentials'],
+        license_number: fields['license-number'],
+        country: fields['country'],
+        institution: fields['institution'],
+        years_of_practice: fields['years-of-practice'],
+        specialties: specialties.join(', '),
+        bio: fields['bio'],
+        website: fields['website'],
+        instagram: fields['instagram'],
+      });
+      if (dbError) throw dbError;
+      setSubmitted(true);
     } catch {
-      setError('Something went wrong. Please email us directly at hello@theeatingedit.com');
+      setError('Something went wrong. Please email us directly at hello@nuri.com');
     }
     setSubmitting(false);
   };
@@ -2479,6 +2483,7 @@ function App() {
   };
 
   const toggleSave = async (id) => {
+    if (!user) { setShowAuthModal('signup'); return; }
     const has = saved.has(id);
     setSaved(p => { const n = new Set(p); has ? n.delete(id) : n.add(id); return n; });
     const recipe = ALL_RECIPES.find(r => r.id === id);
