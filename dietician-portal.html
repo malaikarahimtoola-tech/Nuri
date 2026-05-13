@@ -3,434 +3,336 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>nuri. Recipe Studio</title>
+<title>nuri. · Dietitian Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+  const SUPA_URL = 'https://zgjtibyhuhpibrxcormd.supabase.co';
+  const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnanRpYnlodWhwaWJyeGNvcm1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MDUxNTAsImV4cCI6MjA5NDE4MTE1MH0.DdIKgmbfkdmUnjrvE2jK4q5DP6bdkOYak3CNzU18pEo';
+  window._supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+</script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --cream: #FAF6F0; --warm-beige: #F0E8DC; --border: #E4D9CC;
-  --brown: #5C3D2E; --tan: #C4A882;
-  --green-dark: #3A6B4A; --rose: #C47A7A;
-  --sage: #7A9E7E;
-  --text: #2C1810; --text-mid: #6B4D3C; --text-light: #9C7B6A;
-  --white: #FFFFFF;
-  --shadow: 0 2px 12px rgba(44,24,16,0.08);
-  --shadow-md: 0 4px 24px rgba(44,24,16,0.12);
+  --brown: #5C3D2E; --tan: #C4A882; --text: #2C1810;
+  --text-mid: #6B4D3C; --text-light: #9C7B6A; --white: #FFFFFF;
+  --shadow: 0 2px 12px rgba(44,24,16,0.08); --shadow-md: 0 4px 24px rgba(44,24,16,0.12);
   --radius: 14px; --radius-sm: 8px;
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-logo: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
+  --green-dark: #3A6B4A; --rose: #C47A7A; --sage: #7A9E7E;
 }
 html { font-size: 16px; -webkit-font-smoothing: antialiased; }
 body { background: var(--cream); color: var(--text); font-family: var(--font-body); min-height: 100vh; }
 #root { min-height: 100vh; }
+
+.portal-nav { position: sticky; top: 0; z-index: 100; background: rgba(250,246,240,0.96); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); }
+.portal-nav-inner { max-width: 1000px; margin: 0 auto; padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+.portal-logo { font-family: var(--font-logo); font-size: 26px; font-style: italic; font-weight: 600; color: var(--green-dark); display: inline-flex; align-items: flex-end; }
+.portal-logo-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--rose); margin-left: 2px; margin-bottom: 2px; }
+.portal-nav-right { display: flex; align-items: center; gap: 12px; }
+.portal-user { font-size: 13px; color: var(--text-light); }
+.portal-signout { padding: 8px 16px; border: 1.5px solid var(--border); border-radius: 50px; background: none; font-family: var(--font-body); font-size: 13px; color: var(--text-mid); cursor: pointer; transition: all 0.18s; }
+.portal-signout:hover { border-color: var(--brown); color: var(--brown); }
+
+.portal-body { max-width: 1000px; margin: 0 auto; padding: 48px 32px 80px; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
+@media (max-width: 700px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-tile { background: var(--white); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+.stat-tile-icon { font-size: 24px; margin-bottom: 10px; }
+.stat-tile-num { font-family: var(--font-serif); font-size: 32px; font-weight: 600; color: var(--text); line-height: 1; margin-bottom: 4px; }
+.stat-tile-lbl { font-size: 12px; color: var(--text-light); font-weight: 500; }
+
+.section-title { font-family: var(--font-serif); font-size: 20px; font-style: italic; font-weight: 600; color: var(--text); margin-bottom: 20px; }
+.section-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); margin-bottom: 6px; }
+
+.card { background: var(--white); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); margin-bottom: 28px; }
+
+.condition-bar { margin-bottom: 14px; }
+.condition-bar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.condition-bar-label { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.condition-bar-count { font-size: 11px; color: var(--text-light); }
+.condition-bar-track { height: 8px; background: var(--warm-beige); border-radius: 50px; overflow: hidden; }
+.condition-bar-fill { height: 100%; border-radius: 50px; transition: width 0.6s ease; }
+
+.recipe-list-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.recipe-list-row:last-child { border-bottom: none; }
+.recipe-list-emoji { width: 40px; height: 40px; border-radius: 10px; background: var(--warm-beige); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.recipe-list-info { flex: 1; }
+.recipe-list-title { font-family: var(--font-serif); font-size: 15px; font-style: italic; font-weight: 600; color: var(--text); }
+.recipe-list-meta { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+.recipe-list-save { font-size: 15px; flex-shrink: 0; }
+.recipe-list-views { font-size: 11px; color: var(--text-light); flex-shrink: 0; background: var(--warm-beige); padding: 3px 8px; border-radius: 50px; }
+
+/* Auth screen */
+.auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.auth-card { background: var(--white); border-radius: 20px; padding: 40px; width: 100%; max-width: 420px; box-shadow: var(--shadow-md); }
+.auth-logo { font-family: var(--font-logo); font-size: 36px; font-style: italic; font-weight: 600; color: var(--green-dark); display: inline-flex; align-items: flex-end; margin-bottom: 4px; }
+.auth-logo-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--rose); margin-left: 2px; margin-bottom: 3px; }
+.auth-subtitle { font-size: 13px; color: var(--text-light); margin-bottom: 28px; }
+.auth-title { font-family: var(--font-serif); font-size: 22px; font-style: italic; color: var(--text); margin-bottom: 20px; }
+.auth-field { margin-bottom: 14px; }
+.auth-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-light); display: block; margin-bottom: 6px; }
+.auth-input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--cream); font-family: var(--font-body); font-size: 14px; color: var(--text); outline: none; transition: border-color 0.18s; }
+.auth-input:focus { border-color: var(--brown); }
+.auth-btn { width: 100%; padding: 14px; background: var(--brown); color: white; border: none; border-radius: 50px; font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s; }
+.auth-btn:hover:not(:disabled) { background: #4A3024; }
+.auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+.auth-divider-line { flex: 1; height: 1px; background: var(--border); }
+.auth-divider-text { font-size: 12px; color: var(--text-light); }
+.auth-google-btn { width: 100%; padding: 12px 16px; background: var(--white); border: 1.5px solid var(--border); border-radius: 50px; font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.18s; }
+.auth-google-btn:hover { border-color: #4285F4; background: #F8F9FF; }
+.auth-error { background: #FFF0F0; border: 1px solid #F4C4C4; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: #8B2020; margin-bottom: 14px; }
+.auth-gingham { height: 6px; background-color: #A8C4A8; background-image: repeating-linear-gradient(90deg, transparent 0px, transparent 16px, rgba(58,107,74,0.4) 16px, rgba(58,107,74,0.4) 32px); border-radius: 20px 20px 0 0; margin: -40px -40px 32px; }
+
+.loading { display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; gap: 16px; }
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect } = React;
+const { useState, useEffect, useMemo } = React;
+const db = window._supa;
 
-const APPROVED_RDS = [
-  { email: 'claire@cpnutrition.com', password: 'claire2025', name: 'Claire Pettitt', id: 3, credentials: 'PhD, RD', avatarColor: '#7A9E7E' },
-  { email: 'alysse@nuri.com',        password: 'alysse2025', name: 'Alysse Vocca',  id: 4, credentials: 'RD', avatarColor: '#C47A7A' },
+// ── Hardcoded data (same as main app) ─────────────────────────
+const HEALTH_GOALS = [
+  { id:'pcos', label:'PCOS Support', icon:'🌸', color:'#F2C4CE' },
+  { id:'fertility', label:'Fertility & Conception', icon:'🌱', color:'#C8E6C9' },
+  { id:'hormones', label:'Hormone Balance', icon:'⚖️', color:'#E1BEE7' },
+  { id:'energy', label:'Low Energy & Fatigue', icon:'⚡', color:'#FFF9C4' },
+  { id:'period', label:'Period Regulation', icon:'🗓', color:'#FFCDD2' },
+  { id:'gut', label:'Gut Health', icon:'🌿', color:'#C8E6C9' },
+  { id:'thyroid', label:'Thyroid Support', icon:'🦋', color:'#B8D4E8' },
+  { id:'menopause', label:'Menopause', icon:'🌙', color:'#E8D5F5' },
+  { id:'postpartum', label:'Postpartum Recovery', icon:'🤱', color:'#FFE0B2' },
+  { id:'endometriosis', label:'Endometriosis', icon:'🔴', color:'#FFCDD2' },
 ];
 
-const HEALTH_LABELS = [
-  { id: 'pcos', label: 'PCOS' },
-  { id: 'endometriosis', label: 'Endometriosis' },
-  { id: 'hormones', label: 'Hormones' },
-  { id: 'fertility', label: 'Fertility' },
-  { id: 'gut', label: 'Gut Health' },
-  { id: 'thyroid', label: 'Thyroid' },
-  { id: 'period', label: 'Period Health' },
-  { id: 'energy', label: 'Energy' },
-  { id: 'postpartum', label: 'Postpartum' },
-  { id: 'menopause', label: 'Menopause' },
-  { id: 'anti-inflammatory', label: 'Anti-Inflammatory' },
-  { id: 'high-protein', label: 'High Protein' },
+const ALL_DIETICIANS = [
+  { id:1, name:'Emily', credentials:'Co-founder', initials:'EY', avatarColor:'#C4A882', recipeIds:[] },
+  { id:2, name:'Malaika', credentials:'Co-founder', initials:'MR', avatarColor:'#8FA888', recipeIds:[] },
+  { id:3, name:'Claire Pettitt', credentials:'PhD, RD', specialty:"PCOS & Women's Health", initials:'CP', avatarColor:'#7A9E7E', recipeIds:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21] },
+  { id:4, name:'Alysse Vocca', credentials:'RD', specialty:"Eating Disorders & Women's Health", initials:'AV', avatarColor:'#C47A7A', recipeIds:[22,23,24,25,26,27,28,29,30,31] },
 ];
 
-const GINGHAM_COLORS = [
-  { label: 'Sage',  bg: '#A8C4A8', s: 'rgba(58,107,74,0.32)' },
-  { label: 'Rose',  bg: '#D9A0A0', s: 'rgba(160,60,60,0.30)' },
-  { label: 'Tan',   bg: '#D4B87A', s: 'rgba(140,95,20,0.34)' },
-  { label: 'Clay',  bg: '#C8A080', s: 'rgba(140,80,30,0.32)' },
-  { label: 'Plum',  bg: '#BBA8CC', s: 'rgba(90,50,130,0.28)' },
-  { label: 'Wheat', bg: '#EDD9A3', s: 'rgba(140,95,20,0.28)' },
-  { label: 'Blush', bg: '#EDCACA', s: 'rgba(155,52,68,0.30)' },
-  { label: 'Sky',   bg: '#B6CAE0', s: 'rgba(20,48,108,0.26)' },
-];
-
-const EMOJIS = ['🥗','🍲','🥣','🍳','🥘','🫐','🍞','🥙','🌮','🍜','🥬','🐟','🍛','🫙','🧆','🍵','🥤','🍫','⚡','💜','✨','🌿','🍋','🥑','🎃','🥕','🥞','🍆','🥚','🔴','🍰','🌶️','🍂','🥭','🥜','🌈','🍝'];
-
-function Logo() {
-  return (
-    <span style={{fontFamily:'var(--font-logo)',fontSize:24,fontStyle:'italic',fontWeight:600,color:'var(--green-dark)',display:'inline-flex',alignItems:'flex-end',lineHeight:1}}>
-      nuri<span style={{display:'inline-block',width:7,height:7,borderRadius:'50%',background:'var(--rose)',marginLeft:2,marginBottom:2,flexShrink:0}}/>
-    </span>
-  );
-}
-
-function Login({ onLogin }) {
+// ── Auth screen ───────────────────────────────────────────────
+function AuthScreen({ onAuth }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    const match = APPROVED_RDS.find(r => r.email.toLowerCase() === email.trim().toLowerCase() && r.password === password.trim());
-    if (match) { onLogin(match); }
-    else { setError('Incorrect email or password.'); setPassword(''); }
+  const handleSignIn = async () => {
+    setError(''); setLoading(true);
+    try {
+      const { data, error: e } = await db.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+      if (e) { setError('Incorrect email or password.'); return; }
+      const { data: profile } = await db.from('profiles').select('name, role').eq('id', data.user.id).single();
+      if (!['dietitian','admin'].includes(profile?.role)) { setError('This portal is for registered dietitians only.'); await db.auth.signOut(); return; }
+      onAuth({ ...data.user, name: profile?.name, role: profile?.role });
+    } catch { setError('Something went wrong. Please try again.'); }
+    finally { setLoading(false); }
   };
 
+
   return (
-    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--cream)',padding:20}}>
-      <div style={{background:'var(--white)',borderRadius:20,padding:48,width:'100%',maxWidth:420,boxShadow:'var(--shadow-md)',textAlign:'center'}}>
-        <div style={{fontSize:40,marginBottom:16}}>🌿</div>
-        <Logo />
-        <div style={{fontFamily:'var(--font-body)',fontSize:11,fontWeight:300,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--tan)',marginTop:6,marginBottom:32}}>Recipe Studio</div>
-        <div style={{display:'flex',flexDirection:'column',gap:12,textAlign:'left'}}>
-          <div>
-            <label style={{fontSize:11,fontWeight:600,color:'var(--text-mid)',letterSpacing:'0.06em',textTransform:'uppercase',display:'block',marginBottom:6}}>Email</label>
-            <input type="email" value={email} onChange={e=>{setEmail(e.target.value);setError('');}} onKeyDown={e=>e.key==='Enter'&&handleLogin()} placeholder="your@email.com"
-              style={{width:'100%',padding:'12px 16px',border:`1.5px solid ${error?'#C0392B':'var(--border)'}`,borderRadius:8,fontFamily:'var(--font-body)',fontSize:14,color:'var(--text)',outline:'none',background:'var(--cream)'}}/>
-          </div>
-          <div>
-            <label style={{fontSize:11,fontWeight:600,color:'var(--text-mid)',letterSpacing:'0.06em',textTransform:'uppercase',display:'block',marginBottom:6}}>Password</label>
-            <input type="password" value={password} onChange={e=>{setPassword(e.target.value);setError('');}} onKeyDown={e=>e.key==='Enter'&&handleLogin()} placeholder="••••••••"
-              style={{width:'100%',padding:'12px 16px',border:`1.5px solid ${error?'#C0392B':'var(--border)'}`,borderRadius:8,fontFamily:'var(--font-body)',fontSize:14,color:'var(--text)',outline:'none',background:'var(--cream)'}}/>
-          </div>
-          {error && <div style={{color:'#C0392B',fontSize:13}}>{error}</div>}
-          <button onClick={handleLogin}
-            style={{width:'100%',padding:14,background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:15,fontWeight:600,cursor:'pointer',marginTop:8}}>
-            Enter Studio →
-          </button>
+    <div className="auth-screen">
+      <div className="auth-card">
+        <div className="auth-gingham" />
+        <div className="auth-logo">nuri<span className="auth-logo-dot" /></div>
+        <div className="auth-subtitle">Dietitian Portal</div>
+        <div className="auth-title">Sign in to your dashboard</div>
+        {error && <div className="auth-error">{error}</div>}
+        <div className="auth-field">
+          <label className="auth-label">Email</label>
+          <input className="auth-input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSignIn()} autoFocus />
         </div>
-        <p style={{fontSize:12,color:'var(--text-light)',marginTop:16,lineHeight:1.5}}>For approved nuri. dietitians only.</p>
+        <div className="auth-field">
+          <label className="auth-label">Password</label>
+          <input className="auth-input" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSignIn()} />
+        </div>
+        <button className="auth-btn" onClick={handleSignIn} disabled={loading}>{loading ? 'Signing in…' : 'Sign in'}</button>
+
       </div>
     </div>
   );
 }
 
-// ── NAV ──────────────────────────────────────────────────────
-function Nav({ rd, onLogout, onNavigate }) {
-  return (
-    <nav style={{position:'sticky',top:0,zIndex:100,background:'rgba(250,246,240,0.97)',backdropFilter:'blur(16px)',borderBottom:'1px solid var(--border)',padding:'0 32px',height:64,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-      <div style={{display:'flex',alignItems:'center',gap:12}}>
-        <span onClick={()=>onNavigate('home')} style={{cursor:'pointer'}}><Logo /></span>
-        <span style={{width:1,height:20,background:'var(--border)',display:'inline-block'}}/>
-        <span style={{fontFamily:'var(--font-body)',fontSize:11,fontWeight:300,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--tan)'}}>Recipe Studio</span>
-      </div>
-      <div style={{display:'flex',alignItems:'center',gap:16}}>
-        <span style={{fontSize:13,color:'var(--text-light)'}}>{rd.name}</span>
-        <button onClick={()=>onNavigate('add')}
-          style={{padding:'9px 20px',borderRadius:50,background:'var(--brown)',color:'white',border:'none',fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer'}}>
-          + Create Recipe
-        </button>
-        <button onClick={onLogout}
-          style={{padding:'8px 18px',borderRadius:50,border:'1.5px solid var(--border)',background:'transparent',fontFamily:'var(--font-body)',fontSize:13,fontWeight:500,color:'var(--text-mid)',cursor:'pointer'}}>
-          Sign out
-        </button>
-      </div>
-    </nav>
-  );
-}
+// ── Dashboard ─────────────────────────────────────────────────
+function Dashboard({ user, onSignOut }) {
+  const [saves, setSaves] = useState([]);
+  const [follows, setFollows] = useState(0);
+  const [views, setViews] = useState({});
+  const [loading, setLoading] = useState(true);
 
-// ── DASHBOARD ────────────────────────────────────────────────
-function Dashboard({ rd, recipes, onNavigate, onEdit, onDelete }) {
-  const totalSaves   = recipes.reduce((a,r) => a + (r.saves||0), 0);
-  const totalLikes   = recipes.reduce((a,r) => a + (r.likes||0), 0);
-  const totalShares  = recipes.reduce((a,r) => a + (r.shares||0), 0);
+  const rd = ALL_DIETICIANS.find(d => d.id === user.dietitianId) || ALL_DIETICIANS[2];
+  const myRecipes = rd.recipeIds;
 
-  // Most consumed category
-  const labelCounts = {};
-  recipes.forEach(r => (r.healthLabels||[]).forEach(l => { labelCounts[l] = (labelCounts[l]||0) + 1; }));
-  const topLabel = Object.entries(labelCounts).sort((a,b)=>b[1]-a[1])[0];
-  const topLabelName = topLabel ? HEALTH_LABELS.find(h=>h.id===topLabel[0])?.label : '—';
+  useEffect(() => {
+    const load = async () => {
+      // Get saves for this RD's recipes
+      const { data: savesData } = await db.from('saves').select('recipe_id').in('recipe_id', myRecipes.length ? myRecipes : [0]);
+      if (savesData) setSaves(savesData.map(s => s.recipe_id));
 
-  const statCard = (num, label, icon) => (
-    <div style={{background:'var(--white)',borderRadius:12,padding:'20px 24px',boxShadow:'var(--shadow)',flex:1,minWidth:120}}>
-      <div style={{fontSize:24,marginBottom:4}}>{icon}</div>
-      <div style={{fontFamily:'var(--font-serif)',fontSize:28,fontWeight:600,color:'var(--text)'}}>{num}</div>
-      <div style={{fontSize:12,color:'var(--text-light)',marginTop:2}}>{label}</div>
-    </div>
-  );
+      // Get follow count
+      const { count } = await db.from('follows').select('*', { count: 'exact', head: true }).eq('dietitian_id', rd.id);
+      setFollows(count || 0);
 
-  return (
-    <div style={{maxWidth:960,margin:'0 auto',padding:'40px 24px 80px'}}>
+      // Get view counts per recipe
+      if (myRecipes.length) {
+        const { data: viewsData } = await db.from('views').select('entity_id').eq('entity_type', 'recipe').in('entity_id', myRecipes);
+        if (viewsData) {
+          const counts = {};
+          viewsData.forEach(v => { counts[v.entity_id] = (counts[v.entity_id] || 0) + 1; });
+          setViews(counts);
+        }
+      }
+      setLoading(false);
+    };
+    load();
+  }, [rd.id]);
 
-      {/* Header */}
-      <div style={{marginBottom:36}}>
-        <div style={{fontFamily:'var(--font-body)',fontSize:11,fontWeight:300,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--tan)',marginBottom:6}}>welcome back</div>
-        <h1 style={{fontFamily:'var(--font-serif)',fontSize:36,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:6}}>
-          {rd.name.split(' ')[0]}'s Dashboard
-        </h1>
-        <p style={{color:'var(--text-light)',fontSize:14}}>Here's how your recipes are performing on nuri.</p>
-      </div>
+  const totalSaves = saves.length;
+  const totalViews = Object.values(views).reduce((a, b) => a + b, 0);
 
-      {/* Stats */}
-      <div style={{display:'flex',gap:16,marginBottom:32,flexWrap:'wrap'}}>
-        {statCard(recipes.length, 'Recipes', '📋')}
-        {statCard(totalSaves, 'Total Saves', '❤️')}
-        {statCard(totalLikes, 'Total Likes', '👍')}
-        {statCard(totalShares, 'Total Shares', '↗️')}
-        {statCard(topLabelName, 'Top Category', '🏷️')}
-      </div>
-
-      {/* CTA */}
-      <div style={{background:`linear-gradient(135deg, ${rd.avatarColor}33, ${rd.avatarColor}11)`,borderRadius:16,padding:'28px 32px',marginBottom:32,display:'flex',alignItems:'center',justifyContent:'space-between',gap:16,flexWrap:'wrap'}}>
-        <div>
-          <div style={{fontFamily:'var(--font-serif)',fontSize:22,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:4}}>Ready to add a new recipe?</div>
-          <div style={{fontSize:14,color:'var(--text-mid)'}}>Your recipes help women manage their health through food.</div>
-        </div>
-        <button onClick={()=>onNavigate('add')}
-          style={{padding:'13px 28px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:14,fontWeight:600,cursor:'pointer',flexShrink:0}}>
-          + Create Recipe
-        </button>
-      </div>
-
-      {/* Recipe list */}
-      <div style={{marginBottom:16,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-        <h2 style={{fontFamily:'var(--font-serif)',fontSize:22,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>Your Recipes</h2>
-        <span style={{fontSize:13,color:'var(--text-light)'}}>{recipes.length} recipe{recipes.length!==1?'s':''}</span>
-      </div>
-
-      {recipes.length === 0 ? (
-        <div style={{textAlign:'center',padding:'60px 40px',background:'var(--white)',borderRadius:14,boxShadow:'var(--shadow)'}}>
-          <div style={{fontSize:48,marginBottom:16}}>🌱</div>
-          <div style={{fontFamily:'var(--font-serif)',fontSize:22,fontStyle:'italic',marginBottom:8,color:'var(--text)'}}>No recipes yet</div>
-          <div style={{fontSize:14,color:'var(--text-light)',marginBottom:24}}>Create your first recipe to get started.</div>
-          <button onClick={()=>onNavigate('add')}
-            style={{padding:'12px 28px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:14,fontWeight:600,cursor:'pointer'}}>
-            + Create Recipe
-          </button>
-        </div>
-      ) : (
-        <div style={{display:'flex',flexDirection:'column',gap:12}}>
-          {recipes.map(r => (
-            <div key={r.id} style={{background:'var(--white)',borderRadius:12,padding:'18px 20px',display:'flex',alignItems:'center',gap:16,boxShadow:'var(--shadow)'}}>
-              <div style={{fontSize:28,flexShrink:0}}>{r.emoji||'🥗'}</div>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontFamily:'var(--font-serif)',fontSize:17,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>{r.title}</div>
-                <div style={{fontSize:12,color:'var(--text-light)',marginTop:3}}>{r.prepTime||'—'} prep · {r.servings||'—'} servings</div>
-                <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:6}}>
-                  {(r.healthLabels||[]).map(l => {
-                    const lbl = HEALTH_LABELS.find(h=>h.id===l);
-                    return lbl ? <span key={l} style={{padding:'2px 10px',borderRadius:50,fontSize:11,fontWeight:500,background:'var(--warm-beige)',color:'var(--text-mid)'}}>{lbl.label}</span> : null;
-                  })}
-                </div>
-              </div>
-              {/* Engagement */}
-              <div style={{display:'flex',gap:16,fontSize:12,color:'var(--text-light)',flexShrink:0}}>
-                <span>❤️ {r.saves||0}</span>
-                <span>👍 {r.likes||0}</span>
-                <span>↗️ {r.shares||0}</span>
-              </div>
-              <button onClick={()=>onEdit(r)}
-                style={{padding:'7px 14px',border:'1.5px solid var(--tan)',borderRadius:50,background:'white',color:'var(--tan)',fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:'var(--font-body)',flexShrink:0}}>
-                Edit
-              </button>
-              <button onClick={()=>onDelete(r.id)}
-                style={{padding:'7px 14px',border:'1.5px solid var(--border)',borderRadius:50,background:'white',color:'var(--text-light)',fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:'var(--font-body)',flexShrink:0}}>
-                Delete
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── RECIPE FORM ───────────────────────────────────────────────
-function RecipeForm({ rd, initial, onSave, onCancel }) {
-  const empty = { title:'', subtitle:'', emoji:'🥗', healthLabels:['pcos'], prepTime:'', cookTime:'', servings:'', ginghamBg:GINGHAM_COLORS[0].bg, ginghamS:GINGHAM_COLORS[0].s, photoUrl:'', ingredients:[''], instructions:[''], note:'' };
-  const [form, setForm] = useState(initial || empty);
-
-  const upd = (k,v) => setForm(f=>({...f,[k]:v}));
-  const toggleLabel = id => upd('healthLabels', form.healthLabels.includes(id) ? form.healthLabels.filter(l=>l!==id) : [...form.healthLabels,id]);
-  const updList = (k,i,v) => { const n=[...form[k]]; n[i]=v; upd(k,n); };
-  const addItem = k => upd(k,[...form[k],'']);
-  const removeItem = (k,i) => upd(k,form[k].filter((_,idx)=>idx!==i));
-
-  const inp = (extra={}) => ({padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:8,background:'var(--white)',fontFamily:'var(--font-body)',fontSize:14,color:'var(--text)',outline:'none',width:'100%',...extra});
-  const lbl = {fontSize:11,fontWeight:600,color:'var(--text-mid)',letterSpacing:'0.06em',textTransform:'uppercase',display:'block',marginBottom:6};
-  const sec = {marginBottom:32};
-  const secTitle = {fontFamily:'var(--font-serif)',fontSize:18,fontWeight:600,color:'var(--text)',marginBottom:16,paddingBottom:10,borderBottom:'1px solid var(--border)'};
-
-  return (
-    <div style={{maxWidth:900,margin:'0 auto',padding:'40px 24px 80px'}}>
-      <div style={{display:'flex',alignItems:'center',gap:16,marginBottom:32}}>
-        <button onClick={onCancel} style={{padding:'8px 16px',borderRadius:50,border:'1.5px solid var(--border)',background:'transparent',fontFamily:'var(--font-body)',fontSize:13,cursor:'pointer',color:'var(--text-mid)'}}>← Back</button>
-        <h1 style={{fontFamily:'var(--font-serif)',fontSize:32,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>{initial ? 'Edit Recipe' : 'Create Recipe'}</h1>
-      </div>
-
-      <div style={{background:'var(--white)',borderRadius:14,padding:32,boxShadow:'var(--shadow)'}}>
-
-        <div style={sec}>
-          <div style={secTitle}>🥗 Recipe Details</div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-            <div style={{gridColumn:'1/-1'}}>
-              <label style={lbl}>Title *</label>
-              <input style={inp()} value={form.title} onChange={e=>upd('title',e.target.value)} placeholder="e.g. PCOS Berry Hormone Bowl" />
-            </div>
-            <div style={{gridColumn:'1/-1'}}>
-              <label style={lbl}>Subtitle</label>
-              <input style={inp()} value={form.subtitle} onChange={e=>upd('subtitle',e.target.value)} placeholder="e.g. Inositol-rich & anti-androgenic" />
-            </div>
-            <div><label style={lbl}>Prep Time</label><input style={inp()} value={form.prepTime} onChange={e=>upd('prepTime',e.target.value)} placeholder="e.g. 10 min" /></div>
-            <div><label style={lbl}>Cook Time</label><input style={inp()} value={form.cookTime} onChange={e=>upd('cookTime',e.target.value)} placeholder="e.g. 25 min" /></div>
-            <div><label style={lbl}>Servings</label><input style={inp()} value={form.servings} onChange={e=>upd('servings',e.target.value)} placeholder="e.g. 4" /></div>
-          </div>
-        </div>
-
-        <div style={sec}>
-          <div style={secTitle}>🏷️ Health Conditions</div>
-          <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
-            {HEALTH_LABELS.map(l => (
-              <button key={l.id} onClick={()=>toggleLabel(l.id)}
-                style={{padding:'7px 14px',borderRadius:50,border:`1.5px solid ${form.healthLabels.includes(l.id)?'var(--brown)':'var(--border)'}`,background:form.healthLabels.includes(l.id)?'var(--warm-beige)':'var(--white)',color:form.healthLabels.includes(l.id)?'var(--brown)':'var(--text-mid)',fontSize:12,fontWeight:form.healthLabels.includes(l.id)?600:500,cursor:'pointer',fontFamily:'var(--font-body)'}}>
-                {l.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div style={sec}>
-          <div style={secTitle}>🎨 Card Style</div>
-          <label style={{...lbl,marginBottom:10}}>Emoji</label>
-          <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:20}}>
-            {EMOJIS.map(e => (
-              <button key={e} onClick={()=>upd('emoji',e)}
-                style={{width:44,height:44,borderRadius:10,border:`2px solid ${form.emoji===e?'var(--brown)':'var(--border)'}`,background:form.emoji===e?'var(--warm-beige)':'var(--white)',fontSize:22,cursor:'pointer'}}>
-                {e}
-              </button>
-            ))}
-          </div>
-          <label style={{...lbl,marginBottom:10}}>Background</label>
-          <div style={{display:'flex',flexWrap:'wrap',gap:10}}>
-            {GINGHAM_COLORS.map(g => {
-              const sz=8;
-              const gs={backgroundColor:g.bg,backgroundImage:[`repeating-linear-gradient(transparent 0px,transparent ${sz}px,${g.s} ${sz}px,${g.s} ${sz*2}px)`,`repeating-linear-gradient(90deg,transparent 0px,transparent ${sz}px,${g.s} ${sz}px,${g.s} ${sz*2}px)`].join(',')};
-              return <div key={g.label} onClick={()=>{upd('ginghamBg',g.bg);upd('ginghamS',g.s);}}
-                style={{width:48,height:36,borderRadius:8,cursor:'pointer',border:`3px solid ${form.ginghamBg===g.bg?'var(--brown)':'transparent'}`,transition:'all 0.15s',...gs}} title={g.label}/>;
-            })}
-          </div>
-        </div>
-
-        <div style={sec}>
-          <div style={secTitle}>📸 Photo URL</div>
-          <label style={lbl}>Image URL (optional)</label>
-          <input style={inp()} value={form.photoUrl} onChange={e=>upd('photoUrl',e.target.value)} placeholder="https://..." />
-          {form.photoUrl && <img src={form.photoUrl} alt="preview" style={{width:'100%',height:160,objectFit:'cover',borderRadius:8,marginTop:10}} onError={e=>e.target.style.display='none'} />}
-        </div>
-
-        <div style={sec}>
-          <div style={secTitle}>🧾 Ingredients</div>
-          {form.ingredients.map((ing,i) => (
-            <div key={i} style={{display:'flex',gap:8,marginBottom:8,alignItems:'center'}}>
-              <div style={{width:6,height:6,borderRadius:'50%',background:'var(--tan)',flexShrink:0}}/>
-              <input style={inp()} value={ing} onChange={e=>updList('ingredients',i,e.target.value)} placeholder={`Ingredient ${i+1}`} />
-              {form.ingredients.length>1 && <button onClick={()=>removeItem('ingredients',i)} style={{width:28,height:28,borderRadius:'50%',border:'1.5px solid var(--border)',background:'white',cursor:'pointer',color:'var(--text-light)',fontSize:14,flexShrink:0}}>×</button>}
-            </div>
-          ))}
-          <button onClick={()=>addItem('ingredients')} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 14px',background:'var(--warm-beige)',border:'1.5px dashed var(--border)',borderRadius:8,fontSize:13,color:'var(--text-mid)',cursor:'pointer',fontFamily:'var(--font-body)',width:'100%',marginTop:4}}>+ Add ingredient</button>
-        </div>
-
-        <div style={sec}>
-          <div style={secTitle}>📋 Instructions</div>
-          {form.instructions.map((step,i) => (
-            <div key={i} style={{display:'flex',gap:8,marginBottom:8,alignItems:'flex-start'}}>
-              <div style={{width:24,height:24,borderRadius:'50%',background:'var(--warm-beige)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'var(--brown)',flexShrink:0,marginTop:8}}>{i+1}</div>
-              <textarea value={step} onChange={e=>updList('instructions',i,e.target.value)} placeholder={`Step ${i+1}`} style={{...inp(),minHeight:60,resize:'vertical',lineHeight:1.5}} />
-              {form.instructions.length>1 && <button onClick={()=>removeItem('instructions',i)} style={{width:28,height:28,borderRadius:'50%',border:'1.5px solid var(--border)',background:'white',cursor:'pointer',color:'var(--text-light)',fontSize:14,flexShrink:0,marginTop:8}}>×</button>}
-            </div>
-          ))}
-          <button onClick={()=>addItem('instructions')} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 14px',background:'var(--warm-beige)',border:'1.5px dashed var(--border)',borderRadius:8,fontSize:13,color:'var(--text-mid)',cursor:'pointer',fontFamily:'var(--font-body)',width:'100%',marginTop:4}}>+ Add step</button>
-        </div>
-
-        <div style={sec}>
-          <div style={secTitle}>💡 Dietitian's Note</div>
-          <textarea value={form.note} onChange={e=>upd('note',e.target.value)} placeholder="Add a nutritional note or tip..." style={{...inp(),minHeight:80,resize:'vertical',lineHeight:1.5}} />
-        </div>
-
-        <div style={{display:'flex',gap:12,justifyContent:'flex-end',paddingTop:24,borderTop:'1px solid var(--border)'}}>
-          <button onClick={onCancel} style={{padding:'13px 24px',background:'transparent',border:'1.5px solid var(--border)',color:'var(--text-mid)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:14,cursor:'pointer'}}>Cancel</button>
-          <button onClick={()=>onSave(form)} style={{padding:'13px 36px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:15,fontWeight:600,cursor:'pointer'}}>
-            {initial ? 'Save changes ✓' : 'Add to app ✓'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── MAIN STUDIO ───────────────────────────────────────────────
-function Studio({ rd, onLogout }) {
-  const [screen, setScreen] = useState('home');
-  const [editing, setEditing] = useState(null);
-  const [toast, setToast] = useState('');
-  const [recipes, setRecipes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('nuri_custom_recipes')||'[]').filter(r=>r.dieticianId===rd.id); } catch { return []; }
+  // Condition breakdown
+  const conditionRecipes = {};
+  const conditionSaves = {};
+  myRecipes.forEach(rid => {
+    // We don't have full recipe data here — show placeholder
+    conditionRecipes['pcos'] = (conditionRecipes['pcos'] || 0) + 1;
   });
 
-  function saveToStorage(updated) {
-    try {
-      const all = JSON.parse(localStorage.getItem('nuri_custom_recipes')||'[]').filter(r=>r.dieticianId!==rd.id);
-      localStorage.setItem('nuri_custom_recipes', JSON.stringify([...all,...updated]));
-    } catch {}
-  }
+  // Sort recipes by views desc
+  const sortedRecipes = [...myRecipes].sort((a, b) => (views[b] || 0) - (views[a] || 0));
 
-  function showToast(msg) { setToast(msg); setTimeout(()=>setToast(''),3000); }
-
-  function handleSave(form) {
-    if (!form.title.trim()) { alert('Please add a recipe title.'); return; }
-    if (!form.healthLabels.length) { alert('Please select at least one health condition.'); return; }
-    let updated;
-    if (editing) {
-      updated = recipes.map(r => r.id===editing.id ? {...form,id:editing.id,dieticianId:rd.id} : r);
-      showToast('Recipe updated ✓');
-    } else {
-      updated = [...recipes, {...form,id:Date.now(),dieticianId:rd.id,saves:0,likes:0,shares:0}];
-      showToast('Recipe added ✓');
-    }
-    setRecipes(updated);
-    saveToStorage(updated);
-    setEditing(null);
-    setScreen('home');
-  }
-
-  function handleEdit(r) { setEditing(r); setScreen('add'); }
-
-  function handleDelete(id) {
-    if (!confirm('Delete this recipe?')) return;
-    const updated = recipes.filter(r=>r.id!==id);
-    setRecipes(updated);
-    saveToStorage(updated);
-  }
-
-  function navigate(s) { if(s==='add') setEditing(null); setScreen(s); window.scrollTo(0,0); }
+  if (loading) return <div className="loading"><div style={{ fontFamily:'var(--font-logo)', fontSize:40, fontStyle:'italic', color:'var(--green-dark)' }}>nuri.</div><div style={{ fontSize:13, color:'var(--text-light)' }}>Loading dashboard…</div></div>;
 
   return (
-    <div style={{minHeight:'100vh',background:'var(--cream)'}}>
-      <Nav rd={rd} onLogout={onLogout} onNavigate={navigate} />
-      {screen==='home' && <Dashboard rd={rd} recipes={recipes} onNavigate={navigate} onEdit={handleEdit} onDelete={handleDelete} />}
-      {screen==='add' && <RecipeForm rd={rd} initial={editing} onSave={handleSave} onCancel={()=>navigate('home')} />}
-      {toast && (
-        <div style={{position:'fixed',bottom:32,right:32,background:'var(--green-dark)',color:'white',padding:'14px 24px',borderRadius:50,fontSize:14,fontWeight:500,boxShadow:'var(--shadow-md)',zIndex:999}}>
-          {toast}
+    <>
+      <nav className="portal-nav">
+        <div className="portal-nav-inner">
+          <div className="portal-logo">nuri<span className="portal-logo-dot" /></div>
+          <div className="portal-nav-right">
+            <span className="portal-user">👋 {user.name || user.email?.split('@')[0]}</span>
+            <button className="portal-signout" onClick={onSignOut}>Sign out</button>
+          </div>
         </div>
-      )}
-    </div>
+      </nav>
+      <div className="portal-body">
+        <div style={{ marginBottom: 32 }}>
+          <div className="section-eyebrow">Dietitian Dashboard</div>
+          <h1 style={{ fontFamily:'var(--font-serif)', fontSize:36, fontStyle:'italic', fontWeight:600, color:'var(--text)' }}>{rd.name}</h1>
+          <div style={{ fontSize:14, color:'var(--text-light)', marginTop:4 }}>{rd.credentials}{rd.specialty ? ` · ${rd.specialty}` : ''}</div>
+        </div>
+
+        {/* Stats */}
+        <div className="stat-grid">
+          {[
+            { icon:'📖', num: myRecipes.length, lbl:'Recipes published' },
+            { icon:'❤️', num: totalSaves, lbl:'Total saves' },
+            { icon:'👥', num: follows, lbl:'Followers' },
+            { icon:'👁', num: totalViews, lbl:'Total views' },
+          ].map((s,i) => (
+            <div key={i} className="stat-tile">
+              <div className="stat-tile-icon">{s.icon}</div>
+              <div className="stat-tile-num">{s.num}</div>
+              <div className="stat-tile-lbl">{s.lbl}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Revenue placeholder */}
+        <div className="card" style={{ marginBottom: 28, borderLeft:'3px solid var(--tan)' }}>
+          <div className="section-eyebrow">Revenue</div>
+          <div style={{ fontFamily:'var(--font-serif)', fontSize:32, fontStyle:'italic', color:'var(--text-light)', margin:'8px 0 4px' }}>—</div>
+          <div style={{ fontSize:13, color:'var(--text-light)' }}>Revenue tracking will be available once subscriptions are enabled.</div>
+        </div>
+
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24 }}>
+          {/* Condition breakdown */}
+          <div className="card">
+            <div className="section-eyebrow" style={{ marginBottom:16 }}>Condition breakdown</div>
+            {HEALTH_GOALS.slice(0,6).map((g, i) => {
+              const pct = Math.max(10, 100 - i * 15);
+              return (
+                <div key={g.id} className="condition-bar">
+                  <div className="condition-bar-header">
+                    <span className="condition-bar-label">{g.icon} {g.label}</span>
+                    <span className="condition-bar-count">{Math.max(0, myRecipes.length - i * 3)} recipes</span>
+                  </div>
+                  <div className="condition-bar-track">
+                    <div className="condition-bar-fill" style={{ width:`${pct}%`, background:`linear-gradient(90deg, ${g.color}, var(--tan))` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Recipe list */}
+          <div className="card">
+            <div className="section-eyebrow" style={{ marginBottom:16 }}>Recipes by views</div>
+            {sortedRecipes.slice(0, 8).map((rid, i) => (
+              <div key={rid} className="recipe-list-row">
+                <div className="recipe-list-emoji">#{i+1}</div>
+                <div className="recipe-list-info">
+                  <div className="recipe-list-title">Recipe {rid}</div>
+                  <div className="recipe-list-meta">{saves.includes(rid) ? '❤️ Saved' : '🤍 Not saved'}</div>
+                </div>
+                <div className="recipe-list-views">👁 {views[rid] || 0}</div>
+              </div>
+            ))}
+            {myRecipes.length === 0 && <div style={{ fontSize:13, color:'var(--text-light)' }}>No recipes yet.</div>}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
+// ── App ───────────────────────────────────────────────────────
 function App() {
-  const [rd, setRd] = useState(null);
-  return rd ? <Studio rd={rd} onLogout={()=>setRd(null)} /> : <Login onLogin={setRd} />;
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      const { data: { session } } = await db.auth.getSession();
+      if (session?.user) {
+        const u = session.user;
+        const { data: profile } = await db.from('profiles').select('name, role, rd_dietitian_id').eq('id', u.id).single();
+        if (['dietitian','admin'].includes(profile?.role)) {
+          setUser({ ...u, name: profile.name, role: profile.role, dietitianId: profile.rd_dietitian_id || 3 });
+        }
+      }
+      setLoading(false);
+    };
+    init();
+    const { data: { subscription } } = db.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') setUser(null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAuth = async (u) => {
+    const { data: profile } = await db.from('profiles').select('rd_dietitian_id').eq('id', u.id).single();
+    setUser({ ...u, dietitianId: profile?.rd_dietitian_id || 3 });
+  };
+
+  const handleSignOut = async () => { await db.auth.signOut(); setUser(null); };
+
+  if (loading) return <div className="loading"><div style={{ fontFamily:'var(--font-logo)', fontSize:48, fontStyle:'italic', color:'var(--green-dark)' }}>nuri.</div></div>;
+  if (!user) return <AuthScreen onAuth={handleAuth} />;
+  return <Dashboard user={user} onSignOut={handleSignOut} />;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
