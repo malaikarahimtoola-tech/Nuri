@@ -3,14 +3,40 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>nuri. Admin Recipe Studio</title>
+<title>nuri. · Recipe Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+  const SUPA_URL = 'https://zgjtibyhuhpibrxcormd.supabase.co';
+  const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnanRpYnlodWhwaWJyeGNvcm1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MDUxNTAsImV4cCI6MjA5NDE4MTE1MH0.DdIKgmbfkdmUnjrvE2jK4q5DP6bdkOYak3CNzU18pEo';
+  window._supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+</script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<form name="recipe-submission" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input type="text" name="dietician-name" />
+  <input type="email" name="dietician-email" />
+  <input type="text" name="credentials" />
+  <input type="text" name="recipe-title" />
+  <input type="text" name="recipe-subtitle" />
+  <input type="text" name="health-labels" />
+  <input type="text" name="prep-time" />
+  <input type="text" name="cook-time" />
+  <input type="text" name="servings" />
+  <textarea name="ingredients"></textarea>
+  <textarea name="instructions"></textarea>
+  <textarea name="note"></textarea>
+  <input type="text" name="illustration" />
+  <input type="text" name="background" />
+  <input type="text" name="bot-field" />
+</form>
+
 <style>
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --cream: #FAF6F0; --warm-beige: #F0E8DC; --border: #E4D9CC;
@@ -257,33 +283,87 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
   .signin-page { grid-template-columns: 1fr; }
   .signin-right { display: none; }
 }
+
+
+/* ── ADMIN OVERVIEW ── */
+.nav { position: sticky; top:0; z-index:100; background: rgba(250,246,240,0.96); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); }
+.nav-inner { max-width:1200px; margin:0 auto; padding:0 32px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+.logo { font-family:var(--font-logo); font-size:24px; font-style:italic; font-weight:600; color:var(--green-dark); display:inline-flex; align-items:flex-end; }
+.logo-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--rose); margin-left:2px; margin-bottom:2px; }
+.nav-badge { font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; background:var(--brown); color:white; padding:4px 10px; border-radius:50px; margin-left:12px; }
+.nav-tabs { display:flex; align-items:center; gap:4px; }
+.nav-tab { padding:8px 18px; border-radius:50px; border:none; background:transparent; font-family:var(--font-body); font-size:14px; font-weight:500; color:var(--text-light); cursor:pointer; transition:all 0.18s; }
+.nav-tab:hover { background:var(--warm-beige); color:var(--text); }
+.nav-tab.active { background:var(--brown); color:white; }
+.nav-right { display:flex; align-items:center; gap:12px; }
+.btn-outline { padding:8px 16px; border:1.5px solid var(--border); border-radius:50px; background:none; font-family:var(--font-body); font-size:13px; color:var(--text-mid); cursor:pointer; transition:all 0.18s; }
+.btn-outline:hover { border-color:var(--brown); color:var(--brown); }
+
+.overview-body { max-width:1200px; margin:0 auto; padding:48px 32px 80px; }
+.overview-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-bottom:40px; }
+@media (max-width:900px) { .overview-grid { grid-template-columns:repeat(3,1fr); } }
+.stat-card { background:var(--white); border-radius:var(--radius); padding:22px 20px; box-shadow:var(--shadow); }
+.stat-icon { font-size:22px; margin-bottom:8px; }
+.stat-num { font-family:var(--font-serif); font-size:30px; font-weight:600; color:var(--text); line-height:1; }
+.stat-lbl { font-size:11px; color:var(--text-light); margin-top:3px; font-weight:500; }
+
+.rd-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:20px; margin-bottom:40px; }
+.rd-card { background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; cursor:pointer; transition:box-shadow 0.18s, transform 0.18s; }
+.rd-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+.rd-card.selected { outline:2px solid var(--brown); }
+.rd-card-banner { height:68px; padding:0 20px; display:flex; align-items:flex-end; }
+.rd-avatar { width:48px; height:48px; border-radius:50%; border:3px solid var(--cream); font-size:16px; font-weight:700; color:white; display:flex; align-items:center; justify-content:center; margin-bottom:-18px; box-shadow:var(--shadow); flex-shrink:0; }
+.rd-card-body { padding:26px 20px 20px; }
+.rd-name { font-family:var(--font-serif); font-size:17px; font-weight:600; color:var(--text); margin-bottom:2px; }
+.rd-creds { font-size:11px; color:var(--tan); font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px; }
+.rd-stats-row { display:flex; gap:16px; flex-wrap:wrap; }
+.rd-stat-item { text-align:center; }
+.rd-stat-num { font-family:var(--font-serif); font-size:20px; font-weight:600; color:var(--text); }
+.rd-stat-lbl { font-size:11px; color:var(--text-light); }
+
+.drilldown { background:var(--white); border-radius:var(--radius); padding:28px; box-shadow:var(--shadow); margin-bottom:40px; }
+.drilldown-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+.close-btn { background:none; border:1.5px solid var(--border); border-radius:50px; padding:6px 14px; font-family:var(--font-body); font-size:13px; color:var(--text-mid); cursor:pointer; }
+.close-btn:hover { border-color:var(--brown); color:var(--brown); }
+.recipe-table { width:100%; border-collapse:collapse; }
+.recipe-table th { font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-light); padding:8px 12px; text-align:left; border-bottom:1.5px solid var(--border); }
+.recipe-table td { padding:12px; border-bottom:1px solid var(--border); font-size:14px; color:var(--text); vertical-align:middle; }
+.recipe-table tr:last-child td { border-bottom:none; }
+.recipe-table tr:hover td { background:var(--warm-beige); }
+.tag-pill { display:inline-block; padding:2px 8px; border-radius:50px; font-size:11px; font-weight:500; margin:1px; }
+.views-badge { background:var(--warm-beige); color:var(--text-mid); padding:3px 10px; border-radius:50px; font-size:12px; }
+.saves-badge { background:#FFF0F0; color:#8B3A3A; padding:3px 10px; border-radius:50px; font-size:12px; }
+
+.cond-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:40px; }
+@media (max-width:700px) { .cond-grid { grid-template-columns:1fr; } }
+.cond-card { background:var(--white); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); }
+.section-eyebrow { font-size:11px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--tan); margin-bottom:6px; }
+.section-title { font-family:var(--font-serif); font-size:20px; font-style:italic; font-weight:600; color:var(--text); margin-bottom:20px; }
+.cond-bar { margin-bottom:12px; }
+.cond-bar-top { display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px; }
+.cond-bar-track { height:8px; background:var(--warm-beige); border-radius:50px; overflow:hidden; }
+.cond-bar-fill { height:100%; border-radius:50px; transition:width 0.6s ease; }
+
+/* Auth gate */
+.auth-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; background:var(--cream); }
+.auth-card { background:var(--white); border-radius:20px; overflow:hidden; width:100%; max-width:400px; box-shadow:var(--shadow-md); }
+.auth-gingham { height:6px; background-color:#A8C4A8; background-image:repeating-linear-gradient(90deg,transparent 0px,transparent 16px,rgba(58,107,74,0.4) 16px,rgba(58,107,74,0.4) 32px); }
+.auth-inner { padding:36px 40px 40px; }
+.auth-logo-wrap { font-family:var(--font-logo); font-size:32px; font-style:italic; font-weight:600; color:var(--green-dark); display:inline-flex; align-items:flex-end; margin-bottom:4px; }
+.auth-logo-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--rose); margin-left:2px; margin-bottom:3px; }
+.loading { display:flex; align-items:center; justify-content:center; height:100vh; flex-direction:column; gap:16px; }
 </style>
 </head>
 <body>
-
-<form name="recipe-submission" data-netlify="true" netlify-honeypot="bot-field" hidden>
-  <input type="text" name="dietician-name" />
-  <input type="email" name="dietician-email" />
-  <input type="text" name="credentials" />
-  <input type="text" name="recipe-title" />
-  <input type="text" name="recipe-subtitle" />
-  <input type="text" name="health-labels" />
-  <input type="text" name="prep-time" />
-  <input type="text" name="cook-time" />
-  <input type="text" name="servings" />
-  <textarea name="ingredients"></textarea>
-  <textarea name="instructions"></textarea>
-  <textarea name="note"></textarea>
-  <input type="text" name="illustration" />
-  <input type="text" name="background" />
-  <input type="text" name="bot-field" />
-</form>
-
 <div id="root"></div>
-
 <script type="text/babel">
-const { useState } = React;
+const { useState, useEffect, useMemo } = React;
+const db = window._supa;
 
+// ── ADMIN PASSWORD ────────────────────────────────────────────
+const ADMIN_PASSWORD = 'nuri-admin-2026';
+
+// ── ORIGINAL STUDIO DATA (LABEL_MAP, GINGHAM, ILLUSTRATIONS etc) ─
 const LABEL_MAP = {
   pcos: { label: 'PCOS', color: '#F2C4CE', text: '#8B3A52' },
   fertility: { label: 'Fertility', color: '#C8E6C4', text: '#2E6B3E' },
@@ -395,60 +475,87 @@ function ListEditor({ items, onChange, placeholder, numbered }) {
   );
 }
 
-const ADMIN_PASSWORD = 'nuri2025';
 
-function SignIn({ onSignIn }) {
+// ── ADMIN OVERVIEW DATA ───────────────────────────────────────
+const HEALTH_GOALS = [
+  { id:'pcos', label:'PCOS Support', icon:'🌸', color:'#F2C4CE' },
+  { id:'fertility', label:'Fertility & Conception', icon:'🌱', color:'#C8E6C9' },
+  { id:'hormones', label:'Hormone Balance', icon:'⚖️', color:'#E1BEE7' },
+  { id:'energy', label:'Low Energy & Fatigue', icon:'⚡', color:'#FFF9C4' },
+  { id:'period', label:'Period Regulation', icon:'🗓', color:'#FFCDD2' },
+  { id:'gut', label:'Gut Health', icon:'🌿', color:'#C8E6C9' },
+  { id:'thyroid', label:'Thyroid Support', icon:'🦋', color:'#B8D4E8' },
+  { id:'menopause', label:'Menopause', icon:'🌙', color:'#E8D5F5' },
+  { id:'postpartum', label:'Postpartum Recovery', icon:'🤱', color:'#FFE0B2' },
+  { id:'endometriosis', label:'Endometriosis', icon:'🔴', color:'#FFCDD2' },
+];
+
+const ALL_DIETICIANS = [
+  { id:1, name:'Emily', credentials:'Co-founder', initials:'EY', avatarColor:'#C4A882', recipeIds:[], tags:[] },
+  { id:2, name:'Malaika', credentials:'Co-founder', initials:'MR', avatarColor:'#8FA888', recipeIds:[], tags:[] },
+  { id:3, name:'Claire Pettitt', credentials:'PhD, RD', specialty:"PCOS & Women's Health", initials:'CP', avatarColor:'#7A9E7E', recipeIds:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21], tags:['pcos','hormones','period','gut','fertility','endometriosis'] },
+  { id:4, name:'Alysse Vocca', credentials:'RD', specialty:"Eating Disorders & Women's Health", initials:'AV', avatarColor:'#C47A7A', recipeIds:[22,23,24,25,26,27,28,29,30,31], tags:['pcos','hormones','period','endometriosis'] },
+];
+
+const ALL_RECIPES = [
+  { id:1, dieticianId:3, title:'Pumpkin, Orange & Zaatar Soup', emoji:'🎃', healthLabels:['pcos'] },
+  { id:2, dieticianId:3, title:'Soft & Chewy Oatmeal Chocolate Chip Cookies', emoji:'🍪', healthLabels:['pcos'] },
+  { id:3, dieticianId:3, title:'Citrus Roasted Salmon', emoji:'🐟', healthLabels:['pcos','endometriosis'] },
+  { id:4, dieticianId:3, title:'Moroccan Inspired Traybake', emoji:'🥕', healthLabels:['pcos'] },
+  { id:5, dieticianId:3, title:'Protein Pancakes', emoji:'🥞', healthLabels:['pcos'] },
+  { id:6, dieticianId:3, title:'Chickpea & Aubergine Stew', emoji:'🍆', healthLabels:['pcos'] },
+  { id:7, dieticianId:3, title:'Veggie & Cheese Frittata', emoji:'🥚', healthLabels:['pcos','fertility'] },
+  { id:8, dieticianId:3, title:'Roasted Beetroot', emoji:'🔴', healthLabels:['pcos'] },
+  { id:9, dieticianId:3, title:'Squash Soup', emoji:'🍵', healthLabels:['pcos'] },
+  { id:10, dieticianId:3, title:'Coconut & Butternut Squash Curry', emoji:'🍛', healthLabels:['pcos'] },
+  { id:11, dieticianId:3, title:'Homemade Oreo Cookies', emoji:'🖤', healthLabels:['pcos'] },
+  { id:12, dieticianId:3, title:'Aubergine with Green Beans & Freekeh', emoji:'🥗', healthLabels:['pcos'] },
+  { id:13, dieticianId:3, title:'Cauliflower, Pomegranate & Pistachio Salad', emoji:'🥦', healthLabels:['pcos'] },
+  { id:14, dieticianId:3, title:'Chocolate Date Cake', emoji:'🍰', healthLabels:['pcos'] },
+  { id:15, dieticianId:3, title:'Squash with Chilli Yoghurt & Coriander Sauce', emoji:'🌶', healthLabels:['pcos'] },
+  { id:16, dieticianId:3, title:'Wintery Parsnip Soup', emoji:'🍂', healthLabels:['pcos'] },
+  { id:17, dieticianId:3, title:'Spinach & Sweet Potato Dahl', emoji:'🌿', healthLabels:['pcos'] },
+  { id:18, dieticianId:3, title:'Chickpea, Mango & Cauliflower Salad', emoji:'🥭', healthLabels:['pcos'] },
+  { id:19, dieticianId:3, title:'Peanut Butter Balls', emoji:'🥜', healthLabels:['pcos'] },
+  { id:20, dieticianId:3, title:'Roasted Mixed Veg with Yoghurt & Chilli Oil', emoji:'🌈', healthLabels:['pcos'] },
+  { id:21, dieticianId:3, title:'Lentil Bolognese', emoji:'🍝', healthLabels:['pcos'] },
+  { id:22, dieticianId:4, title:'Cauliflower Shrimp Fried Rice', emoji:'🦐', healthLabels:['pcos','hormones'] },
+  { id:23, dieticianId:4, title:'Berry Chia Pudding', emoji:'🫐', healthLabels:['pcos','hormones','energy'] },
+  { id:24, dieticianId:4, title:'Egg Muffins', emoji:'🥚', healthLabels:['pcos','energy','hormones'] },
+  { id:25, dieticianId:4, title:'Spicy Peanut Tofu Stir-Fry', emoji:'🥜', healthLabels:['pcos','hormones'] },
+  { id:26, dieticianId:4, title:'Mediterranean Quinoa Bowl', emoji:'🥗', healthLabels:['pcos','hormones'] },
+  { id:27, dieticianId:4, title:'Salmon Avocado Cucumber Boats', emoji:'🥑', healthLabels:['pcos','hormones'] },
+  { id:28, dieticianId:4, title:'Sweet Potato Egg Hash', emoji:'🍳', healthLabels:['pcos','energy','hormones'] },
+  { id:29, dieticianId:4, title:'Zucchini Turkey Taco Skillet', emoji:'🌮', healthLabels:['pcos','hormones'] },
+  { id:30, dieticianId:4, title:'Cinnamon Almond Yogurt Bowl', emoji:'🍓', healthLabels:['pcos','energy','hormones'] },
+  { id:31, dieticianId:4, title:'Turmeric Coconut Chickpea Curry', emoji:'🍛', healthLabels:['pcos','hormones','gut'] },
+];
+
+// ── AUTH GATE ─────────────────────────────────────────────────
+function AuthScreen({ onAuth }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
-  const handleLogin = () => {
-    if (password.trim() === ADMIN_PASSWORD) {
-      onSignIn({ name: 'Admin', email: 'admin@nuri.com', creds: 'nuri.', initials: 'N', avatarColor: '#3A6B4A' });
-    } else {
-      setError('Incorrect password.');
-      setPassword('');
-    }
-  };
-
   return (
-    <div className="signin-page">
-      <div className="signin-left">
-        <div className="signin-eyebrow">welcome to the</div>
-        <h1 className="signin-headline">Recipe Studio</h1>
-        <p className="signin-sub">Design beautiful recipe cards and publish them directly to the nuri. feed.</p>
-        <div className="signin-form">
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input className="form-input" type="password" placeholder="••••••••" value={password}
-              onChange={e=>{setPassword(e.target.value);setError('');}}
-              onKeyDown={e=>e.key==='Enter'&&handleLogin()}
-              style={{borderColor: error ? '#C0392B' : undefined}} />
+    <div className="auth-screen">
+      <div className="auth-card">
+        <div className="auth-gingham" />
+        <div className="auth-inner">
+          <div className="auth-logo-wrap">nuri<span className="auth-logo-dot"/></div>
+          <div style={{ fontSize:12, color:'var(--text-light)', marginBottom:24 }}>Recipe Studio · Admin</div>
+          <div style={{ fontFamily:'var(--font-serif)', fontSize:22, fontStyle:'italic', color:'var(--text)', marginBottom:20 }}>Enter admin password</div>
+          {error && <div style={{ background:'#FFF0F0', border:'1px solid #F4C4C4', borderRadius:8, padding:'10px 14px', fontSize:13, color:'#8B2020', marginBottom:14 }}>{error}</div>}
+          <div style={{ marginBottom:14 }}>
+            <label style={{ fontSize:11, fontWeight:600, letterSpacing:'0.07em', textTransform:'uppercase', color:'var(--text-light)', display:'block', marginBottom:6 }}>Password</label>
+            <input className="form-input" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && (password===ADMIN_PASSWORD ? onAuth({name:'Admin'}) : setError('Incorrect password.'))} autoFocus style={{ width:'100%' }} />
           </div>
-          {error && <div style={{color:'#C0392B',fontSize:13,lineHeight:1.4}}>{error}</div>}
-          <button className="signin-btn" disabled={!password} onClick={handleLogin}>
-            Enter Studio →
-          </button>
-          <p className="signin-note">Admin access only.</p>
-        </div>
-      </div>
-      <div className="signin-right">
-        <div className="signin-preview-card">
-          <div style={{fontFamily:'var(--font-logo)',fontSize:22,fontWeight:600,fontStyle:'italic',color:'var(--green-dark)',display:'inline-flex',alignItems:'flex-end',marginBottom:8}}>
-            nuri<span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'var(--rose)',marginLeft:2,marginBottom:2}}/>
-          </div>
-          <div style={{fontFamily:'var(--font-serif)',fontSize:20,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:8}}>Your recipes, beautifully presented</div>
-          <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.6,marginBottom:16}}>Design your card, pick your tablecloth, choose your illustration — then publish straight to the feed.</p>
-          {['🎨  Choose your gingham background','🖼  Pick an illustration','📋  Fill in your recipe','✨  Publish to the feed'].map((s,i,a)=>(
-            <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',borderBottom:i<a.length-1?'1px solid var(--border)':'none'}}>
-              <span style={{fontSize:13,color:'var(--text-mid)'}}>{s}</span>
-            </div>
-          ))}
+          <button className="signin-btn" onClick={() => password===ADMIN_PASSWORD ? onAuth({name:'Admin'}) : setError('Incorrect password.')}>Enter Studio →</button>
         </div>
       </div>
     </div>
   );
 }
 
+// ── RECIPE STUDIO (original) ──────────────────────────────────
 function RecipeStudio({ user, onPublish }) {
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
@@ -701,12 +808,174 @@ function SuccessPage({ user, onAnother }) {
   );
 }
 
+// ── ADMIN OVERVIEW ────────────────────────────────────────────
+function Overview({ onSignOut }) {
+  const [saves, setSaves] = useState([]);
+  const [follows, setFollows] = useState({});
+  const [views, setViews] = useState({});
+  const [userCount, setUserCount] = useState(0);
+  const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      const [{ data: savesData }, { data: followsData }, { data: viewsData }, { count: users }] = await Promise.all([
+        db.from('saves').select('recipe_id, user_id'),
+        db.from('follows').select('dietitian_id'),
+        db.from('views').select('entity_type, entity_id'),
+        db.from('profiles').select('*', { count:'exact', head:true }),
+      ]);
+      if (savesData) setSaves(savesData);
+      if (followsData) { const fc = {}; followsData.forEach(f => { fc[f.dietitian_id] = (fc[f.dietitian_id]||0)+1; }); setFollows(fc); }
+      if (viewsData) { const vc = {}; viewsData.forEach(v => { const k=`${v.entity_type}:${v.entity_id}`; vc[k]=(vc[k]||0)+1; }); setViews(vc); }
+      if (users != null) setUserCount(users);
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const totalSaves = saves.length;
+  const totalViews = Object.values(views).reduce((a,b)=>a+b,0);
+  const rdStats = ALL_DIETICIANS.map(rd => ({
+    ...rd,
+    saves: saves.filter(s=>rd.recipeIds.includes(s.recipe_id)).length,
+    views: rd.recipeIds.reduce((n,rid)=>n+(views[`recipe:${rid}`]||0),0),
+    followers: follows[rd.id]||0,
+  }));
+
+  const conditionCounts = {};
+  ALL_RECIPES.forEach(r => r.healthLabels.forEach(l => { conditionCounts[l]=(conditionCounts[l]||0)+1; }));
+  const maxCond = Math.max(...Object.values(conditionCounts),1);
+  const conditionSaves = {};
+  saves.forEach(s => { const r=ALL_RECIPES.find(x=>x.id===s.recipe_id); if(r) r.healthLabels.forEach(l=>{ conditionSaves[l]=(conditionSaves[l]||0)+1; }); });
+
+  const selectedRd = selected ? ALL_DIETICIANS.find(d=>d.id===selected) : null;
+  const selectedRecipes = selectedRd ? ALL_RECIPES.filter(r=>r.dieticianId===selected) : [];
+
+  if (loading) return <div className="loading"><div style={{fontFamily:'var(--font-logo)',fontSize:40,fontStyle:'italic',color:'var(--green-dark)'}}>nuri.</div><div style={{fontSize:13,color:'var(--text-light)'}}>Loading…</div></div>;
+
+  return (
+    <div className="overview-body">
+      <div style={{marginBottom:32}}>
+        <div className="section-eyebrow">Platform Overview</div>
+        <h1 style={{fontFamily:'var(--font-serif)',fontSize:36,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>Recipe Studio</h1>
+      </div>
+
+      <div className="overview-grid">
+        {[{icon:'👥',num:userCount,lbl:'Total users'},{icon:'📖',num:ALL_RECIPES.length,lbl:'Total recipes'},{icon:'🩺',num:ALL_DIETICIANS.length,lbl:'Dietitians'},{icon:'❤️',num:totalSaves,lbl:'Total saves'},{icon:'👁',num:totalViews,lbl:'Total views'}].map((s,i)=>(
+          <div key={i} className="stat-card"><div className="stat-icon">{s.icon}</div><div className="stat-num">{s.num}</div><div className="stat-lbl">{s.lbl}</div></div>
+        ))}
+      </div>
+
+      <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:'20px 24px',boxShadow:'var(--shadow)',marginBottom:40,borderLeft:'3px solid var(--tan)',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}}>
+        <div><div className="section-eyebrow">Revenue</div><div style={{fontFamily:'var(--font-serif)',fontSize:28,color:'var(--text-light)',fontStyle:'italic'}}>—</div></div>
+        <div style={{fontSize:13,color:'var(--text-light)',maxWidth:360}}>Revenue tracking will populate once Stripe subscriptions are connected.</div>
+      </div>
+
+      <div className="cond-grid">
+        <div className="cond-card">
+          <div className="section-eyebrow">Recipes per condition</div>
+          <div className="section-title">Content coverage</div>
+          {Object.entries(conditionCounts).sort((a,b)=>b[1]-a[1]).map(([id,count])=>{
+            const g=HEALTH_GOALS.find(x=>x.id===id);
+            return <div key={id} className="cond-bar"><div className="cond-bar-top"><span style={{color:'var(--text)',display:'flex',alignItems:'center',gap:6}}>{g?.icon} {g?.label||id}</span><span style={{color:'var(--text-light)'}}>{count}</span></div><div className="cond-bar-track"><div className="cond-bar-fill" style={{width:`${(count/maxCond)*100}%`,background:`linear-gradient(90deg, ${g?.color||'var(--tan)'}, var(--brown))`}}/></div></div>;
+          })}
+        </div>
+        <div className="cond-card">
+          <div className="section-eyebrow">Saves per condition</div>
+          <div className="section-title">User interest</div>
+          {Object.entries(conditionSaves).length===0 ? <div style={{fontSize:13,color:'var(--text-light)'}}>No saves yet.</div> : Object.entries(conditionSaves).sort((a,b)=>b[1]-a[1]).map(([id,count])=>{
+            const g=HEALTH_GOALS.find(x=>x.id===id); const max=Math.max(...Object.values(conditionSaves),1);
+            return <div key={id} className="cond-bar"><div className="cond-bar-top"><span style={{color:'var(--text)',display:'flex',alignItems:'center',gap:6}}>{g?.icon} {g?.label||id}</span><span style={{color:'var(--text-light)'}}>{count}</span></div><div className="cond-bar-track"><div className="cond-bar-fill" style={{width:`${(count/max)*100}%`,background:'linear-gradient(90deg, var(--rose), var(--brown))'}}/></div></div>;
+          })}
+        </div>
+      </div>
+
+      <div style={{fontSize:11,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--tan)',marginBottom:8}}>Dietitians</div>
+      <h2 style={{fontFamily:'var(--font-serif)',fontSize:22,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:20}}>Click to see recipe breakdown</h2>
+      <div className="rd-grid">
+        {rdStats.map(rd=>(
+          <div key={rd.id} className={`rd-card ${selected===rd.id?'selected':''}`} onClick={()=>setSelected(selected===rd.id?null:rd.id)}>
+            <div className="rd-card-banner" style={{background:`linear-gradient(135deg, ${rd.avatarColor}88, ${rd.avatarColor}33)`}}>
+              <div className="rd-avatar" style={{background:rd.avatarColor}}>{rd.initials}</div>
+            </div>
+            <div className="rd-card-body">
+              <div className="rd-name">{rd.name}</div>
+              <div className="rd-creds">{rd.credentials}</div>
+              <div className="rd-stats-row">
+                {[{num:rd.recipeIds.length,lbl:'Recipes'},{num:rd.saves,lbl:'Saves'},{num:rd.followers,lbl:'Followers'},{num:rd.views,lbl:'Views'}].map((s,i)=>(
+                  <div key={i} className="rd-stat-item"><div className="rd-stat-num">{s.num}</div><div className="rd-stat-lbl">{s.lbl}</div></div>
+                ))}
+              </div>
+              <div style={{marginTop:12,padding:'8px 12px',background:'var(--warm-beige)',borderRadius:8,fontSize:12,color:'var(--text-light)',borderLeft:'2px solid var(--tan)'}}>💰 Revenue: <strong>—</strong> <span style={{fontSize:11}}>pending Stripe</span></div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {selected && selectedRd && (
+        <div className="drilldown">
+          <div className="drilldown-header">
+            <div><div className="section-eyebrow">Recipe breakdown</div><div style={{fontFamily:'var(--font-serif)',fontSize:22,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>{selectedRd.name}'s recipes</div></div>
+            <button className="close-btn" onClick={()=>setSelected(null)}>✕ Close</button>
+          </div>
+          {selectedRecipes.length===0 ? <div style={{fontSize:13,color:'var(--text-light)'}}>No recipes yet.</div> : (
+            <table className="recipe-table">
+              <thead><tr><th></th><th>Recipe</th><th>Conditions</th><th>Views</th><th>Saves</th></tr></thead>
+              <tbody>
+                {selectedRecipes.map(r=>{
+                  const rSaves=saves.filter(s=>s.recipe_id===r.id).length;
+                  const rViews=views[`recipe:${r.id}`]||0;
+                  return (
+                    <tr key={r.id}>
+                      <td style={{fontSize:22}}>{r.emoji}</td>
+                      <td style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontWeight:600}}>{r.title}</td>
+                      <td>{r.healthLabels.map(l=>{const g=HEALTH_GOALS.find(x=>x.id===l);return <span key={l} className="tag-pill" style={{background:g?.color||'var(--warm-beige)',color:'var(--text-mid)'}}>{g?.icon} {g?.label||l}</span>;})}</td>
+                      <td><span className="views-badge">👁 {rViews}</span></td>
+                      <td><span className="saves-badge">❤️ {rSaves}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── APP ───────────────────────────────────────────────────────
 function App() {
+  const [authed, setAuthed] = useState(false);
   const [user, setUser] = useState(null);
+  const [tab, setTab] = useState('overview');
   const [published, setPublished] = useState(false);
-  if (!user) return <SignIn onSignIn={setUser} />;
-  if (published) return <SuccessPage user={user} onAnother={()=>setPublished(false)} />;
-  return <RecipeStudio user={user} onPublish={()=>setPublished(true)} />;
+
+  if (!authed) return <AuthScreen onAuth={u => { setAuthed(true); setUser(u); }} />;
+
+  return (
+    <>
+      <nav className="nav">
+        <div className="nav-inner">
+          <div style={{display:'flex',alignItems:'center'}}>
+            <div className="logo">nuri<span className="logo-dot"/></div>
+            <span className="nav-badge">Admin Studio</span>
+          </div>
+          <div className="nav-tabs">
+            <button className={`nav-tab ${tab==='overview'?'active':''}`} onClick={()=>{setTab('overview');setPublished(false);}}>📊 Overview</button>
+            <button className={`nav-tab ${tab==='create'?'active':''}`} onClick={()=>{setTab('create');setPublished(false);}}>✦ Create Recipe</button>
+          </div>
+          <div className="nav-right">
+            <button className="btn-outline" onClick={()=>setAuthed(false)}>Sign out</button>
+          </div>
+        </div>
+      </nav>
+      {tab==='overview' && <Overview onSignOut={()=>setAuthed(false)} />}
+      {tab==='create' && !published && <RecipeStudio user={{name:user?.name||'Admin',email:'admin@nuri.com',creds:'Admin'}} onPublish={()=>setPublished(true)} />}
+      {tab==='create' && published && <SuccessPage user={{name:user?.name||'Admin',email:'admin@nuri.com'}} onAnother={()=>setPublished(false)} />}
+    </>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
