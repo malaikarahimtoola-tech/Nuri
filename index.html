@@ -18,6 +18,18 @@
   const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnanRpYnlodWhwaWJyeGNvcm1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MDUxNTAsImV4cCI6MjA5NDE4MTE1MH0.DdIKgmbfkdmUnjrvE2jK4q5DP6bdkOYak3CNzU18pEo';
   window._supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 </script>
+<script>
+  // PostHog analytics
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.people.toString()+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+  posthog.init('phc_n6e5Ezs3YtWXgzEvMekGbudN5E8jw8gjRR7WZqqjjYYU', {
+    api_host: 'https://eu.i.posthog.com',
+    person_profiles: 'identified_only',
+    capture_pageview: true,
+    capture_pageleave: true,
+    session_recording: { maskAllInputs: true },
+  });
+  window._ph = window.posthog;
+</script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1302,6 +1314,16 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
 
 function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFollow, saved, onToggleSave, user, onSignIn }) {
   const dRecipes = getRecipesByD(d.id);
+
+  // Track time spent on profile
+  useEffect(() => {
+    if (window._ph) window._ph.capture('dietitian_profile_opened', { dietitian_name: d.name, dietitian_id: d.id });
+    const start = Date.now();
+    return () => {
+      const seconds = Math.round((Date.now() - start) / 1000);
+      if (window._ph) window._ph.capture('dietitian_profile_time_spent', { dietitian_name: d.name, dietitian_id: d.id, seconds_spent: seconds });
+    };
+  }, [d.id]);
   const focusGoals = d.tags.map(t => HEALTH_GOALS.find(g => g.id === t)).filter(Boolean);
   return (
     <div>
@@ -1900,8 +1922,8 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
                 </div>
                 <button className="rd-dash-toggle" onClick={onToggleRD}>Exit RD mode</button>
               </div>
-              <div style={{ marginBottom: 12 }}>
-                <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-light)', display: 'block', marginBottom: 6 }}>View as dietician</label>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-light)', display: 'block', marginBottom: 6 }}>View as dietitian</label>
                 <select style={{ padding: '8px 12px', border: '1.5px solid var(--border)', borderRadius: 8, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text)', background: 'var(--cream)', width: '100%' }}
                   value={rdDieticianId} onChange={e => onSetRDDietician(Number(e.target.value))}>
                   {ALL_DIETICIANS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
@@ -1912,29 +1934,105 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
                 if (!rd) return null;
                 const myRecipes = getRecipesByD(rd.id);
                 const totalSaves = myRecipes.reduce((acc, r) => acc + (saved.has(r.id) ? 1 : 0), 0);
+                const followCount = [...followed].filter(id => id === rd.id).length;
+
+                // Condition breakdown — count saves per condition tag across this RD's recipes
+                const conditionSaves = {};
+                myRecipes.forEach(r => {
+                  if (saved.has(r.id)) {
+                    r.healthLabels.forEach(label => {
+                      conditionSaves[label] = (conditionSaves[label] || 0) + 1;
+                    });
+                  }
+                });
+                // Also count recipe count per condition (even if not saved)
+                const conditionRecipes = {};
+                myRecipes.forEach(r => {
+                  r.healthLabels.forEach(label => {
+                    conditionRecipes[label] = (conditionRecipes[label] || 0) + 1;
+                  });
+                });
+                const allConditions = [...new Set(myRecipes.flatMap(r => r.healthLabels))];
+                const maxRecipes = Math.max(...allConditions.map(c => conditionRecipes[c] || 0), 1);
+
+                // Top recipes by saves
+                const sortedRecipes = [...myRecipes].sort((a, b) => (saved.has(b.id) ? 1 : 0) - (saved.has(a.id) ? 1 : 0));
+
                 return (
                   <>
-                    <div style={{ display: 'flex', gap: 20, marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>
-                      {[{ num: myRecipes.length, lbl: 'Recipes' }, { num: totalSaves, lbl: 'Saves' }].map((s,i) => (
-                        <div key={i}>
-                          <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 600, color: 'var(--text)' }}>{s.num}</div>
-                          <div style={{ fontSize: 11, color: 'var(--text-light)' }}>{s.lbl}</div>
+                    {/* ── Overview stats ── */}
+                    <div style={{ display: 'flex', gap: 16, marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border)', flexWrap: 'wrap' }}>
+                      {[
+                        { num: myRecipes.length, lbl: 'Recipes', icon: '📖' },
+                        { num: totalSaves, lbl: 'Total saves', icon: '❤️' },
+                        { num: followCount, lbl: 'Followers', icon: '👥' },
+                        { num: allConditions.length, lbl: 'Conditions', icon: '🏷' },
+                      ].map((s, i) => (
+                        <div key={i} style={{ flex: '1 1 80px', background: 'var(--warm-beige)', borderRadius: 12, padding: '14px 16px' }}>
+                          <div style={{ fontSize: 18, marginBottom: 4 }}>{s.icon}</div>
+                          <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 600, color: 'var(--text)' }}>{s.num}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 2 }}>{s.lbl}</div>
                         </div>
                       ))}
                     </div>
-                    {myRecipes.map(r => (
-                      <div key={r.id} className="rd-recipe-row">
-                        <div className="rd-recipe-emoji">{r.emoji}</div>
-                        <div className="rd-recipe-info">
-                          <div className="rd-recipe-title">{r.title}</div>
-                          <div className="rd-recipe-stats">
-                            <span className="rd-stat"><strong>{saved.has(r.id) ? '❤️' : '🤍'}</strong> {saved.has(r.id) ? 'Saved' : 'Not saved'}</span>
-                            <span className="rd-stat"><strong>{r.healthLabels.length}</strong> tags</span>
-                            <span className="rd-stat"><strong>{r.servings}</strong> servings</span>
-                          </div>
+
+                    {/* ── Condition breakdown chart ── */}
+                    <div style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-light)', marginBottom: 12 }}>Condition breakdown</div>
+                      {allConditions.length === 0 ? (
+                        <div style={{ fontSize: 13, color: 'var(--text-light)' }}>No condition tags yet.</div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          {allConditions
+                            .sort((a, b) => (conditionRecipes[b] || 0) - (conditionRecipes[a] || 0))
+                            .map(condition => {
+                              const goal = HEALTH_GOALS.find(g => g.id === condition);
+                              const recipeCount = conditionRecipes[condition] || 0;
+                              const saveCount = conditionSaves[condition] || 0;
+                              const pct = Math.round((recipeCount / maxRecipes) * 100);
+                              return (
+                                <div key={condition}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                                    <span style={{ fontSize: 13, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                      {goal?.icon} {goal?.label || condition}
+                                    </span>
+                                    <span style={{ fontSize: 11, color: 'var(--text-light)' }}>{recipeCount} recipe{recipeCount !== 1 ? 's' : ''} · {saveCount} save{saveCount !== 1 ? 's' : ''}</span>
+                                  </div>
+                                  <div style={{ height: 8, background: 'var(--warm-beige)', borderRadius: 50, overflow: 'hidden' }}>
+                                    <div style={{
+                                      height: '100%', width: `${pct}%`,
+                                      background: `linear-gradient(90deg, ${goal?.color || 'var(--tan)'}, var(--brown))`,
+                                      borderRadius: 50, transition: 'width 0.6s ease'
+                                    }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
                         </div>
-                      </div>
-                    ))}
+                      )}
+                    </div>
+
+                    {/* ── Top recipes ── */}
+                    <div style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-light)', marginBottom: 12 }}>Your recipes</div>
+                      {sortedRecipes.map((r, i) => (
+                        <div key={r.id} className="rd-recipe-row" onClick={() => onRecipeClick(r)} style={{ cursor: 'pointer' }}>
+                          <div style={{ width: 24, textAlign: 'center', fontFamily: 'var(--font-serif)', fontSize: 13, color: 'var(--text-light)', flexShrink: 0 }}>{i + 1}</div>
+                          <div className="rd-recipe-emoji">{r.emoji}</div>
+                          <div className="rd-recipe-info" style={{ flex: 1 }}>
+                            <div className="rd-recipe-title">{r.title}</div>
+                            <div className="rd-recipe-stats">
+                              {r.healthLabels.slice(0, 2).map(l => {
+                                const g = HEALTH_GOALS.find(x => x.id === l);
+                                return <span key={l} className="rd-stat">{g?.icon} {g?.label || l}</span>;
+                              })}
+                            </div>
+                          </div>
+                          <div style={{ flexShrink: 0, fontSize: 16 }}>{saved.has(r.id) ? '❤️' : '🤍'}</div>
+                        </div>
+                      ))}
+                    </div>
+
                     <a href={(rd.id === 1 || rd.id === 2) ? 'recipe-studio.html' : 'dietician-portal.html'} target="_blank" className="rd-portal-btn">
                       ✦ {(rd.id === 1 || rd.id === 2) ? 'Recipe Studio (Admin)' : 'Recipe Studio'} →
                     </a>
@@ -2338,6 +2436,11 @@ function App() {
   const handleAuth = async (u) => {
     setUser(u);
     setShowAuthModal(false);
+    // Identify user in PostHog
+    if (window._ph) {
+      window._ph.identify(u.id, { email: u.email, name: u.name });
+      window._ph.capture('signed_in');
+    }
     const profile = await loadUserData(u.id);
     setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
   };
@@ -2346,6 +2449,14 @@ function App() {
 
   const navigate = (type, data) => {
     if (type === 'recipe' && !user) { setShowAuthModal('signup'); return; }
+    if (type === 'recipe' && window._ph) window._ph.capture('recipe_viewed', {
+      recipe_id: data.id, recipe_title: data.title,
+      dietitian: ALL_DIETICIANS.find(d => d.id === data.dieticianId)?.name,
+      conditions: data.healthLabels,
+    });
+    if (type === 'profile' && window._ph) window._ph.capture('dietitian_profile_viewed', {
+      dietitian_id: data.id, dietitian_name: data.name,
+    });
     setView({ type, data }); window.scrollTo(0, 0);
   };
   const goBack = () => { setView(null); window.scrollTo(0, 0); };
@@ -2362,6 +2473,12 @@ function App() {
   const toggleSave = async (id) => {
     const has = saved.has(id);
     setSaved(p => { const n = new Set(p); has ? n.delete(id) : n.add(id); return n; });
+    const recipe = ALL_RECIPES.find(r => r.id === id);
+    if (!has && window._ph) window._ph.capture('recipe_saved', {
+      recipe_id: id, recipe_title: recipe?.title,
+      dietitian: ALL_DIETICIANS.find(d => d.id === recipe?.dieticianId)?.name,
+      conditions: recipe?.healthLabels,
+    });
     if (user) {
       if (has) await db.from('saves').delete().eq('user_id', user.id).eq('recipe_id', id);
       else await db.from('saves').upsert({ user_id: user.id, recipe_id: id }, { onConflict: 'user_id,recipe_id' });
@@ -2385,6 +2502,7 @@ function App() {
 
   const completeOnboarding = async (goals) => {
     setHealthGoals(goals);
+    if (window._ph) window._ph.capture('onboarding_completed', { conditions: goals });
     if (user) await db.from('profiles').update({ health_goals: goals }).eq('id', user.id);
     setScreen('app');
   };
