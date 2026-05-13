@@ -12,6 +12,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+  const SUPA_URL = 'https://zgjtibyhuhpibrxcormd.supabase.co';
+  const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnanRpYnlodWhwaWJyeGNvcm1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MDUxNTAsImV4cCI6MjA5NDE4MTE1MH0.DdIKgmbfkdmUnjrvE2jK4q5DP6bdkOYak3CNzU18pEo';
+  window._supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+</script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -539,13 +545,30 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .grocery-action-btn.primary:hover { background: #4A3024; }
 
 /* ── LOCKED RECIPE CARD ──────────────────────────────────── */
-.card-lock-badge { position: absolute; top: 10px; left: 10px; z-index: 4; background: rgba(44,24,16,0.72); backdrop-filter: blur(4px); border-radius: 50px; padding: 4px 10px; display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9); letter-spacing: 0.04em; }
+/* ── LOCKED RECIPE CARD ──────────────────────────────────── */
 .recipe-card.locked { cursor: pointer; }
-.recipe-card.locked .recipe-card-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(44,24,16,0.55) 100%); z-index: 2; }
-.recipe-card.locked .recipe-card-body { filter: blur(3px); user-select: none; pointer-events: none; }
-.locked-prompt { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(to top, rgba(44,24,16,0.88) 0%, transparent 100%); }
-.locked-prompt-text { font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 500; }
-.locked-prompt-btn { font-size: 12px; font-weight: 700; color: white; background: var(--brown); border: none; border-radius: 50px; padding: 5px 14px; cursor: pointer; font-family: var(--font-body); flex-shrink: 0; }
+
+/* ── RECIPE UNLOCK MODAL ─────────────────────────────────── */
+.unlock-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(44,24,16,0.45); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+.unlock-modal { background: var(--cream); border-radius: 20px; width: 100%; max-width: 480px; overflow: hidden; box-shadow: 0 32px 80px rgba(44,24,16,0.28); animation: slideIn 0.26s ease; }
+.unlock-modal-banner { padding: 32px 40px 24px; background: linear-gradient(135deg, #3A6B4A 0%, #2A5038 100%); position: relative; overflow: hidden; }
+.unlock-modal-banner::before { content:''; position:absolute; inset:0; background-image: repeating-linear-gradient(transparent 0,transparent 24px,rgba(255,255,255,0.07) 24px,rgba(255,255,255,0.07) 48px),repeating-linear-gradient(90deg,transparent 0,transparent 24px,rgba(255,255,255,0.07) 24px,rgba(255,255,255,0.07) 48px); }
+.unlock-modal-recipe { position: relative; z-index: 1; }
+.unlock-modal-recipe-emoji { font-size: 40px; margin-bottom: 8px; }
+.unlock-modal-recipe-title { font-family: var(--font-serif); font-size: 22px; font-style: italic; font-weight: 600; color: white; line-height: 1.2; margin-bottom: 4px; }
+.unlock-modal-recipe-sub { font-size: 13px; color: rgba(255,255,255,0.72); }
+.unlock-modal-body { padding: 28px 40px 36px; }
+.unlock-modal-heading { font-family: var(--font-serif); font-size: 22px; font-style: italic; color: var(--text); margin-bottom: 8px; }
+.unlock-modal-text { font-size: 14px; color: var(--text-mid); line-height: 1.6; margin-bottom: 24px; }
+.unlock-modal-perks { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+.unlock-perk { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-mid); }
+.unlock-perk-icon { font-size: 16px; flex-shrink: 0; }
+.unlock-modal-cta { width: 100%; padding: 14px; background: var(--brown); color: white; border: none; border-radius: 50px; font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s; margin-bottom: 10px; }
+.unlock-modal-cta:hover { background: #4A3024; transform: translateY(-1px); }
+.unlock-modal-signin { text-align: center; font-size: 13px; color: var(--text-light); }
+.unlock-modal-signin-btn { background: none; border: none; color: var(--brown); font-weight: 600; cursor: pointer; font-size: 13px; font-family: var(--font-body); text-decoration: underline; }
+.unlock-modal-close { position: absolute; top: 14px; right: 16px; background: rgba(255,255,255,0.18); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; }
 
 /* ── SIGN-IN GATE (feed banner) ───────────────────────────── */
 .signin-gate { background: var(--white); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 28px; border-left: 3px solid var(--tan); flex-wrap: wrap; }
@@ -784,61 +807,98 @@ function Avatar({ initials, color, cls = 'avatar-sm', photo }) {
   return <div className={cls} style={{ background: color }}>{initials}</div>;
 }
 
-function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggleSave, isLocked, onSignIn }) {
-  const d = getD(recipe.dieticianId);
-  const [imgFailed, setImgFailed] = useState(false);
-
-  const handleClick = () => { if (isLocked) { onSignIn(); } else { onRecipeClick(recipe); } };
-
+function UnlockModal({ recipe, onClose, onSignIn }) {
   return (
-    <div className={`recipe-card fade-up ${isLocked ? 'locked' : ''}`} onClick={handleClick} style={{ position:'relative' }}>
-      <div className="recipe-card-img" style={getRecipeGingham(recipe)}>
-        {isLocked && <div className="card-lock-badge">🔒 Sign in</div>}
-        {recipe.illusSvg ? (
-          <div className="recipe-card-fallback">
-            <div style={{ width: 80, height: 80 }} dangerouslySetInnerHTML={{ __html: recipe.illusSvg }} />
-            <div className="fallback-title">{recipe.title}</div>
-          </div>
-        ) : !imgFailed ? (
-          <>
-            <img className="recipe-card-photo" src={photoUrl(recipe.id)} alt={recipe.title} onError={() => setImgFailed(true)} />
-            <div className="recipe-card-photo-overlay" />
-          </>
-        ) : (
-          <div className="recipe-card-fallback">
-            <div className="fallback-emoji">{recipe.emoji}</div>
-            <div className="fallback-title">{recipe.title}</div>
-          </div>
-        )}
-        {isLocked ? (
-          <div className="locked-prompt">
-            <span className="locked-prompt-text">Free preview</span>
-            <button className="locked-prompt-btn" onClick={e => { e.stopPropagation(); onSignIn(); }}>Sign in to view →</button>
-          </div>
-        ) : (
-          <button className="card-save-btn" onClick={e => { e.stopPropagation(); onToggleSave(recipe.id); }}>
-            {isSaved ? '❤️' : '🤍'}
-          </button>
-        )}
-      </div>
-      <div className="recipe-card-body">
-        <div className="card-dietician" onClick={e => { e.stopPropagation(); if (!isLocked) onDieticianClick(d); }}>
-          <Avatar initials={d.initials} color={d.avatarColor} photo={d.photo} cls="avatar-sm" />
-          <div>
-            <div className="dietician-name-sm">{d.name}</div>
-            <div className="dietician-creds-sm">{d.credentials}</div>
+    <div className="unlock-modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="unlock-modal">
+        <div className="unlock-modal-banner">
+          <button className="unlock-modal-close" onClick={onClose}>✕</button>
+          <div className="unlock-modal-recipe">
+            <div className="unlock-modal-recipe-emoji">{recipe.emoji}</div>
+            <div className="unlock-modal-recipe-title">{recipe.title}</div>
+            <div className="unlock-modal-recipe-sub">{recipe.subtitle}</div>
           </div>
         </div>
-        <div className="card-title">{recipe.title}</div>
-        <div className="card-subtitle">{recipe.subtitle}</div>
-        <div className="health-tags">{recipe.healthLabels.slice(0,3).map(l => <HealthTag key={l} label={l} />)}</div>
-        <div className="card-meta">
-          <span className="meta-item">⏱ {recipe.prepTime}</span>
-          <span className="meta-item">🔥 {recipe.cookTime}</span>
-          <span className="meta-item">🍽 {recipe.servings} servings</span>
+        <div className="unlock-modal-body">
+          <div className="unlock-modal-heading">Create a free account to unlock this recipe</div>
+          <p className="unlock-modal-text">nuri. is free to join. Sign up to get full access to every recipe, save your favourites, and build your grocery list.</p>
+          <div className="unlock-modal-perks">
+            {[
+              { icon:'🩺', text:'Recipes by verified registered dietitians' },
+              { icon:'🔬', text:'Condition-specific: PCOS, endo, hormones & more' },
+              { icon:'🛒', text:'Auto grocery lists from your saved recipes' },
+              { icon:'❤️', text:'Save recipes and build your personal recipe book' },
+            ].map(p => (
+              <div key={p.text} className="unlock-perk">
+                <span className="unlock-perk-icon">{p.icon}</span>
+                <span>{p.text}</span>
+              </div>
+            ))}
+          </div>
+          <button className="unlock-modal-cta" onClick={() => { onClose(); onSignIn('signup'); }}>Create free account →</button>
+          <div className="unlock-modal-signin">
+            Already have an account?{' '}
+            <button className="unlock-modal-signin-btn" onClick={() => { onClose(); onSignIn('signin'); }}>Sign in</button>
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggleSave, isLocked, onSignIn }) {
+  const d = getD(recipe.dieticianId);
+  const [imgFailed, setImgFailed] = useState(false);
+  const [showUnlock, setShowUnlock] = useState(false);
+
+  const handleClick = () => { if (isLocked) { setShowUnlock(true); } else { onRecipeClick(recipe); } };
+
+  return (
+    <>
+      {showUnlock && <UnlockModal recipe={recipe} onClose={() => setShowUnlock(false)} onSignIn={(mode) => { setShowUnlock(false); onSignIn(mode); }} />}
+      <div className={`recipe-card fade-up ${isLocked ? 'locked' : ''}`} onClick={handleClick} style={{ position:'relative' }}>
+        <div className="recipe-card-img" style={getRecipeGingham(recipe)}>
+          {recipe.illusSvg ? (
+            <div className="recipe-card-fallback">
+              <div style={{ width: 80, height: 80 }} dangerouslySetInnerHTML={{ __html: recipe.illusSvg }} />
+              <div className="fallback-title">{recipe.title}</div>
+            </div>
+          ) : !imgFailed ? (
+            <>
+              <img className="recipe-card-photo" src={photoUrl(recipe.id)} alt={recipe.title} onError={() => setImgFailed(true)} />
+              <div className="recipe-card-photo-overlay" />
+            </>
+          ) : (
+            <div className="recipe-card-fallback">
+              <div className="fallback-emoji">{recipe.emoji}</div>
+              <div className="fallback-title">{recipe.title}</div>
+            </div>
+          )}
+          {!isLocked && (
+            <button className="card-save-btn" onClick={e => { e.stopPropagation(); onToggleSave(recipe.id); }}>
+              {isSaved ? '❤️' : '🤍'}
+            </button>
+          )}
+        </div>
+        <div className="recipe-card-body">
+          <div className="card-dietician" onClick={e => { e.stopPropagation(); if (!isLocked) onDieticianClick(d); }}>
+            <Avatar initials={d.initials} color={d.avatarColor} photo={d.photo} cls="avatar-sm" />
+            <div>
+              <div className="dietician-name-sm">{d.name}</div>
+              <div className="dietician-creds-sm">{d.credentials}</div>
+            </div>
+          </div>
+          <div className="card-title">{recipe.title}</div>
+          <div className="card-subtitle">{recipe.subtitle}</div>
+          <div className="health-tags">{recipe.healthLabels.slice(0,3).map(l => <HealthTag key={l} label={l} />)}</div>
+          <div className="card-meta">
+            <span className="meta-item">⏱ {recipe.prepTime}</span>
+            <span className="meta-item">🔥 {recipe.cookTime}</span>
+            <span className="meta-item">🍽 {recipe.servings} servings</span>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -1444,22 +1504,49 @@ function downloadBook(savedRecipes) {
   w.document.close();
 }
 
+// Split a recipe ingredient string into individual grocery items (name only, no amounts)
+function parseGroceryItems(ingredient) {
+  // Split on commas, " and ", " & ", " + "
+  const parts = ingredient
+    .split(/,\s*|\s+and\s+|\s+&\s+|\s+\+\s+/i)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  return parts.map(part => {
+    // Strip leading quantities: "2 tbsp", "1 tsp", "½ cup", "3", "¼", numbers + units
+    let item = part
+      .replace(/^[\d½¼¾⅓⅔⅛\s]+(tbsp|tsp|cup|ml|g|kg|lb|oz|litre|liter|l\b)[s]?\s*/i, '')
+      .replace(/^[\d½¼¾⅓⅔⅛]+\s*[\d\/]*\s*/i, '')
+      .replace(/^(a|an|some|handful of|bunch of|small|large|medium|big|generous)\s+/i, '')
+      .trim();
+    // Capitalise first letter
+    return item.charAt(0).toUpperCase() + item.slice(1);
+  }).filter(s => s.length > 1);
+}
+
 function GroceryList({ savedRecipes }) {
   const [checked, setChecked] = useState(() => ls('nuri_grocery_checked', []));
   useEffect(() => { lsSave('nuri_grocery_checked', checked); }, [checked]);
 
+  // Build per-recipe item lists (parsed)
+  const recipeItems = useMemo(() =>
+    savedRecipes.map(r => ({
+      ...r,
+      parsedItems: r.ingredients.flatMap((ing, i) =>
+        parseGroceryItems(ing).map((item, j) => ({ key: `${r.id}:${i}:${j}`, item }))
+      )
+    })),
+  [savedRecipes]);
+
   const toggle = key => setChecked(p => p.includes(key) ? p.filter(x => x !== key) : [...p, key]);
   const clearChecked = () => setChecked([]);
-  const checkAll = () => {
-    const all = savedRecipes.flatMap(r => r.ingredients.map((_, i) => `${r.id}:${i}`));
-    setChecked(all);
-  };
+  const checkAll = () => setChecked(recipeItems.flatMap(r => r.parsedItems.map(i => i.key)));
 
-  const totalItems = savedRecipes.reduce((n, r) => n + r.ingredients.length, 0);
+  const totalItems = recipeItems.reduce((n, r) => n + r.parsedItems.length, 0);
   const doneCount = checked.length;
 
   const copyList = () => {
-    const lines = savedRecipes.flatMap(r => [`\n${r.title}`, ...r.ingredients.map(ing => `  • ${ing}`)]);
+    const lines = recipeItems.flatMap(r => [`\n${r.title}`, ...r.parsedItems.map(i => `  • ${i.item}`)]);
     navigator.clipboard.writeText(lines.join('\n').trim()).catch(() => {});
   };
 
@@ -1484,20 +1571,19 @@ function GroceryList({ savedRecipes }) {
         <button className="grocery-action-btn" onClick={checkAll}>✓ Check all</button>
         <button className="grocery-action-btn" onClick={clearChecked}>↺ Uncheck all</button>
       </div>
-      {savedRecipes.map(r => (
+      {recipeItems.map(r => (
         <div key={r.id} className="grocery-section">
           <div className="grocery-section-title">
             {r.emoji} {r.title}
-            <span className="grocery-recipe-badge">{r.ingredients.length} items</span>
+            <span className="grocery-recipe-badge">{r.parsedItems.length} items</span>
           </div>
           <div style={{ background:'var(--white)', borderRadius:'var(--radius)', overflow:'hidden', boxShadow:'var(--shadow)' }}>
-            {r.ingredients.map((ing, i) => {
-              const key = `${r.id}:${i}`;
+            {r.parsedItems.map(({ key, item }) => {
               const done = checked.includes(key);
               return (
                 <div key={key} className={`grocery-item ${done ? 'checked' : ''}`} onClick={() => toggle(key)}>
                   <div className={`grocery-check ${done ? 'done' : ''}`}>{done ? '✓' : ''}</div>
-                  <span className="grocery-item-text">{ing}</span>
+                  <span className="grocery-item-text">{item}</span>
                 </div>
               );
             })}
@@ -2030,29 +2116,48 @@ function RDApplicationModal({ onClose }) {
   );
 }
 
-// ── AUTH MODAL ────────────────────────────────────────────────
+// ── AUTH MODAL (Supabase Auth) ────────────────────────────────
 function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
-  const [mode, setMode] = useState(defaultMode);
+  const [mode, setMode] = useState(defaultMode === 'signup' ? 'signup' : 'signin');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const db = window._supa;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError('');
     if (!email.trim() || !password.trim()) { setError('Please fill in all fields.'); return; }
     if (mode === 'signup' && !name.trim()) { setError('Please enter your name.'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
-    const users = JSON.parse(localStorage.getItem('nuri_users') || '[]');
-    if (mode === 'signup') {
-      if (users.find(u => u.email === email.trim().toLowerCase())) { setError('An account with this email already exists.'); return; }
-      const u = { id: 'u_' + Date.now(), name: name.trim(), email: email.trim().toLowerCase(), password };
-      localStorage.setItem('nuri_users', JSON.stringify([...users, u]));
-      onAuth(u);
-    } else {
-      const match = users.find(u => u.email === email.trim().toLowerCase() && u.password === password);
-      if (!match) { setError('Incorrect email or password.'); return; }
-      onAuth(match);
+    setLoading(true);
+    try {
+      if (mode === 'signup') {
+        const { data, error: e } = await db.auth.signUp({
+          email: email.trim().toLowerCase(),
+          password,
+          options: { data: { name: name.trim() } }
+        });
+        if (e) { setError(e.message); return; }
+        // Fetch or wait for profile
+        const user = data.user;
+        onAuth({ id: user.id, email: user.email, name: name.trim() });
+      } else {
+        const { data, error: e } = await db.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password
+        });
+        if (e) { setError('Incorrect email or password.'); return; }
+        const user = data.user;
+        // Fetch name from profiles
+        const { data: profile } = await db.from('profiles').select('name').eq('id', user.id).single();
+        onAuth({ id: user.id, email: user.email, name: profile?.name || email.split('@')[0] });
+      }
+    } catch(err) {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -2081,7 +2186,9 @@ function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
             <label className="auth-label">Password</label>
             <input className="auth-input" type="password" placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'} value={password} onChange={e => setPassword(e.target.value)} onKeyDown={handleKey} />
           </div>
-          <button className="auth-btn" onClick={handleSubmit}>{mode === 'signup' ? 'Create account' : 'Sign in'}</button>
+          <button className="auth-btn" onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Please wait…' : mode === 'signup' ? 'Create account' : 'Sign in'}
+          </button>
           <div className="auth-switch">
             {mode === 'signin' ? (
               <>Don't have an account? <button className="auth-switch-btn" onClick={() => { setMode('signup'); setError(''); }}>Sign up</button></>
@@ -2128,38 +2235,6 @@ function AboutTab({ onApply }) {
 
         <div className="about-divider" />
 
-        <div className="about-section">
-          <div className="about-section-eyebrow">who we are</div>
-          <h2 className="about-section-title">Built by women, for women.</h2>
-          <p className="about-section-text">nuri. was co-founded by Emily and Malaika — two women who experienced first-hand how hard it is to find reliable, actionable nutrition guidance for chronic conditions.</p>
-          <div className="about-team">
-            {[
-              { name:'Emily', role:'Co-founder', initials:'EY', color:'#C4A882', bio:'Passionate about making clinical nutrition accessible to every woman, regardless of budget or background. Building nuri. to close the gap between dietitian expertise and everyday kitchens.' },
-              { name:'Malaika', role:'Co-founder', initials:'MR', color:'#8FA888', bio:'Believes nutrition is one of the most powerful tools women have — and that it should feel empowering, not restrictive. Focused on community, content and the science of eating well.' },
-            ].map(m => (
-              <div key={m.name} className="about-team-card">
-                <div className="about-team-banner" style={{ background:`linear-gradient(135deg, ${m.color}88, ${m.color}33)` }}>
-                  <div className="about-team-avatar" style={{ background: m.color }}>{m.initials}</div>
-                </div>
-                <div className="about-team-body">
-                  <div className="about-team-name">{m.name}</div>
-                  <div className="about-team-role">{m.role}</div>
-                  <p className="about-team-bio">{m.bio}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="about-divider" />
-
-        <div className="about-section">
-          <div className="about-section-eyebrow">our dietitians</div>
-          <h2 className="about-section-title">Verified. Specialist. Trusted.</h2>
-          <p className="about-section-text">Every RD on nuri. goes through a verification process — we check credentials, registration status, and specialist expertise before they can publish. We only accept dietitians with documented experience in women's health conditions.</p>
-          <p className="about-section-text">Our founding dietitians include Claire Pettitt (PhD, RD) with 13 years of NHS and private practice experience specialising in PCOS and endometriosis, and Alysse Vocca (RD) specialising in eating disorders and hormone health.</p>
-        </div>
-
         <div className="about-cta">
           <div className="about-cta-title">Are you a registered dietitian?</div>
           <p className="about-cta-text">We're always looking for specialist RDs to join our founding team. Apply to share your recipes with thousands of women managing chronic conditions.</p>
@@ -2172,81 +2247,153 @@ function AboutTab({ onApply }) {
 
 // ── APP ───────────────────────────────────────────────────────
 function App() {
-  const [screen, setScreen] = useState('welcome');
+  const db = window._supa;
+  const [screen, setScreen] = useState('loading');
   const [tab, setTab] = useState('feed');
-  const [healthGoals, setHealthGoals] = useState(() => ls('tee_goals', []));
-  const [followed, setFollowed] = useState(() => new Set(ls('tee_followed', [])));
-  const [saved, setSaved] = useState(() => new Set(ls('tee_saved', [])));
+  const [healthGoals, setHealthGoals] = useState([]);
+  const [followed, setFollowed] = useState(() => new Set());
+  const [saved, setSaved] = useState(() => new Set());
   const [view, setView] = useState(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [user, setUser] = useState(() => ls('nuri_current_user', null));
-
-  const [tried, setTried] = useState(() => new Set(ls('tee_tried', [])));
-  const [triedPhotos, setTriedPhotos] = useState(() => ls('tee_triedphotos', {}));
+  const [user, setUser] = useState(null);
+  const [tried, setTried] = useState(() => new Set());
+  const [triedPhotos, setTriedPhotos] = useState({});
   const [comments, setComments] = useState(() => ls('tee_comments', {}));
-  const [isRD, setIsRD] = useState(() => ls('tee_rdmode', false));
-  const [rdDieticianId, setRdDieticianId] = useState(() => ls('tee_rdid', 3));
+  const [isRD, setIsRD] = useState(false);
+  const [rdDieticianId, setRdDieticianId] = useState(3);
 
-  useEffect(() => { lsSave('tee_goals', healthGoals); }, [healthGoals]);
-  useEffect(() => { lsSave('tee_followed', [...followed]); }, [followed]);
-  useEffect(() => { lsSave('tee_saved', [...saved]); }, [saved]);
-  useEffect(() => { lsSave('tee_tried', [...tried]); }, [tried]);
-  useEffect(() => { lsSave('tee_triedphotos', triedPhotos); }, [triedPhotos]);
+  const loadUserData = async (uid) => {
+    const [{ data: profile }, { data: savesData }, { data: followsData }, { data: triedData }] = await Promise.all([
+      db.from('profiles').select('name, health_goals, rd_mode, rd_dietitian_id').eq('id', uid).single(),
+      db.from('saves').select('recipe_id').eq('user_id', uid),
+      db.from('follows').select('dietitian_id').eq('user_id', uid),
+      db.from('tried').select('recipe_id, photo_url').eq('user_id', uid),
+    ]);
+    if (profile?.health_goals?.length) setHealthGoals(profile.health_goals);
+    if (profile?.rd_mode != null) setIsRD(profile.rd_mode);
+    if (profile?.rd_dietitian_id) setRdDieticianId(profile.rd_dietitian_id);
+    if (savesData) setSaved(new Set(savesData.map(r => r.recipe_id)));
+    if (followsData) setFollowed(new Set(followsData.map(r => r.dietitian_id)));
+    if (triedData) {
+      setTried(new Set(triedData.map(r => r.recipe_id)));
+      const photos = {};
+      triedData.forEach(r => { if (r.photo_url) photos[r.recipe_id] = r.photo_url; });
+      setTriedPhotos(photos);
+    }
+    return profile;
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      const { data: { session } } = await db.auth.getSession();
+      if (session?.user) {
+        const u = session.user;
+        const profile = await loadUserData(u.id);
+        setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
+        setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
+      } else {
+        setScreen('welcome');
+      }
+    };
+    init();
+    const { data: { subscription } } = db.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') { setUser(null); setSaved(new Set()); setFollowed(new Set()); setTried(new Set()); setScreen('welcome'); }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => { if (user) db.from('profiles').update({ rd_mode: isRD }).eq('id', user.id); }, [isRD]);
+  useEffect(() => { if (user) db.from('profiles').update({ rd_dietitian_id: rdDieticianId }).eq('id', user.id); }, [rdDieticianId]);
   useEffect(() => { lsSave('tee_comments', comments); }, [comments]);
-  useEffect(() => { lsSave('tee_rdmode', isRD); }, [isRD]);
-  useEffect(() => { lsSave('tee_rdid', rdDieticianId); }, [rdDieticianId]);
-  useEffect(() => { lsSave('nuri_current_user', user); }, [user]);
 
-  const handleAuth = u => { setUser(u); setShowAuthModal(false); };
-  const handleSignOut = () => setUser(null);
+  const handleAuth = async (u) => {
+    setUser(u);
+    setShowAuthModal(false);
+    const profile = await loadUserData(u.id);
+    setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
+  };
+
+  const handleSignOut = async () => { await db.auth.signOut(); };
 
   const navigate = (type, data) => {
-    if (type === 'recipe' && !user) { setShowAuthModal(true); return; }
+    if (type === 'recipe' && !user) { setShowAuthModal('signup'); return; }
     setView({ type, data }); window.scrollTo(0, 0);
   };
   const goBack = () => { setView(null); window.scrollTo(0, 0); };
-  const toggleFollow = id => setFollowed(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
-  const toggleSave = id => setSaved(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
-  const toggleTried = (id, photo) => {
-    setTried(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
-    if (photo) setTriedPhotos(p => ({ ...p, [id]: photo }));
-  };
-  const addComment = (recipeId, comment) => {
-    setComments(p => ({ ...p, [recipeId]: [...(p[recipeId] || []), comment] }));
+
+  const toggleFollow = async (id) => {
+    const has = followed.has(id);
+    setFollowed(p => { const n = new Set(p); has ? n.delete(id) : n.add(id); return n; });
+    if (user) {
+      if (has) await db.from('follows').delete().eq('user_id', user.id).eq('dietitian_id', id);
+      else await db.from('follows').upsert({ user_id: user.id, dietitian_id: id }, { onConflict: 'user_id,dietitian_id' });
+    }
   };
 
-  const completeOnboarding = goals => {
+  const toggleSave = async (id) => {
+    const has = saved.has(id);
+    setSaved(p => { const n = new Set(p); has ? n.delete(id) : n.add(id); return n; });
+    if (user) {
+      if (has) await db.from('saves').delete().eq('user_id', user.id).eq('recipe_id', id);
+      else await db.from('saves').upsert({ user_id: user.id, recipe_id: id }, { onConflict: 'user_id,recipe_id' });
+    }
+  };
+
+  const toggleTried = async (id, photo) => {
+    const has = tried.has(id);
+    setTried(p => { const n = new Set(p); has ? n.delete(id) : n.add(id); return n; });
+    if (photo) setTriedPhotos(p => ({ ...p, [id]: photo }));
+    if (user) {
+      if (has) await db.from('tried').delete().eq('user_id', user.id).eq('recipe_id', id);
+      else await db.from('tried').upsert({ user_id: user.id, recipe_id: id, photo_url: photo || null }, { onConflict: 'user_id,recipe_id' });
+    }
+  };
+
+  const addComment = async (recipeId, comment) => {
+    setComments(p => ({ ...p, [recipeId]: [...(p[recipeId] || []), comment] }));
+    if (user) await db.from('comments').insert({ recipe_id: recipeId, user_id: user.id, name: comment.name, text: comment.text });
+  };
+
+  const completeOnboarding = async (goals) => {
     setHealthGoals(goals);
-    lsSave('tee_onboarded', true);
+    if (user) await db.from('profiles').update({ health_goals: goals }).eq('id', user.id);
     setScreen('app');
   };
+
+  if (screen === 'loading') return (
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', flexDirection:'column', gap:16 }}>
+      <div style={{ fontFamily:'var(--font-logo)', fontSize:56, fontStyle:'italic', fontWeight:600, color:'var(--green-dark)', display:'inline-flex', alignItems:'flex-end' }}>
+        nuri<span style={{ display:'inline-block', width:13, height:13, borderRadius:'50%', background:'var(--rose)', marginLeft:3, marginBottom:4 }} />
+      </div>
+      <div style={{ fontSize:13, color:'var(--text-light)', letterSpacing:'0.05em' }}>Loading…</div>
+    </div>
+  );
 
   if (screen === 'welcome') return <Welcome onStart={() => setScreen('onboarding')} />;
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} />;
 
-  const navProps = { user, onSignIn: () => setShowAuthModal(true), onSignOut: handleSignOut };
-
+  const navProps = { user, onSignIn: () => setShowAuthModal('signin'), onSignOut: handleSignOut };
   const sharedProps = {
     onRecipeClick: r => navigate('recipe', r),
     onDieticianClick: d => navigate('profile', d),
     saved, onToggleSave: toggleSave,
-    user, onSignIn: () => setShowAuthModal(true),
+    user, onSignIn: (mode = 'signup') => setShowAuthModal(mode),
   };
 
   if (view?.type === 'recipe') return (
     <>
       <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
       <RecipeDetail recipe={view.data} onBack={goBack} onDieticianClick={d => navigate('profile', d)} followed={followed.has(view.data.dieticianId)} onToggleFollow={toggleFollow} isSaved={saved.has(view.data.id)} onToggleSave={toggleSave} tried={tried} onToggleTried={toggleTried} triedPhotos={triedPhotos} comments={comments} onAddComment={addComment} />
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} />}
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
     </>
   );
 
   if (view?.type === 'profile') return (
     <>
       <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
-      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={() => setShowAuthModal(true)} />
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} />}
+      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={(mode='signup') => setShowAuthModal(mode)} />
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
     </>
   );
 
@@ -2259,7 +2406,7 @@ function App() {
       {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} />}
       {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} />}
       {showApplyModal && <RDApplicationModal onClose={() => setShowApplyModal(false)} />}
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} />}
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
     </>
   );
 }
