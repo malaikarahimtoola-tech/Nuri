@@ -645,13 +645,13 @@ const { useState, useMemo, useEffect } = React;
 
 // ── DATA ─────────────────────────────────────────────────────
 const HEALTH_GOALS = [
-  { id: 'pcos', label: 'PCOS Support', icon: '🌸', description: 'Balance hormones & reduce inflammation', color: '#F2C4CE' },
+  { id: 'pcos', label: 'PCOS Support', icon: '🌸', description: 'Recipes to support hormone balance and reduce inflammation', color: '#F2C4CE' },
   { id: 'fertility', label: 'Fertility & Conception', icon: '🌱', description: 'Nourish your body for conception', color: '#C8E6C4' },
   { id: 'hormones', label: 'Hormone Balance', icon: '⚖️', description: 'Regulate mood, energy & cycle', color: '#F5E6A3' },
   { id: 'energy', label: 'Low Energy & Fatigue', icon: '✨', description: 'Fuel your body from the inside out', color: '#FFD9B3' },
   { id: 'period', label: 'Period Regulation', icon: '🔴', description: 'Support a healthy, regular cycle', color: '#F4C4C4' },
   { id: 'gut', label: 'Gut Health', icon: '🌿', description: 'Heal your gut, heal your health', color: '#C4DEB8' },
-  { id: 'thyroid', label: 'Thyroid Support', icon: '🦋', description: 'Nourish your thyroid naturally', color: '#B8D4E8' },
+  { id: 'thyroid', label: 'Thyroid Support', icon: '🦋', description: 'Recipes to support thyroid health', color: '#B8D4E8' },
   { id: 'menopause', label: 'Menopause', icon: '🌙', description: 'Ease the transition with nutrition', color: '#D4B8E8' },
   { id: 'postpartum', label: 'Postpartum Recovery', icon: '💛', description: 'Replenish & restore after birth', color: '#F5E6A3' },
   { id: 'endometriosis', label: 'Endometriosis', icon: '🩷', description: 'Anti-inflammatory, pain-reducing foods', color: '#F2C4CE' },
@@ -676,7 +676,7 @@ const LABEL_MAP = {
 const DIETICIANS = [
   { id:1, name:'Emily', credentials:'Co-founder', specialty:'Women\'s Health Nutrition', bio:'Co-founder of nuri. Building a recipe platform for women managing chronic conditions.', initials:'EY', avatarColor:'#C4A882', followers:0, following:0, tags:['pcos','gut','hormones'], recipeIds:[] },
   { id:2, name:'Malaika', credentials:'Co-founder', specialty:'Women\'s Health Nutrition', bio:'Co-founder of nuri. Building a recipe platform for women managing chronic conditions.', initials:'MR', avatarColor:'#8FA888', followers:0, following:0, tags:['pcos','hormones','endometriosis'], recipeIds:[] },
-  { id:3, name:'Claire Pettitt', credentials:'PhD, RD', specialty:'PCOS & Women\'s Health', bio:'🇬🇧 PhD Registered Dietitian with 13 years of clinical experience across the NHS and private practice. Specialises in PCOS, endometriosis, fertility and gut health.', photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/t/5f7e58211578215f0166d324/1602115640084/img_1516.jpg?format=500w', initials:'CP', avatarColor:'#7A9E7E', followers:5752, following:0, tags:['pcos','hormones','period','gut','fertility','endometriosis'], recipeIds:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21] },
+  { id:3, name:'Claire Pettitt', credentials:'PhD, RD', specialty:'PCOS & Women\'s Health', bio:'🇬🇧 PhD Registered Dietitian with 13 years of clinical experience across the NHS and private practice. Specialises in PCOS, endometriosis, fertility and gut health.', photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/t/5f7e58211578215f0166d324/1602115640084/img_1516.jpg?format=500w', initials:'CP', avatarColor:'#7A9E7E', followers:0, following:0, tags:['pcos','hormones','period','gut','fertility','endometriosis'], recipeIds:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21] },
   { id:4, name:'Alysse Vocca', credentials:'RD', specialty:'Eating Disorders & Women\'s Health', bio:'Hi, I\'m Alysse — a Registered Dietitian specializing in women\'s health, eating disorders, and sustainable nutrition for chronic conditions, including PCOS. My approach focuses on helping women build a healthier relationship with food while supporting hormone balance, blood sugar stability, energy levels, and overall well-being without restriction or rigid dieting. I believe nutrition should feel realistic, nourishing, and supportive of your lifestyle. My specialties include PCOS nutrition, hormone health, and eating disorder recovery.', initials:'AV', avatarColor:'#C47A7A', followers:0, following:0, tags:['pcos','hormones','period','endometriosis'], recipeIds:[22,23,24,25,26,27,28,29,30,31] },
 ];
 
@@ -1034,7 +1034,7 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
           {active === 'all' ? 'All Recipes' : `${goalLabel?.icon} ${goalLabel?.label}`}
         </h1>
         <p className="feed-page-sub">
-          {active === 'all' ? 'Condition-specific recipes, built by registered dietitians' : `Recipes to support ${goalLabel?.label.toLowerCase()}`}
+          {active === 'all' ? 'Condition-specific recipes, built by registered dietitians' : goalLabel?.description}
         </p>
       </div>
       {!user && (
@@ -1352,6 +1352,7 @@ function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFo
 }
 
 function ExploreTab({ onDieticianClick, followed, onToggleFollow }) {
+  const exploreDieticians = ALL_DIETICIANS.filter(d => d.id !== 1 && d.id !== 2);
   return (
     <div className="page-wrap">
       <div className="page-hero">
@@ -1360,7 +1361,7 @@ function ExploreTab({ onDieticianClick, followed, onToggleFollow }) {
         <p className="page-hero-sub">Every recipe is posted by a registered & verified RD.</p>
       </div>
       <div className="explore-grid">
-        {ALL_DIETICIANS.map(d => {
+        {exploreDieticians.map(d => {
           const goals = d.tags.map(t => HEALTH_GOALS.find(g => g.id === t)).filter(Boolean);
           return (
             <div key={d.id} className="rd-card" onClick={() => onDieticianClick(d)}>
@@ -1504,24 +1505,26 @@ function downloadBook(savedRecipes) {
   w.document.close();
 }
 
-// Split a recipe ingredient string into individual grocery items (name only, no amounts)
+// Strip leading quantity/measurement from an ingredient string, keep the rest as one item
 function parseGroceryItems(ingredient) {
-  // Split on commas, " and ", " & ", " + "
-  const parts = ingredient
-    .split(/,\s*|\s+and\s+|\s+&\s+|\s+\+\s+/i)
-    .map(s => s.trim())
-    .filter(Boolean);
+  let item = ingredient.trim();
 
-  return parts.map(part => {
-    // Strip leading quantities: "2 tbsp", "1 tsp", "½ cup", "3", "¼", numbers + units
-    let item = part
-      .replace(/^[\d½¼¾⅓⅔⅛\s]+(tbsp|tsp|cup|ml|g|kg|lb|oz|litre|liter|l\b)[s]?\s*/i, '')
-      .replace(/^[\d½¼¾⅓⅔⅛]+\s*[\d\/]*\s*/i, '')
-      .replace(/^(a|an|some|handful of|bunch of|small|large|medium|big|generous)\s+/i, '')
-      .trim();
-    // Capitalise first letter
-    return item.charAt(0).toUpperCase() + item.slice(1);
-  }).filter(s => s.length > 1);
+  // Normalise unicode fractions to ascii so regex works reliably
+  item = item
+    .replace(/½/g, '1/2').replace(/¼/g, '1/4').replace(/¾/g, '3/4')
+    .replace(/⅓/g, '1/3').replace(/⅔/g, '2/3').replace(/⅛/g, '1/8')
+    .replace(/⅜/g, '3/8').replace(/⅝/g, '5/8').replace(/⅞/g, '7/8');
+
+  // Strip leading quantity + optional unit
+  // e.g. "3 cups", "1/2 lb", "2 tbsp", "1 x 400g tin", "40g", "500 ml"
+  item = item
+    .replace(/^[\d\s\/]+\s*(x\s*)?(tbsp|tsp|cups?|ml|l\b|g\b|kg|lb|oz|litres?|liters?|fl\s*oz|pints?|cloves?|slices?|handfuls?|bunch(?:es)?|sprigs?|pieces?|heads?|cans?|tins?|packets?|bags?)\.?\s*/i, '')
+    // Bare numbers at the start with no unit: "2 salmon fillets" → "salmon fillets"
+    .replace(/^[\d\s\/]+\s+/, '')
+    .trim();
+
+  if (!item) return [];
+  return [item.charAt(0).toUpperCase() + item.slice(1)];
 }
 
 function GroceryList({ savedRecipes }) {
@@ -2228,6 +2231,31 @@ function AboutTab({ onApply }) {
                 <div className="about-pillar-icon">{p.icon}</div>
                 <div className="about-pillar-title">{p.title}</div>
                 <p className="about-pillar-text">{p.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="about-divider" />
+
+        <div className="about-section">
+          <div className="about-section-eyebrow">who we are</div>
+          <h2 className="about-section-title">Built by women, for women.</h2>
+          <p className="about-section-text">nuri. was co-founded by Emily and Malaika — two women who experienced first-hand how hard it is to find reliable, actionable nutrition guidance for chronic conditions.</p>
+          <div className="about-team">
+            {[
+              { name:'Emily', role:'Co-founder', initials:'EY', color:'#C4A882', bio:'Passionate about making clinical nutrition accessible to every woman, regardless of budget or background. Building nuri. to close the gap between dietitian expertise and everyday kitchens.' },
+              { name:'Malaika', role:'Co-founder', initials:'MR', color:'#8FA888', bio:'Believes nutrition is one of the most powerful tools women have — and that it should feel empowering, not restrictive. Focused on community, content and the science of eating well.' },
+            ].map(m => (
+              <div key={m.name} className="about-team-card">
+                <div className="about-team-banner" style={{ background:`linear-gradient(135deg, ${m.color}88, ${m.color}33)` }}>
+                  <div className="about-team-avatar" style={{ background: m.color }}>{m.initials}</div>
+                </div>
+                <div className="about-team-body">
+                  <div className="about-team-name">{m.name}</div>
+                  <div className="about-team-role">{m.role}</div>
+                  <p className="about-team-bio">{m.bio}</p>
+                </div>
               </div>
             ))}
           </div>
