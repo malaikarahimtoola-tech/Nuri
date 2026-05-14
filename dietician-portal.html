@@ -956,7 +956,8 @@ function EditMyRecipes({ user }) {
   const handleSave = async () => {
     setSaving(true); setMsg('');
     try {
-      const { error } = await db.from('recipes').update({
+      console.log('Saving recipe:', selected.id, 'photo:', selected.photo);
+      const { data, error } = await db.from('recipes').update({
         title: selected.title,
         subtitle: selected.subtitle,
         note: selected.note,
@@ -967,11 +968,12 @@ function EditMyRecipes({ user }) {
         ingredients: selected.ingredients,
         instructions: selected.instructions,
         photo: selected.photo,
-      }).eq('id', selected.id);
+      }).eq('id', selected.id).select();
+      console.log('Save result:', data, error);
       if (error) throw error;
       setRecipes(rs => rs.map(r => r.id === selected.id ? selected : r));
       setMsg('Saved ✓');
-    } catch(e) { setMsg('Error: ' + e.message); }
+    } catch(e) { setMsg('Error: ' + e.message); console.error('Save error:', e); }
     setSaving(false);
   };
 
@@ -979,7 +981,7 @@ function EditMyRecipes({ user }) {
     const file = e.target.files?.[0]; if (!file) return;
     setUploading(true); setMsg('');
     try {
-      const url = await uploadToStorage('recipe-images', `recipe-${selected.id}-${Date.now()}`, file);
+      const url = await uploadToStorage('Recipe-Images', `recipe-${selected.id}-${Date.now()}`, file);
       setSelected(s => ({ ...s, photo: url }));
       setMsg('Photo uploaded ✓ — click Save to apply');
     } catch(e) { setMsg('Upload failed: ' + e.message); }
@@ -1106,7 +1108,7 @@ function ProfileSettings({ user }) {
     const file = e.target.files?.[0]; if (!file) return;
     setUploading(true); setMsg('');
     try {
-      const url = await uploadToStorage('dietitian-avatars', `dietitian-${user.dietitianId}-${Date.now()}`, file);
+      const url = await uploadToStorage('Dietitian-Avatars', `dietitian-${user.dietitianId}-${Date.now()}`, file);
       setPhoto(url);
       setMsg('Photo uploaded ✓ — click Save to apply');
     } catch(e) { setMsg('Upload failed: ' + e.message); }
