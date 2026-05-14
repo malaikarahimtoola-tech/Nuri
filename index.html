@@ -809,23 +809,38 @@ function getRecipeGingham(recipe) {
       ].join(','),
     };
   }
-  return getGingham(recipe.id);
+  // Use grid index if available to ensure adjacent tiles never share same color
+  if (recipe._gridIndex !== undefined) {
+    const idx = recipe._gridIndex;
+    // In a 3-col grid, positions 0,1,2 are in same row — ensure all 3 differ
+    const p = GINGHAM[idx % GINGHAM.length];
+    const sz = 26;
+    return {
+      backgroundColor: p.bg,
+      backgroundImage: [
+        `repeating-linear-gradient(transparent 0px,transparent ${sz}px,${p.s} ${sz}px,${p.s} ${sz*2}px)`,
+        `repeating-linear-gradient(90deg,transparent 0px,transparent ${sz}px,${p.s} ${sz}px,${p.s} ${sz*2}px)`,
+      ].join(','),
+    };
+  }
+  return getGingham(recipe.id, recipe.dieticianId || recipe.dietitian_id || 0);
 }
 const fmt = (n) => n >= 1000 ? `${(n/1000).toFixed(1)}k` : String(n);
 
 // ── GINGHAM ───────────────────────────────────────────────────
 const GINGHAM = [
-  { bg:'#A8C4A8', s:'rgba(58,107,74,0.32)' },   // sage
+  { bg:'#A8C4A8', s:'rgba(58,107,74,0.32)' },    // sage
   { bg:'#D9A0A0', s:'rgba(160,60,60,0.30)' },    // rose
+  { bg:'#A8BBD4', s:'rgba(40,80,140,0.28)' },    // blue
   { bg:'#D4B87A', s:'rgba(140,95,20,0.34)' },    // tan
-  { bg:'#C8A080', s:'rgba(140,80,30,0.32)' },    // clay
   { bg:'#BBA8CC', s:'rgba(90,50,130,0.28)' },    // plum
-  { bg:'#A8C4A8', s:'rgba(58,107,74,0.28)' },    // sage light
-  { bg:'#D9A0A0', s:'rgba(160,60,60,0.26)' },    // rose light
-  { bg:'#D4B87A', s:'rgba(140,95,20,0.28)' },    // tan light
+  { bg:'#C8A080', s:'rgba(140,80,30,0.32)' },    // clay
+  { bg:'#A8C4B8', s:'rgba(40,107,80,0.28)' },    // teal
+  { bg:'#D4A8A8', s:'rgba(140,60,60,0.28)' },    // dusty rose
 ];
-function getGingham(id) {
-  const p = GINGHAM[(id - 1) % GINGHAM.length];
+function getGingham(id, dieticianId) {
+  const offset = (dieticianId || 0) * 3;
+  const p = GINGHAM[(id - 1 + offset) % GINGHAM.length];
   const sz = 26;
   return {
     backgroundColor: p.bg,
@@ -1001,7 +1016,7 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
     <>
       {showUnlock && <UnlockModal recipe={recipe} onClose={() => setShowUnlock(false)} onSignIn={(mode) => { setShowUnlock(false); onSignIn(mode); }} />}
       <div className={`recipe-card fade-up ${isLocked ? 'locked' : ''}`} onClick={handleClick} style={{ position:'relative' }}>
-        <div className="recipe-card-img" style={getRecipeGingham(recipe)}>
+        <div className="recipe-card-img" style={hasPhoto ? { background: 'var(--warm-beige)' } : getRecipeGingham(recipe)}>
           {isPremiumLocked && (
             <div className="exclusive-badge">nuri. exclusive</div>
           )}
@@ -1011,10 +1026,9 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
               <div className="fallback-title">{recipe.title}</div>
             </div>
           ) : hasPhoto ? (
-            <>
-              <img className="recipe-card-photo" src={photoSrc} alt={recipe.title} onError={() => setImgFailed(true)} />
-              <div className="recipe-card-photo-overlay" />
-            </>
+            <div className="recipe-card-fallback" style={{ padding:0, overflow:'hidden', width:'85%', height:'85%', margin:'auto' }}>
+              <img style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', borderRadius:10 }} src={photoSrc} alt={recipe.title} onError={() => setImgFailed(true)} />
+            </div>
           ) : (
             <div className="recipe-card-fallback">
               <div className="fallback-emoji">{recipe.emoji}</div>
@@ -1228,7 +1242,7 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
             const isPremiumRecipe = !isFreeDietitian && !isFreeRecipe;
             const locked = !user && i >= FREE_PREVIEW_COUNT;
             const premiumLocked = isPremiumRecipe && !isPremium;
-            return <RecipeCard key={r.id} recipe={r} onRecipeClick={onRecipeClick} onDieticianClick={onDieticianClick} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} isLocked={locked} onSignIn={onSignIn} isPremiumLocked={premiumLocked && !locked} onSubscribe={onSubscribe} supaDietitians={supaDietitians} />;
+            return <RecipeCard key={r.id} recipe={{...r, _gridIndex: i}} onRecipeClick={onRecipeClick} onDieticianClick={onDieticianClick} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} isLocked={locked} onSignIn={onSignIn} isPremiumLocked={premiumLocked && !locked} onSubscribe={onSubscribe} supaDietitians={supaDietitians} />;
           })}
         </div>
       )}
@@ -1567,7 +1581,33 @@ function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFo
 }
 
 function ExploreTab({ onDieticianClick, followed, onToggleFollow, supaDietitians }) {
-  const exploreDieticians = ALL_DIETICIANS.filter(d => d.id !== 1 && d.id !== 2).map(d => ({ ...d, ...(supaDietitians?.[d.id] || {}) }));
+  const [supaRDs, setSupaRDs] = useState([]);
+  useEffect(() => {
+    window._supa.from('dietitians').select('id, name, credentials, specialty, bio, photo, tags').eq('is_active', true).then(({ data }) => {
+      if (data) setSupaRDs(data);
+    });
+  }, []);
+
+  // Merge hardcoded + Supabase RDs (Supabase wins for new ones, hardcoded provides fallback data)
+  const exploreDieticians = supaRDs.length > 0
+    ? supaRDs
+        .filter(d => d.id !== 1 && d.id !== 2)
+        .map(d => {
+          const hardcoded = ALL_DIETICIANS.find(x => x.id === d.id) || {};
+          const supaOverride = supaDietitians?.[d.id] || {};
+          return {
+            ...hardcoded,
+            ...d,
+            photo: supaOverride.supaAvatar || d.photo || hardcoded.photo || null,
+            bio: supaOverride.supaBio || d.bio || hardcoded.bio,
+            supaFollowers: supaOverride.supaFollowers || 0,
+            avatarColor: hardcoded.avatarColor || '#C4A882',
+            initials: hardcoded.initials || d.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase(),
+            tags: d.tags || hardcoded.tags || [],
+            recipeIds: hardcoded.recipeIds || [],
+          };
+        })
+    : ALL_DIETICIANS.filter(d => d.id !== 1 && d.id !== 2).map(d => ({ ...d, ...(supaDietitians?.[d.id] || {}) }));
   return (
     <div className="page-wrap">
       <div className="page-hero">
@@ -2666,12 +2706,12 @@ function App() {
         const dm = {};
         // Count followers per dietitian
         const followerCounts = {};
-        if (followsData) followsData.forEach(f => { followerCounts[f.dietitian_id] = (followerCounts[f.dietitian_id] || 0) + 1; });
+        if (followsData) followsData.forEach(f => { const k = parseInt(f.dietitian_id, 10); followerCounts[k] = (followerCounts[k] || 0) + 1; });
         // Count saves per recipe
         const saveCounts = {};
         if (savesData) savesData.forEach(s => { saveCounts[s.recipe_id] = (saveCounts[s.recipe_id] || 0) + 1; });
         dData.forEach(d => {
-          dm[d.id] = { supaAvatar: d.photo, supaBio: d.bio, supaFollowers: followerCounts[d.id] || 0 };
+          dm[parseInt(d.id,10)] = { supaAvatar: d.photo, supaBio: d.bio, supaFollowers: followerCounts[parseInt(d.id,10)] || 0 };
         });
         setSupaDietitians(dm);
         setSupaSaves(saveCounts);
