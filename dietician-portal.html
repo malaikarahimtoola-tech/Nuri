@@ -538,44 +538,55 @@ function Dashboard({ user, onSignOut }) {
   const [saves, setSaves] = useState([]);
   const [follows, setFollows] = useState(0);
   const [views, setViews] = useState({});
+  const [myRecipes, setMyRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const rd = ALL_DIETICIANS.find(d => d.id === user.dietitianId) || ALL_DIETICIANS[2];
-  const myRecipes = rd.recipeIds;
 
+  const loadData = async () => {
+    // Load recipes from Supabase for this RD
+    const { data: recipesData } = await db.from('recipes').select('id, title, emoji, health_labels').eq('dietitian_id', rd.id);
+    const recipes = recipesData || [];
+    setMyRecipes(recipes);
+    const recipeIds = recipes.map(r => r.id);
+
+    // Get saves, follows, views in parallel
+    const [{ data: savesData }, { count: followCount }, { data: viewsData }] = await Promise.all([
+      recipeIds.length ? db.from('saves').select('recipe_id').in('recipe_id', recipeIds) : { data: [] },
+      db.from('follows').select('*', { count: 'exact', head: true }).eq('dietitian_id', rd.id),
+      recipeIds.length ? db.from('views').select('entity_id').eq('entity_type', 'recipe').in('entity_id', recipeIds) : { data: [] },
+    ]);
+
+    if (savesData) setSaves(savesData.map(s => s.recipe_id));
+    setFollows(followCount || 0);
+    if (viewsData) {
+      const counts = {};
+      viewsData.forEach(v => { counts[v.entity_id] = (counts[v.entity_id] || 0) + 1; });
+      setViews(counts);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { loadData(); }, [rd.id]);
+
+  // Refresh when tab becomes visible
   useEffect(() => {
-    const load = async () => {
-      // Get saves for this RD's recipes
-      const { data: savesData } = await db.from('saves').select('recipe_id').in('recipe_id', myRecipes.length ? myRecipes : [0]);
-      if (savesData) setSaves(savesData.map(s => s.recipe_id));
-
-      // Get follow count
-      const { count } = await db.from('follows').select('*', { count: 'exact', head: true }).eq('dietitian_id', rd.id);
-      setFollows(count || 0);
-
-      // Get view counts per recipe
-      if (myRecipes.length) {
-        const { data: viewsData } = await db.from('views').select('entity_id').eq('entity_type', 'recipe').in('entity_id', myRecipes);
-        if (viewsData) {
-          const counts = {};
-          viewsData.forEach(v => { counts[v.entity_id] = (counts[v.entity_id] || 0) + 1; });
-          setViews(counts);
-        }
-      }
-      setLoading(false);
-    };
-    load();
+    const handleVisibility = () => { if (document.visibilityState === 'visible') loadData(); };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [rd.id]);
 
   const totalSaves = saves.length;
   const totalViews = Object.values(views).reduce((a, b) => a + b, 0);
 
-  // Condition breakdown
+  // Condition breakdown from real recipe data
   const conditionRecipes = {};
   const conditionSaves = {};
-  myRecipes.forEach(rid => {
-    // We don't have full recipe data here — show placeholder
-    conditionRecipes['pcos'] = (conditionRecipes['pcos'] || 0) + 1;
+  myRecipes.forEach(r => {
+    (r.health_labels || []).forEach(l => {
+      conditionRecipes[l] = (conditionRecipes[l] || 0) + 1;
+      if (saves.includes(r.id)) conditionSaves[l] = (conditionSaves[l] || 0) + 1;
+    });
   });
 
   // Sort recipes by views desc
@@ -1175,7 +1186,7 @@ function ProfileSettings({ user }) {
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('dashboard');
+  const [tab, setTab] = useState('create');
   const [published, setPublished] = useState(false);
 
   useEffect(() => {
