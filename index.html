@@ -2166,7 +2166,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
                 const rd = ALL_DIETICIANS.find(d => d.id === rdDieticianId);
                 if (!rd) return null;
                 const myRecipes = getRecipesByD(rd.id);
-                const totalSaves = myRecipes.reduce((acc, r) => acc + (saved.has(r.id) ? 1 : 0), 0);
+                const totalSaves = myRecipes.reduce((acc, r) => acc + (supaSaves?.[r.id] || 0), 0);
                 const followCount = supaDietitians?.[rd.id]?.supaFollowers || [...followed].filter(id => id === rd.id).length;
 
                 // Condition breakdown — count saves per condition tag across this RD's recipes
