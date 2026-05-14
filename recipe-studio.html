@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,24 +17,6 @@
   window._supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 </script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-<form name="recipe-submission" data-netlify="true" netlify-honeypot="bot-field" hidden>
-  <input type="text" name="dietician-name" />
-  <input type="email" name="dietician-email" />
-  <input type="text" name="credentials" />
-  <input type="text" name="recipe-title" />
-  <input type="text" name="recipe-subtitle" />
-  <input type="text" name="health-labels" />
-  <input type="text" name="prep-time" />
-  <input type="text" name="cook-time" />
-  <input type="text" name="servings" />
-  <textarea name="ingredients"></textarea>
-  <textarea name="instructions"></textarea>
-  <textarea name="note"></textarea>
-  <input type="text" name="illustration" />
-  <input type="text" name="background" />
-  <input type="text" name="bot-field" />
-</form>
 
 <style>
 
@@ -580,23 +563,25 @@ function RecipeStudio({ user, onPublish }) {
 
   const handlePublish = async () => {
     setSubmitting(true);
-    const body = new URLSearchParams({
-      'form-name':'recipe-submission','dietician-name':user.name,'dietician-email':user.email,
-      'credentials':user.creds,'recipe-title':title,'recipe-subtitle':subtitle,
-      'health-labels':labels.join(', '),'prep-time':prepTime,'cook-time':cookTime,'servings':servings,
-      'ingredients':ingredients.filter(Boolean).join('\n'),'instructions':instructions.filter(Boolean).join('\n'),
-      'note':note,'illustration':illus?illus.id:'none','background':gingham,
-    });
-    try { await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()}); } catch {}
-    const gData = GINGHAM_OPTIONS.find(g=>g.id===gingham)||GINGHAM_OPTIONS[0];
-    const dieticianId = 'rd_'+user.email.replace(/[^a-z0-9]/gi,'').slice(0,12);
-    const rec = { id:'r_'+Date.now(), title:title.trim(), subtitle:subtitle.trim(), dieticianId, healthLabels:labels, prepTime:prepTime||'—', cookTime:cookTime||'—', servings:Number(servings)||0, ingredients:ingredients.filter(Boolean), instructions:instructions.filter(Boolean), note, emoji:'🍽', illusSvg:illus?illus.svg:null, ginghamBg:gData.bg, ginghamS:gData.s };
     try {
-      const ex = JSON.parse(localStorage.getItem('tee_community_recipes')||'[]');
-      localStorage.setItem('tee_community_recipes', JSON.stringify([...ex,rec]));
-      const exDs = JSON.parse(localStorage.getItem('tee_community_dieticians')||'[]');
-      localStorage.setItem('tee_community_dieticians', JSON.stringify(exDs.map(d=>d.id===dieticianId?{...d,recipeIds:[...(d.recipeIds||[]),rec.id]}:d)));
-    } catch {}
+      const { error } = await db.from('recipes').insert({
+        dietitian_id: user.dietitianId || null,
+        title: title.trim(),
+        subtitle: subtitle.trim(),
+        emoji: '🍽',
+        health_labels: labels,
+        prep_time: prepTime || '—',
+        cook_time: cookTime || '—',
+        servings: Number(servings) || 0,
+        ingredients: ingredients.filter(Boolean),
+        instructions: instructions.filter(Boolean),
+        note: note,
+        is_published: true,
+      });
+      if (error) throw error;
+    } catch(e) {
+      console.error('Publish error:', e);
+    }
     setSubmitting(false);
     onPublish();
   };
@@ -946,6 +931,272 @@ function Overview({ onSignOut }) {
 }
 
 // ── APP ───────────────────────────────────────────────────────
+
+// ── SHARED UPLOAD HELPER ─────────────────────────────────────
+async function uploadToStorage(bucket, path, file) {
+  const { data, error } = await db.storage.from(bucket).upload(path, file, { upsert: true, contentType: file.type });
+  if (error) throw error;
+  const { data: urlData } = db.storage.from(bucket).getPublicUrl(path);
+  return urlData.publicUrl;
+}
+
+// ── EDIT RECIPES ─────────────────────────────────────────────
+function EditRecipes() {
+  const [recipes, setRecipes] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    db.from('recipes').select('*').order('id').then(({ data }) => { if (data) setRecipes(data); });
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true); setMsg('');
+    try {
+      const { error } = await db.from('recipes').update({
+        title: selected.title,
+        subtitle: selected.subtitle,
+        note: selected.note,
+        prep_time: selected.prep_time,
+        cook_time: selected.cook_time,
+        servings: selected.servings,
+        health_labels: selected.health_labels,
+        ingredients: selected.ingredients,
+        instructions: selected.instructions,
+        photo: selected.photo,
+      }).eq('id', selected.id);
+      if (error) throw error;
+      setRecipes(rs => rs.map(r => r.id === selected.id ? selected : r));
+      setMsg('Saved ✓');
+    } catch(e) { setMsg('Error: ' + e.message); }
+    setSaving(false);
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setUploading(true); setMsg('');
+    try {
+      const url = await uploadToStorage('recipe-images', `recipe-${selected.id}-${Date.now()}`, file);
+      setSelected(s => ({ ...s, photo: url }));
+      setMsg('Photo uploaded ✓ — click Save to apply');
+    } catch(e) { setMsg('Upload failed: ' + e.message); }
+    setUploading(false);
+  };
+
+  const HEALTH_GOALS = [
+    {id:'pcos',label:'PCOS'},{id:'fertility',label:'Fertility'},{id:'hormones',label:'Hormones'},
+    {id:'energy',label:'Energy'},{id:'period',label:'Period'},{id:'gut',label:'Gut'},
+    {id:'thyroid',label:'Thyroid'},{id:'menopause',label:'Menopause'},
+    {id:'postpartum',label:'Postpartum'},{id:'endometriosis',label:'Endometriosis'},
+    {id:'anti-inflammatory',label:'Anti-inflammatory'},{id:'high-protein',label:'High Protein'},
+  ];
+
+  return (
+    <div className="overview-body">
+      <div style={{marginBottom:32}}>
+        <div className="section-eyebrow">Content Management</div>
+        <h1 style={{fontFamily:'var(--font-serif)',fontSize:32,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>Edit Recipes</h1>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:selected?'280px 1fr':'1fr',gap:24,alignItems:'start'}}>
+        <div style={{background:'var(--white)',borderRadius:'var(--radius)',boxShadow:'var(--shadow)',overflow:'hidden'}}>
+          <div style={{padding:'16px 20px',borderBottom:'1px solid var(--border)',fontSize:11,fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--text-light)'}}>
+            {recipes.length} recipes
+          </div>
+          <div style={{maxHeight:600,overflowY:'auto'}}>
+            {recipes.map(r => (
+              <div key={r.id} onClick={() => setSelected({...r})} style={{
+                padding:'12px 20px',cursor:'pointer',borderBottom:'1px solid var(--border)',
+                background: selected?.id === r.id ? 'var(--warm-beige)' : 'transparent',
+                display:'flex',alignItems:'center',gap:10,
+              }}>
+                {r.photo && !r.photo.includes('squarespace') ? (
+                  <img src={r.photo} style={{width:32,height:32,borderRadius:6,objectFit:'cover',flexShrink:0}} onError={e => e.target.style.display='none'} />
+                ) : (
+                  <div style={{width:32,height:32,borderRadius:6,background:'var(--warm-beige)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>{r.emoji||'🍽'}</div>
+                )}
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontFamily:'var(--font-serif)',fontSize:13,fontStyle:'italic',fontWeight:600,color:'var(--text)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{r.title}</div>
+                  <div style={{fontSize:11,color:'var(--text-light)'}}>ID {r.id}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {selected && (
+          <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:28,boxShadow:'var(--shadow)'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24,flexWrap:'wrap',gap:12}}>
+              <div style={{fontFamily:'var(--font-serif)',fontSize:20,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>Editing: {selected.title}</div>
+              <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                {msg && <span style={{fontSize:13,color:msg.includes('Error')?'#8B2020':'var(--green-dark)'}}>{msg}</span>}
+                <button onClick={() => setSelected(null)} style={{padding:'8px 16px',border:'1.5px solid var(--border)',borderRadius:50,background:'none',fontFamily:'var(--font-body)',fontSize:13,cursor:'pointer'}}>Cancel</button>
+                <button onClick={handleSave} disabled={saving} style={{padding:'8px 20px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer',opacity:saving?0.6:1}}>
+                  {saving ? 'Saving…' : 'Save changes'}
+                </button>
+              </div>
+            </div>
+
+            {/* Photo upload */}
+            <div style={{marginBottom:20}}>
+              <div className="section-eyebrow" style={{marginBottom:8}}>Recipe photo</div>
+              <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+                {selected.photo && !selected.photo.includes('broken') && <img src={selected.photo} style={{width:80,height:80,borderRadius:10,objectFit:'cover'}} onError={e => e.target.style.display='none'} />}
+                <label style={{padding:'10px 20px',background:'var(--warm-beige)',border:'1.5px solid var(--border)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,cursor:'pointer',fontWeight:500}}>
+                  {uploading ? 'Uploading…' : selected.photo ? '↺ Replace photo' : '+ Upload photo'}
+                  <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{display:'none'}} disabled={uploading} />
+                </label>
+                {selected.photo && <button onClick={() => setSelected(s => ({...s, photo: null}))} style={{fontSize:12,color:'var(--text-light)',background:'none',border:'none',cursor:'pointer'}}>Remove</button>}
+              </div>
+            </div>
+
+            {/* Fields */}
+            {[
+              {label:'Title', key:'title'},
+              {label:'Subtitle', key:'subtitle'},
+              {label:'Prep time', key:'prep_time'},
+              {label:'Cook time', key:'cook_time'},
+            ].map(f => (
+              <div key={f.key} style={{marginBottom:14}}>
+                <div className="section-eyebrow" style={{marginBottom:6}}>{f.label}</div>
+                <input value={selected[f.key]||''} onChange={e => setSelected(s => ({...s,[f.key]:e.target.value}))}
+                  style={{width:'100%',padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:8,fontFamily:'var(--font-body)',fontSize:14,color:'var(--text)',background:'var(--cream)',outline:'none'}} />
+              </div>
+            ))}
+
+            <div style={{marginBottom:14}}>
+              <div className="section-eyebrow" style={{marginBottom:6}}>Servings</div>
+              <input type="number" value={selected.servings||''} onChange={e => setSelected(s => ({...s,servings:Number(e.target.value)}))}
+                style={{width:100,padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:8,fontFamily:'var(--font-body)',fontSize:14,color:'var(--text)',background:'var(--cream)',outline:'none'}} />
+            </div>
+
+            <div style={{marginBottom:14}}>
+              <div className="section-eyebrow" style={{marginBottom:8}}>Health labels</div>
+              <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                {HEALTH_GOALS.map(g => {
+                  const active = (selected.health_labels||[]).includes(g.id);
+                  return <button key={g.id} onClick={() => setSelected(s => ({...s, health_labels: active ? s.health_labels.filter(x=>x!==g.id) : [...(s.health_labels||[]), g.id]}))}
+                    style={{padding:'4px 12px',borderRadius:50,border:`1.5px solid ${active?'var(--brown)':'var(--border)'}`,background:active?'var(--brown)':'transparent',color:active?'white':'var(--text-mid)',fontFamily:'var(--font-body)',fontSize:12,cursor:'pointer'}}>
+                    {g.label}
+                  </button>;
+                })}
+              </div>
+            </div>
+
+            <div style={{marginBottom:14}}>
+              <div className="section-eyebrow" style={{marginBottom:6}}>Note</div>
+              <textarea value={selected.note||''} onChange={e => setSelected(s => ({...s,note:e.target.value}))} rows={2}
+                style={{width:'100%',padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:8,fontFamily:'var(--font-body)',fontSize:14,color:'var(--text)',background:'var(--cream)',outline:'none',resize:'vertical'}} />
+            </div>
+
+            <div style={{marginBottom:14}}>
+              <div className="section-eyebrow" style={{marginBottom:6}}>Ingredients (one per line)</div>
+              <textarea value={(selected.ingredients||[]).join('\n')} onChange={e => setSelected(s => ({...s,ingredients:e.target.value.split('\n')}))} rows={6}
+                style={{width:'100%',padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:8,fontFamily:'var(--font-body)',fontSize:13,color:'var(--text)',background:'var(--cream)',outline:'none',resize:'vertical'}} />
+            </div>
+
+            <div style={{marginBottom:14}}>
+              <div className="section-eyebrow" style={{marginBottom:6}}>Instructions (one per line)</div>
+              <textarea value={(selected.instructions||[]).join('\n')} onChange={e => setSelected(s => ({...s,instructions:e.target.value.split('\n')}))} rows={8}
+                style={{width:'100%',padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:8,fontFamily:'var(--font-body)',fontSize:13,color:'var(--text)',background:'var(--cream)',outline:'none',resize:'vertical'}} />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── EDIT DIETITIANS ───────────────────────────────────────────
+function EditDietitians() {
+  const ALL_D = [
+    {id:1,name:'Emily',credentials:'Co-founder',initials:'EY',avatarColor:'#C4A882'},
+    {id:2,name:'Malaika',credentials:'Co-founder',initials:'MR',avatarColor:'#8FA888'},
+    {id:3,name:'Claire Pettitt',credentials:'PhD, RD',initials:'CP',avatarColor:'#7A9E7E'},
+    {id:4,name:'Alysse Vocca',credentials:'RD',initials:'AV',avatarColor:'#C47A7A'},
+  ];
+  const [profiles, setProfiles] = useState({});
+  const [saving, setSaving] = useState(null);
+  const [msg, setMsg] = useState({});
+  const [uploading, setUploading] = useState(null);
+
+  useEffect(() => {
+    db.from('dietitians').select('id,bio,photo').then(({ data }) => {
+      if (data) { const m = {}; data.forEach(d => { m[d.id] = d; }); setProfiles(m); }
+    });
+  }, []);
+
+  const handleSave = async (id) => {
+    setSaving(id);
+    try {
+      const p = profiles[id] || {};
+      await db.from('dietitians').update({ bio: p.bio, photo: p.photo }).eq('id', id);
+      setMsg(m => ({...m, [id]: 'Saved ✓'}));
+    } catch(e) { setMsg(m => ({...m, [id]: 'Error'})); }
+    setSaving(null);
+  };
+
+  const handleUpload = async (id, file) => {
+    setUploading(id);
+    try {
+      const url = await uploadToStorage('dietitian-avatars', `dietitian-${id}-${Date.now()}`, file);
+      setProfiles(p => ({...p, [id]: {...(p[id]||{}), photo: url}}));
+      setMsg(m => ({...m, [id]: 'Photo uploaded ✓ — click Save'}));
+    } catch(e) { setMsg(m => ({...m, [id]: 'Upload failed'})); }
+    setUploading(null);
+  };
+
+  return (
+    <div className="overview-body">
+      <div style={{marginBottom:32}}>
+        <div className="section-eyebrow">Team</div>
+        <h1 style={{fontFamily:'var(--font-serif)',fontSize:32,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>Edit Profiles</h1>
+        <p style={{fontSize:14,color:'var(--text-light)',marginTop:8}}>Update bios and profile photos. Changes appear immediately in the app.</p>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(440px,1fr))',gap:24}}>
+        {ALL_D.map(d => {
+          const p = profiles[d.id] || {};
+          return (
+            <div key={d.id} style={{background:'var(--white)',borderRadius:'var(--radius)',overflow:'hidden',boxShadow:'var(--shadow)'}}>
+              <div style={{height:60,background:`linear-gradient(135deg, ${d.avatarColor}88, ${d.avatarColor}33)`,display:'flex',alignItems:'flex-end',padding:'0 20px'}}>
+                <div style={{width:52,height:52,borderRadius:'50%',border:'3px solid var(--cream)',background: p.photo ? 'transparent' : d.avatarColor,display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontWeight:700,fontSize:16,marginBottom:-18,overflow:'hidden',flexShrink:0,boxShadow:'var(--shadow)'}}>
+                  {p.photo ? <img src={p.photo} style={{width:'100%',height:'100%',objectFit:'cover'}} onError={e => { e.target.style.display='none'; e.target.parentNode.innerHTML = d.initials; }} /> : d.initials}
+                </div>
+              </div>
+              <div style={{padding:'28px 20px 20px'}}>
+                <div style={{fontFamily:'var(--font-serif)',fontSize:18,fontWeight:600,color:'var(--text)',marginBottom:2}}>{d.name}</div>
+                <div style={{fontSize:11,color:'var(--tan)',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:16}}>{d.credentials}</div>
+
+                <div style={{marginBottom:12}}>
+                  <div className="section-eyebrow" style={{marginBottom:6}}>Profile photo</div>
+                  <label style={{display:'inline-flex',alignItems:'center',gap:6,padding:'8px 16px',background:'var(--warm-beige)',border:'1.5px solid var(--border)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:12,cursor:'pointer',fontWeight:500}}>
+                    {uploading===d.id ? 'Uploading…' : p.photo ? '↺ Replace' : '+ Upload photo'}
+                    <input type="file" accept="image/*" onChange={e => { const f=e.target.files?.[0]; if(f) handleUpload(d.id,f); }} style={{display:'none'}} disabled={uploading===d.id} />
+                  </label>
+                </div>
+
+                <div style={{marginBottom:12}}>
+                  <div className="section-eyebrow" style={{marginBottom:6}}>Bio {(d.id===1||d.id===2)?'(shown on About page)':''}</div>
+                  <textarea value={p.bio||''} onChange={e => setProfiles(pp => ({...pp,[d.id]:{...pp[d.id],bio:e.target.value}}))} rows={4} placeholder={`Write ${d.name}'s bio...`}
+                    style={{width:'100%',padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:8,fontFamily:'var(--font-body)',fontSize:13,color:'var(--text)',background:'var(--cream)',outline:'none',resize:'vertical'}} />
+                </div>
+
+                <div style={{display:'flex',alignItems:'center',gap:10}}>
+                  <button onClick={() => handleSave(d.id)} disabled={saving===d.id} style={{padding:'9px 20px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer',opacity:saving===d.id?0.6:1}}>
+                    {saving===d.id ? 'Saving…' : 'Save'}
+                  </button>
+                  {msg[d.id] && <span style={{fontSize:13,color:msg[d.id].includes('Error')||msg[d.id].includes('failed')?'#8B2020':'var(--green-dark)'}}>{msg[d.id]}</span>}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [authed, setAuthed] = useState(false);
   const [user, setUser] = useState(null);
@@ -965,6 +1216,8 @@ function App() {
           <div className="nav-tabs">
             <button className={`nav-tab ${tab==='overview'?'active':''}`} onClick={()=>{setTab('overview');setPublished(false);}}>📊 Overview</button>
             <button className={`nav-tab ${tab==='create'?'active':''}`} onClick={()=>{setTab('create');setPublished(false);}}>✦ Create Recipe</button>
+            <button className={`nav-tab ${tab==='edit'?'active':''}`} onClick={()=>{setTab('edit');setPublished(false);}}>✏️ Edit Recipes</button>
+            <button className={`nav-tab ${tab==='profiles'?'active':''}`} onClick={()=>{setTab('profiles');setPublished(false);}}>👤 Profiles</button>
           </div>
           <div className="nav-right">
             <button className="btn-outline" onClick={()=>setAuthed(false)}>Sign out</button>
@@ -974,6 +1227,8 @@ function App() {
       {tab==='overview' && <Overview onSignOut={()=>setAuthed(false)} />}
       {tab==='create' && !published && <RecipeStudio user={{name:user?.name||'Admin',email:'admin@nuri.com',creds:'Admin'}} onPublish={()=>setPublished(true)} />}
       {tab==='create' && published && <SuccessPage user={{name:user?.name||'Admin',email:'admin@nuri.com'}} onAnother={()=>setPublished(false)} />}
+      {tab==='edit' && <EditRecipes />}
+      {tab==='profiles' && <EditDietitians />}
     </>
   );
 }
