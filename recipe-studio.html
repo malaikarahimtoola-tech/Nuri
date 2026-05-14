@@ -935,8 +935,8 @@ function Overview({ onSignOut }) {
 async function uploadToStorage(bucket, path, file) {
   const { data, error } = await db.storage.from(bucket).upload(path, file, { upsert: true, contentType: file.type });
   if (error) throw error;
-  const { data: urlData } = db.storage.from(bucket).getPublicUrl(path);
-  return urlData.publicUrl;
+  const publicUrl = `https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/${bucket}/${path}`;
+  return publicUrl;
 }
 
 // ── EDIT RECIPES ─────────────────────────────────────────────
