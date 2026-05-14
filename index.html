@@ -842,7 +842,7 @@ function photoUrl(id, supaPhoto) {
   return `https://images.unsplash.com/photo-${pid}?w=800&q=70&auto=format&fit=crop`;
 }
 const SUPA_STORAGE_URL = 'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public';
-function recipePhotoUrl(r) { return r.supaPhoto || (r.photo) || photoUrl(r.id); }
+function recipePhotoUrl(r) { return r.supaPhoto || r.photo || null; }
 function dietitianAvatarUrl(d) { return d.supaAvatar || d.photo || null; }
 function ls(k, fb) { try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : fb; } catch { return fb; } }
 function lsSave(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
@@ -1118,15 +1118,21 @@ function Welcome({ onStart }) {
   );
 }
 
-function Onboarding({ onComplete }) {
+function Onboarding({ onComplete, userName }) {
   const [selected, setSelected] = useState([]);
   const toggle = id => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  const firstName = userName ? userName.split(/[@\s]/)[0] : null;
   return (
     <div className="onboarding-wrap">
       <div className="onboarding-head">
+        {firstName && (
+          <div style={{ fontFamily:'var(--font-serif)', fontSize:28, fontStyle:'italic', color:'var(--green-dark)', marginBottom:8 }}>
+            Welcome, {firstName} 👋
+          </div>
+        )}
         <div className="onboarding-step">Personalise your feed</div>
         <h1 className="onboarding-title">What are you managing?</h1>
-        <p className="onboarding-sub">Select all that feel relevant — we'll tailor your recipe feed.</p>
+        <p className="onboarding-sub">Select all that feel relevant — we'll tailor your recipe feed. We're growing our library rapidly. Welcome to the community — excited to be on this journey with you.</p>
       </div>
       <div className="onboarding-grid">
         {HEALTH_GOALS.map(g => (
@@ -2686,13 +2692,17 @@ function App() {
   const handleAuth = async (u) => {
     setUser(u);
     setShowAuthModal(false);
-    // Identify user in PostHog
     if (window._ph) {
       window._ph.identify(u.id, { email: u.email, name: u.name });
       window._ph.capture('signed_in');
     }
     const profile = await loadUserData(u.id);
-    setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
+    // Only show onboarding for new signups (no goals set yet)
+    if (!profile?.health_goals?.length) {
+      setScreen('onboarding');
+    } else {
+      setScreen('app');
+    }
   };
 
   const handleSignOut = async () => { await db.auth.signOut(); };
@@ -2776,7 +2786,7 @@ function App() {
   );
 
   if (screen === 'welcome') return <Welcome onStart={() => setScreen('onboarding')} />;
-  if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} />;
+  if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} userName={user?.name || user?.email} />;
 
   const navProps = { user, onSignIn: () => setShowAuthModal('signin'), onSignOut: handleSignOut };
   const sharedProps = {
