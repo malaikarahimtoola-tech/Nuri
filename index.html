@@ -782,8 +782,9 @@ const RECIPES = [
 ];
 
 // ── COMMUNITY DATA (from portal) ─────────────────────────────
-const communityDieticians = (() => { try { return JSON.parse(localStorage.getItem('tee_community_dieticians') || '[]'); } catch { return []; } })();
-const communityRecipes    = (() => { try { return JSON.parse(localStorage.getItem('tee_community_recipes')    || '[]'); } catch { return []; } })();
+// Community recipes now loaded from Supabase dynamically in App
+const communityDieticians = [];
+const communityRecipes    = [];
 const adminRecipes        = (() => { try { return JSON.parse(localStorage.getItem('nuri_custom_recipes')      || '[]'); } catch { return []; } })();
 const adminDieticians     = (() => { try { return JSON.parse(localStorage.getItem('nuri_custom_dieticians')   || '[]'); } catch { return []; } })();
 // Deduplicate: only add community/admin dieticians whose id isn't already in DIETICIANS
@@ -1358,10 +1359,23 @@ function NutritionNote({ note }) {
   );
 }
 
-function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFollow, isSaved, onToggleSave, tried, onToggleTried, triedPhotos, comments, onAddComment }) {
+function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFollow, isSaved, onToggleSave, tried, onToggleTried, triedPhotos, comments, onAddComment, user }) {
   const d = getD(recipe.dieticianId);
   const isTried = tried.has(recipe.id);
   const [showMadeIt, setShowMadeIt] = useState(false);
+  const [communityPhotos, setCommunityPhotos] = useState([]);
+  const isAdmin = user?.email === 'nuriteam@nuri.com' || user?.role === 'admin';
+
+  useEffect(() => {
+    // Load all community photos for this recipe from Supabase
+    window._supa.from('tried').select('user_id, photo_url').eq('recipe_id', recipe.id).not('photo_url', 'is', null)
+      .then(({ data }) => { if (data) setCommunityPhotos(data); });
+  }, [recipe.id]);
+
+  const handleDeleteCommunityPhoto = async (userId) => {
+    await window._supa.from('tried').update({ photo_url: null }).eq('recipe_id', recipe.id).eq('user_id', userId);
+    setCommunityPhotos(p => p.filter(x => x.user_id !== userId));
+  };
 
   const handleMadeIt = () => {
     if (isTried) return;
@@ -1370,6 +1384,8 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
   const confirmMadeIt = (photo) => {
     onToggleTried(recipe.id, photo);
     setShowMadeIt(false);
+    // Refresh community photos after adding
+    if (photo && user) setCommunityPhotos(p => [...p.filter(x => x.user_id !== user.id), { user_id: user.id, photo_url: photo }]);
   };
 
   return (
@@ -1442,16 +1458,30 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
         <div className="community-photos-section">
           <div className="community-photos-head">📸 Community dishes</div>
           <div className="community-photos-grid">
-            {isTried && triedPhotos[recipe.id] && (
+            {communityPhotos.map(cp => (
+              <div key={cp.user_id} className="community-photo-slot" style={{ position: 'relative' }}>
+                <img src={cp.photo_url} alt="community dish" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                {cp.user_id === user?.id && (
+                  <div style={{ position:'absolute', top:4, right:4, fontSize:10, background:'rgba(255,255,255,0.9)', borderRadius:50, padding:'2px 8px', color:'var(--tan)', fontWeight:600 }}>You</div>
+                )}
+                {isAdmin && (
+                  <button onClick={() => handleDeleteCommunityPhoto(cp.user_id)} style={{ position:'absolute', top:4, left:4, background:'rgba(139,32,32,0.85)', border:'none', borderRadius:50, color:'white', fontSize:10, padding:'3px 8px', cursor:'pointer', fontWeight:600 }}>✕ Delete</button>
+                )}
+              </div>
+            ))}
+            {communityPhotos.length === 0 && !isTried && (
               <div className="community-photo-slot">
-                <img src={triedPhotos[recipe.id]} alt="your creation" />
+                <div className="community-photo-placeholder" onClick={handleMadeIt}>
+                  <div className="community-photo-placeholder-icon">📷</div>
+                  <div className="community-photo-placeholder-label">Be the first to share your dish</div>
+                </div>
               </div>
             )}
-            {Array.from({ length: isTried && triedPhotos[recipe.id] ? 5 : 6 }).map((_, i) => (
+            {communityPhotos.length < 6 && Array.from({ length: Math.max(0, (isTried ? 5 : 5) - communityPhotos.length) }).map((_, i) => (
               <div key={i} className="community-photo-slot">
-                <div className="community-photo-placeholder" onClick={!isTried ? handleMadeIt : undefined}>
+                <div className="community-photo-placeholder">
                   <div className="community-photo-placeholder-icon">📷</div>
-                  <div className="community-photo-placeholder-label">{i === 0 && !isTried ? 'Be the first to share your dish' : 'Waiting for dishes…'}</div>
+                  <div className="community-photo-placeholder-label">Waiting for dishes…</div>
                 </div>
               </div>
             ))}
@@ -2630,6 +2660,13 @@ function App() {
       }
     };
     loadSupaData();
+    // Store loadSupaData globally so tabs can refresh
+    window._loadSupaData = loadSupaData;
+
+    // Reload photo data whenever user returns to this tab (e.g. after uploading in portal)
+    const handleVisibility = () => { if (document.visibilityState === 'visible') loadSupaData(); };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
 
     const { data: { subscription } } = db.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') { setUser(null); setSaved(new Set()); setFollowed(new Set()); setTried(new Set()); setScreen('welcome'); }
@@ -2654,6 +2691,11 @@ function App() {
   };
 
   const handleSignOut = async () => { await db.auth.signOut(); };
+
+  // Refresh Supabase photo data whenever user navigates back to feed
+  useEffect(() => {
+    if (tab === 'feed' && window._loadSupaData) window._loadSupaData();
+  }, [tab]);
 
   const navigate = (type, data) => {
     if (type === 'recipe' && !user) { setShowAuthModal('signup'); return; }
@@ -2744,7 +2786,7 @@ function App() {
   if (view?.type === 'recipe') return (
     <>
       <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
-      <RecipeDetail recipe={view.data} onBack={goBack} onDieticianClick={d => navigate('profile', d)} followed={followed.has(view.data.dieticianId)} onToggleFollow={toggleFollow} isSaved={saved.has(view.data.id)} onToggleSave={toggleSave} tried={tried} onToggleTried={toggleTried} triedPhotos={triedPhotos} comments={comments} onAddComment={addComment} />
+      <RecipeDetail recipe={view.data} onBack={goBack} onDieticianClick={d => navigate('profile', d)} followed={followed.has(view.data.dieticianId)} onToggleFollow={toggleFollow} isSaved={saved.has(view.data.id)} onToggleSave={toggleSave} tried={tried} onToggleTried={toggleTried} triedPhotos={triedPhotos} comments={comments} onAddComment={addComment} user={user} />
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
       {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
     </>
