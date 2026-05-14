@@ -542,6 +542,7 @@ function Dashboard({ user, onSignOut }) {
   const [loading, setLoading] = useState(true);
 
   const rd = ALL_DIETICIANS.find(d => d.id === user.dietitianId) || ALL_DIETICIANS[2];
+  console.log('Dashboard: user.dietitianId=', user.dietitianId, 'rd.id=', rd.id);
 
   const loadData = async () => {
     // Load recipes from Supabase for this RD
