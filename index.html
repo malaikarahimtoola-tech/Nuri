@@ -881,26 +881,24 @@ function Avatar({ initials, color, cls = 'avatar-sm', photo }) {
 function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [billingPeriod, setBillingPeriod] = useState('monthly');
 
   const handleSubscribe = async () => {
     if (!user) { onClose(); onSignIn('signup'); return; }
     setLoading(true); setError('');
     try {
-      const stripe = window._stripe;
-      // Record pending subscription in Supabase, then redirect to Stripe Checkout
-      const { error: dbErr } = await window._supa.from('subscriptions').upsert(
+      // Log pending subscription
+      await window._supa.from('subscriptions').upsert(
         { user_id: user.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'pending' },
         { onConflict: 'user_id' }
       );
-      if (dbErr) throw dbErr;
-      const { error: stripeErr } = await stripe.redirectToCheckout({
-        lineItems: [{ price: NURI_PREMIUM_PRICE_ID, quantity: 1 }],
-        mode: 'subscription',
-        successUrl: window.location.origin + window.location.pathname + '?subscribed=true',
-        cancelUrl: window.location.href,
-        clientReferenceId: user.id,
+      // Build payment link URL with prefilled email and client reference
+      const base = billingPeriod === 'annual' ? STRIPE_PAYMENT_LINK_ANNUAL : STRIPE_PAYMENT_LINK_MONTHLY;
+      const params = new URLSearchParams({
+        prefilled_email: user.email || '',
+        client_reference_id: user.id,
       });
-      if (stripeErr) throw stripeErr;
+      window.location.href = base + '?' + params.toString();
     } catch(e) {
       setError('Something went wrong. Please try again.');
       setLoading(false);
@@ -921,10 +919,17 @@ function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
         <div className="sub-modal-body">
           <div className="sub-modal-title">One subscription, all the experts</div>
           <p className="sub-modal-text">Get full access to every nuri. exclusive dietitian — now and as we grow. Cancel anytime.</p>
-          <div className="sub-modal-price">
-            <span className="sub-modal-price-num">£9.99</span>
-            <span className="sub-modal-price-period">/ month</span>
+          <div style={{ display:'flex', gap:8, marginBottom:20, background:'var(--warm-beige)', padding:4, borderRadius:50 }}>
+            <button onClick={() => setBillingPeriod('monthly')} style={{ flex:1, padding:'8px 0', borderRadius:50, border:'none', fontFamily:'var(--font-body)', fontSize:13, fontWeight:600, cursor:'pointer', background: billingPeriod==='monthly' ? 'var(--brown)' : 'transparent', color: billingPeriod==='monthly' ? 'white' : 'var(--text-mid)', transition:'all 0.18s' }}>Monthly</button>
+            <button onClick={() => setBillingPeriod('annual')} style={{ flex:1, padding:'8px 0', borderRadius:50, border:'none', fontFamily:'var(--font-body)', fontSize:13, fontWeight:600, cursor:'pointer', background: billingPeriod==='annual' ? 'var(--brown)' : 'transparent', color: billingPeriod==='annual' ? 'white' : 'var(--text-mid)', transition:'all 0.18s', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+              Annual <span style={{ fontSize:10, background:'#C8E6C9', color:'#2E7D32', padding:'2px 6px', borderRadius:50 }}>Save £20</span>
+            </button>
           </div>
+          <div className="sub-modal-price">
+            <span className="sub-modal-price-num">{billingPeriod === 'annual' ? '£99.99' : '£9.99'}</span>
+            <span className="sub-modal-price-period">{billingPeriod === 'annual' ? '/ year' : '/ month'}</span>
+          </div>
+          {billingPeriod === 'annual' && <div style={{ fontSize:12, color:'var(--text-light)', marginTop:-16, marginBottom:16 }}>That's just £8.33/month</div>}
           <div className="sub-modal-perks">
             {[
               { icon:'🔓', text:'Unlock all exclusive recipes' },
@@ -940,7 +945,7 @@ function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
           </div>
           {error && <div style={{color:'#8B2020',fontSize:13,marginBottom:12}}>{error}</div>}
           <button className="sub-modal-cta" onClick={handleSubscribe} disabled={loading}>
-            {loading ? 'Redirecting to checkout…' : user ? 'Subscribe for £9.99/month →' : 'Sign up to subscribe →'}
+            {loading ? 'Redirecting to checkout…' : user ? `Subscribe for ${billingPeriod === 'annual' ? '£99.99/year' : '£9.99/month'} →` : 'Sign up to subscribe →'}
           </button>
           <div className="sub-modal-note">Secure payment via Stripe · Cancel anytime</div>
         </div>
@@ -1167,6 +1172,8 @@ const FREE_PREVIEW_COUNT = 3;
 // ── STRIPE CONFIG ─────────────────────────────────────────────
 // One subscription unlocks ALL premium dietitians — new RDs added in future auto-included
 const NURI_PREMIUM_PRICE_ID = 'price_1TWUKf1strcTxBlboRSq9F53';
+const STRIPE_PAYMENT_LINK_MONTHLY = 'https://buy.stripe.com/test_00w00b0YT3Mh2SRcvMeIw00';
+const STRIPE_PAYMENT_LINK_ANNUAL  = 'https://buy.stripe.com/test_aFadR1aztdmR1ONgM2eIw01';
 const FREE_DIETITIANS = [1, 2, 3]; // Emily, Malaika, Claire — always free
 const FREE_RECIPE_IDS = [22, 23, 24]; // First 3 Alysse recipes free for everyone
 
