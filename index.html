@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1529,7 +1530,7 @@ function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFo
           <div className="profile-specialty">{d.specialty}</div>
           <p className="profile-bio">{d.bio}</p>
           <div className="profile-stats">
-            <div><span className="stat-num">{fmt(followed ? d.followers + 1 : d.followers)}</span><span className="stat-label">Followers</span></div>
+            <div><span className="stat-num">{fmt((mergedD.supaFollowers || mergedD.followers || 0) + (followed ? 1 : 0))}</span><span className="stat-label">Followers</span></div>
             <div><span className="stat-num">{dRecipes.length}</span><span className="stat-label">Recipes</span></div>
           </div>
           <div className="focus-tags">
@@ -1566,8 +1567,8 @@ function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFo
   );
 }
 
-function ExploreTab({ onDieticianClick, followed, onToggleFollow }) {
-  const exploreDieticians = ALL_DIETICIANS.filter(d => d.id !== 1 && d.id !== 2);
+function ExploreTab({ onDieticianClick, followed, onToggleFollow, supaDietitians }) {
+  const exploreDieticians = ALL_DIETICIANS.filter(d => d.id !== 1 && d.id !== 2).map(d => ({ ...d, ...(supaDietitians?.[d.id] || {}) }));
   return (
     <div className="page-wrap">
       <div className="page-hero">
@@ -1592,7 +1593,7 @@ function ExploreTab({ onDieticianClick, followed, onToggleFollow }) {
                   {goals.map(g => <span key={g.id} className="focus-tag" style={{ background: g.color + '55' }}>{g.icon} {g.label}</span>)}
                 </div>
                 <div className="rd-footer">
-                  <span className="rd-stats">{(followed.has(d.id) ? d.followers + 1 : d.followers).toLocaleString()} followers</span>
+                  <span className="rd-stats">{((d.supaFollowers || d.followers || 0)).toLocaleString()} followers</span>
                   <button className={`follow-btn ${followed.has(d.id) ? 'following' : ''}`} onClick={e => { e.stopPropagation(); onToggleFollow(d.id); }}>
                     {followed.has(d.id) ? 'Following' : 'Follow'}
                   </button>
@@ -2596,8 +2597,9 @@ function App() {
   const [showSubModal, setShowSubModal] = useState(false);
   const [user, setUser] = useState(null);
   const [tried, setTried] = useState(() => new Set());
-  const [supaRecipes, setSupaRecipes] = useState({}); // id -> {supaPhoto, note overrides from DB}
-  const [supaDietitians, setSupaDietitians] = useState({}); // id -> {photo, bio overrides from DB}
+  const [supaRecipes, setSupaRecipes] = useState({});
+  const [supaDietitians, setSupaDietitians] = useState({});
+  const [supaSaves, setSupaSaves] = useState({}); // recipe_id -> save count
   const [triedPhotos, setTriedPhotos] = useState({});
   const [comments, setComments] = useState(() => ls('tee_comments', {}));
   const [isRD, setIsRD] = useState(false);
@@ -2650,9 +2652,11 @@ function App() {
     init();
     // Load recipe photos and dietitian data from Supabase
     const loadSupaData = async () => {
-      const [{ data: rData }, { data: dData }] = await Promise.all([
+      const [{ data: rData }, { data: dData }, { data: followsData }, { data: savesData }] = await Promise.all([
         db.from('recipes').select('id, photo'),
         db.from('dietitians').select('id, photo, bio'),
+        db.from('follows').select('dietitian_id'),
+        db.from('saves').select('recipe_id'),
       ]);
       if (rData) {
         const rm = {};
@@ -2661,8 +2665,17 @@ function App() {
       }
       if (dData) {
         const dm = {};
-        dData.forEach(d => { if (d.photo || d.bio) dm[d.id] = { supaAvatar: d.photo, supaBio: d.bio }; });
+        // Count followers per dietitian
+        const followerCounts = {};
+        if (followsData) followsData.forEach(f => { followerCounts[f.dietitian_id] = (followerCounts[f.dietitian_id] || 0) + 1; });
+        // Count saves per recipe
+        const saveCounts = {};
+        if (savesData) savesData.forEach(s => { saveCounts[s.recipe_id] = (saveCounts[s.recipe_id] || 0) + 1; });
+        dData.forEach(d => {
+          dm[d.id] = { supaAvatar: d.photo, supaBio: d.bio, supaFollowers: followerCounts[d.id] || 0 };
+        });
         setSupaDietitians(dm);
+        setSupaSaves(saveCounts);
       }
     };
     loadSupaData();
@@ -2705,7 +2718,7 @@ function App() {
     }
   };
 
-  const handleSignOut = async () => { await db.auth.signOut(); };
+  const handleSignOut = async () => { await db.auth.signOut(); setUser(null); setSaved(new Set()); setFollowed(new Set()); setTried(new Set()); setScreen('welcome'); };
 
   // Refresh Supabase photo data whenever user navigates back to feed
   useEffect(() => {
@@ -2795,7 +2808,7 @@ function App() {
     saved, onToggleSave: toggleSave,
     user, onSignIn: (mode = 'signup') => setShowAuthModal(mode),
     isPremium, onSubscribe: () => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } },
-    supaRecipes, supaDietitians,
+    supaRecipes, supaDietitians, supaSaves,
   };
 
   if (view?.type === 'recipe') return (
@@ -2820,7 +2833,7 @@ function App() {
     <>
       <TopNav current={tab} onChange={setTab} {...navProps} />
       {tab === 'feed'    && <FeedTab healthGoals={healthGoals} {...sharedProps} />}
-      {tab === 'explore' && <ExploreTab followed={followed} onToggleFollow={toggleFollow} onDieticianClick={d => navigate('profile', d)} />}
+      {tab === 'explore' && <ExploreTab followed={followed} onToggleFollow={toggleFollow} onDieticianClick={d => navigate('profile', d)} supaDietitians={supaDietitians} />}
       {tab === 'saved'   && <SavedTab {...sharedProps} />}
       {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} supaDietitians={supaDietitians} />}
       {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} />}
