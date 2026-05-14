@@ -2001,7 +2001,7 @@ const CHALLENGE_GOALS = [
   { id:'menopause',     target:3, badges:[{at:1,icon:'🌙',label:'Transition Guide'},{at:3,icon:'🌕',label:'Menopause Maven'}] },
 ];
 
-function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician }) {
+function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician, supaDietitians }) {
   const goals = HEALTH_GOALS.filter(g => healthGoals.includes(g.id));
   const followedDs = ALL_DIETICIANS.filter(d => followed.has(d.id));
   const triedPhotosArr = Object.entries(triedPhotos).filter(([,v]) => v);
@@ -2167,7 +2167,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
                 if (!rd) return null;
                 const myRecipes = getRecipesByD(rd.id);
                 const totalSaves = myRecipes.reduce((acc, r) => acc + (saved.has(r.id) ? 1 : 0), 0);
-                const followCount = [...followed].filter(id => id === rd.id).length;
+                const followCount = supaDietitians?.[rd.id]?.supaFollowers || [...followed].filter(id => id === rd.id).length;
 
                 // Condition breakdown — count saves per condition tag across this RD's recipes
                 const conditionSaves = {};
@@ -2881,7 +2881,7 @@ function App() {
       {tab === 'explore' && <ExploreTab followed={followed} onToggleFollow={toggleFollow} onDieticianClick={d => navigate('profile', d)} supaDietitians={supaDietitians} />}
       {tab === 'saved'   && <SavedTab {...sharedProps} />}
       {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} supaDietitians={supaDietitians} />}
-      {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} />}
+      {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} />}
       {showApplyModal && <RDApplicationModal onClose={() => setShowApplyModal(false)} />}
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
       {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
