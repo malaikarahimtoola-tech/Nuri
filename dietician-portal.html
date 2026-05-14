@@ -981,7 +981,7 @@ function EditMyRecipes({ user }) {
     const file = e.target.files?.[0]; if (!file) return;
     setUploading(true); setMsg('');
     try {
-      const url = await uploadToStorage('Recipe-Images', `recipe-${selected.id}-${Date.now()}`, file);
+      const url = await uploadToStorage('recipe-images', `recipe-${selected.id}-${Date.now()}`, file);
       setSelected(s => ({ ...s, photo: url }));
       setMsg('Photo uploaded ✓ — click Save to apply');
     } catch(e) { setMsg('Upload failed: ' + e.message); }
@@ -1108,7 +1108,7 @@ function ProfileSettings({ user }) {
     const file = e.target.files?.[0]; if (!file) return;
     setUploading(true); setMsg('');
     try {
-      const url = await uploadToStorage('Dietitian-Avatars', `dietitian-${user.dietitianId}-${Date.now()}`, file);
+      const url = await uploadToStorage('dietitian-avatars', `dietitian-${user.dietitianId}-${Date.now()}`, file);
       setPhoto(url);
       setMsg('Photo uploaded ✓ — click Save to apply');
     } catch(e) { setMsg('Upload failed: ' + e.message); }
