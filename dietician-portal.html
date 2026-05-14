@@ -541,12 +541,12 @@ function Dashboard({ user, onSignOut }) {
   const [myRecipes, setMyRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const rd = ALL_DIETICIANS.find(d => d.id === user.dietitianId) || ALL_DIETICIANS[2];
-  console.log('Dashboard: user.dietitianId=', user.dietitianId, 'rd.id=', rd.id);
+  const rdId = parseInt(user.dietitianId, 10) || 4;
+  const rd = ALL_DIETICIANS.find(d => d.id === rdId) || ALL_DIETICIANS[3];
 
   const loadData = async () => {
     // Load recipes from Supabase for this RD
-    const { data: recipesData } = await db.from('recipes').select('id, title, emoji, health_labels').eq('dietitian_id', rd.id);
+    const { data: recipesData } = await db.from('recipes').select('id, title, emoji, health_labels').eq('dietitian_id', rdId);
     const recipes = recipesData || [];
     setMyRecipes(recipes);
     const recipeIds = recipes.map(r => r.id);
@@ -554,11 +554,11 @@ function Dashboard({ user, onSignOut }) {
     // Get saves, follows, views in parallel
     const [{ data: savesData }, { count: followCount }, { data: viewsData }] = await Promise.all([
       recipeIds.length ? db.from('saves').select('recipe_id').in('recipe_id', recipeIds) : { data: [] },
-      db.from('follows').select('*', { count: 'exact', head: true }).eq('dietitian_id', rd.id),
-      recipeIds.length ? db.from('views').select('entity_id').eq('entity_type', 'recipe').in('entity_id', recipeIds) : { data: [] },
+      db.from('follows').select('*', { count: 'exact', head: true }).eq('dietitian_id', rdId),
+      recipeIds.length ? db.from('views').select('entity_id').eq('entity_type', 'recipe').in('entity_id', recipeIds.map(String)) : { data: [] },
     ]);
 
-    if (savesData) setSaves(savesData.map(s => s.recipe_id));
+    if (savesData) setSaves(savesData.map(s => parseInt(s.recipe_id, 10)));
     setFollows(followCount || 0);
     if (viewsData) {
       const counts = {};
@@ -658,7 +658,7 @@ function Dashboard({ user, onSignOut }) {
                 <div className="recipe-list-emoji">{r.emoji || '🍽'}</div>
                 <div className="recipe-list-info">
                   <div className="recipe-list-title">{r.title}</div>
-                  <div className="recipe-list-meta">{saves.includes(r.id) ? '❤️ Saved' : '🤍 Not saved'}</div>
+                  <div className="recipe-list-meta">{saves.includes(parseInt(r.id,10)) ? '❤️ Saved' : '🤍 Not saved'}</div>
                 </div>
                 <div className="recipe-list-views">👁 {views[r.id] || 0}</div>
               </div>
