@@ -591,7 +591,7 @@ function Dashboard({ user, onSignOut }) {
   });
 
   // Sort recipes by views desc
-  const sortedRecipes = [...myRecipes].sort((a, b) => (views[b] || 0) - (views[a] || 0));
+  const sortedRecipes = [...myRecipes].sort((a, b) => (views[b.id] || 0) - (views[a.id] || 0));
 
   if (loading) return <div className="loading"><div style={{ fontFamily:'var(--font-logo)', fontSize:40, fontStyle:'italic', color:'var(--green-dark)' }}>nuri.</div><div style={{ fontSize:13, color:'var(--text-light)' }}>Loading dashboard…</div></div>;
 
@@ -630,16 +630,20 @@ function Dashboard({ user, onSignOut }) {
           {/* Condition breakdown */}
           <div className="card">
             <div className="section-eyebrow" style={{ marginBottom:16 }}>Condition breakdown</div>
-            {HEALTH_GOALS.slice(0,6).map((g, i) => {
-              const pct = Math.max(10, 100 - i * 15);
+            {Object.keys(conditionRecipes).length === 0 ? (
+              <div style={{ fontSize:13, color:'var(--text-light)' }}>No condition data yet.</div>
+            ) : Object.entries(conditionRecipes).sort((a,b) => b[1]-a[1]).map(([id, count]) => {
+              const g = HEALTH_GOALS.find(x => x.id === id) || { icon:'🏷', label: id, color:'var(--warm-beige)' };
+              const maxCount = Math.max(...Object.values(conditionRecipes), 1);
+              const pct = Math.round((count / maxCount) * 100);
               return (
-                <div key={g.id} className="condition-bar">
+                <div key={id} className="condition-bar">
                   <div className="condition-bar-header">
                     <span className="condition-bar-label">{g.icon} {g.label}</span>
-                    <span className="condition-bar-count">{Math.max(0, myRecipes.length - i * 3)} recipes</span>
+                    <span className="condition-bar-count">{count} recipe{count !== 1 ? 's' : ''}</span>
                   </div>
                   <div className="condition-bar-track">
-                    <div className="condition-bar-fill" style={{ width:`${pct}%`, background:`linear-gradient(90deg, ${g.color}, var(--tan))` }} />
+                    <div className="condition-bar-fill" style={{ width:`${pct}%`, background:`linear-gradient(90deg, ${g?.color||'var(--warm-beige)'}, var(--tan))` }} />
                   </div>
                 </div>
               );
@@ -649,14 +653,14 @@ function Dashboard({ user, onSignOut }) {
           {/* Recipe list */}
           <div className="card">
             <div className="section-eyebrow" style={{ marginBottom:16 }}>Recipes by views</div>
-            {sortedRecipes.slice(0, 8).map((rid, i) => (
-              <div key={rid} className="recipe-list-row">
-                <div className="recipe-list-emoji">{(RECIPE_DATA[rid]||{emoji:"🍽"}).emoji}</div>
+            {sortedRecipes.slice(0, 8).map((r, i) => (
+              <div key={r.id} className="recipe-list-row">
+                <div className="recipe-list-emoji">{r.emoji || '🍽'}</div>
                 <div className="recipe-list-info">
-                  <div className="recipe-list-title">{(RECIPE_DATA[rid]||{title:`Recipe ${rid}`}).title}</div>
-                  <div className="recipe-list-meta">{saves.includes(rid) ? '❤️ Saved' : '🤍 Not saved'}</div>
+                  <div className="recipe-list-title">{r.title}</div>
+                  <div className="recipe-list-meta">{saves.includes(r.id) ? '❤️ Saved' : '🤍 Not saved'}</div>
                 </div>
-                <div className="recipe-list-views">👁 {views[rid] || 0}</div>
+                <div className="recipe-list-views">👁 {views[r.id] || 0}</div>
               </div>
             ))}
             {myRecipes.length === 0 && <div style={{ fontSize:13, color:'var(--text-light)' }}>No recipes yet.</div>}
