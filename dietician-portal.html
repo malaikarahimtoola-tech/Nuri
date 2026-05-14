@@ -552,14 +552,14 @@ function Dashboard({ user, onSignOut }) {
     const recipeIds = recipes.map(r => r.id);
 
     // Get saves, follows, views in parallel
-    const [{ data: savesData }, { count: followCount }, { data: viewsData }] = await Promise.all([
+    const [{ data: savesData }, { data: followData }, { data: viewsData }] = await Promise.all([
       recipeIds.length ? db.from('saves').select('recipe_id').in('recipe_id', recipeIds) : { data: [] },
-      db.from('follows').select('*', { count: 'exact', head: true }).eq('dietitian_id', rdId),
+      db.from('follows').select('user_id').eq('dietitian_id', rdId),
       recipeIds.length ? db.from('views').select('entity_id').eq('entity_type', 'recipe').in('entity_id', recipeIds.map(String)) : { data: [] },
     ]);
 
     if (savesData) setSaves(savesData.map(s => parseInt(s.recipe_id, 10)));
-    setFollows(followCount || 0);
+    setFollows(followData?.length || 0);
     if (viewsData) {
       const counts = {};
       viewsData.forEach(v => { counts[v.entity_id] = (counts[v.entity_id] || 0) + 1; });
