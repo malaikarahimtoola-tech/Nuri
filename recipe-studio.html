@@ -1146,13 +1146,73 @@ function EditDietitians() {
     setUploading(null);
   };
 
+  const [showAdd, setShowAdd] = useState(false);
+  const [newRD, setNewRD] = useState({ name:'', credentials:'', specialty:'', bio:'' });
+  const [adding, setAdding] = useState(false);
+  const [addMsg, setAddMsg] = useState('');
+
+  const handleAddDietitian = async () => {
+    if (!newRD.name.trim()) { setAddMsg('Name is required'); return; }
+    setAdding(true); setAddMsg('');
+    try {
+      const { error } = await db.from('dietitians').insert({
+        name: newRD.name.trim(),
+        credentials: newRD.credentials.trim(),
+        specialty: newRD.specialty.trim(),
+        bio: newRD.bio.trim(),
+        is_active: true,
+        followers: 0,
+        tags: [],
+      });
+      if (error) throw error;
+      // Show setup instructions
+      const { data: newD } = await db.from('dietitians').select('id').eq('name', newRD.name.trim()).single();
+      const newId = newD?.id;
+      setAddMsg(`Added ✓ — Now: 1) Create their Supabase account, 2) Run SQL: UPDATE public.profiles SET role='dietitian', rd_dietitian_id=${newId} WHERE id=(SELECT id FROM auth.users WHERE email='their@email'); UPDATE public.dietitians SET user_id=(SELECT id FROM auth.users WHERE email='their@email') WHERE id=${newId};`);
+      setNewRD({ name:'', credentials:'', specialty:'', bio:'' });
+    } catch(e) { setAddMsg('Error: ' + e.message); }
+    setAdding(false);
+  };
+
   return (
     <div className="overview-body">
-      <div style={{marginBottom:32}}>
-        <div className="section-eyebrow">Team</div>
-        <h1 style={{fontFamily:'var(--font-serif)',fontSize:32,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>Edit Profiles</h1>
-        <p style={{fontSize:14,color:'var(--text-light)',marginTop:8}}>Update bios and profile photos. Changes appear immediately in the app.</p>
+      <div style={{marginBottom:32,display:'flex',justifyContent:'space-between',alignItems:'flex-end',flexWrap:'wrap',gap:16}}>
+        <div>
+          <div className="section-eyebrow">Team</div>
+          <h1 style={{fontFamily:'var(--font-serif)',fontSize:32,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>Edit Profiles</h1>
+          <p style={{fontSize:14,color:'var(--text-light)',marginTop:8}}>Update bios and profile photos. Changes appear immediately in the app.</p>
+        </div>
+        <button onClick={() => setShowAdd(!showAdd)} style={{padding:'10px 24px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:14,fontWeight:600,cursor:'pointer'}}>
+          {showAdd ? '✕ Cancel' : '+ Add Dietitian'}
+        </button>
       </div>
+
+      {showAdd && (
+        <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:28,boxShadow:'var(--shadow)',marginBottom:28}}>
+          <div style={{fontFamily:'var(--font-serif)',fontSize:20,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:20}}>New Dietitian</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+            {[{label:'Full Name *',key:'name',placeholder:'e.g. Sarah Johnson'},{label:'Credentials',key:'credentials',placeholder:'e.g. RD, MSc'},{label:'Specialty',key:'specialty',placeholder:'e.g. PCOS & Gut Health'}].map(f => (
+              <div key={f.key}>
+                <div className="section-eyebrow" style={{marginBottom:5}}>{f.label}</div>
+                <input value={newRD[f.key]} onChange={e => setNewRD(p => ({...p,[f.key]:e.target.value}))} placeholder={f.placeholder}
+                  style={{width:'100%',padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:8,fontFamily:'var(--font-body)',fontSize:14,color:'var(--text)',background:'var(--cream)',outline:'none'}} />
+              </div>
+            ))}
+          </div>
+          <div style={{marginBottom:16}}>
+            <div className="section-eyebrow" style={{marginBottom:5}}>Bio</div>
+            <textarea value={newRD.bio} onChange={e => setNewRD(p => ({...p,bio:e.target.value}))} rows={3} placeholder="Write their bio..."
+              style={{width:'100%',padding:'10px 14px',border:'1.5px solid var(--border)',borderRadius:8,fontFamily:'var(--font-body)',fontSize:14,color:'var(--text)',background:'var(--cream)',outline:'none',resize:'vertical'}} />
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <button onClick={handleAddDietitian} disabled={adding} style={{padding:'10px 24px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:14,fontWeight:600,cursor:'pointer',opacity:adding?0.6:1}}>
+              {adding ? 'Adding…' : 'Add Dietitian'}
+            </button>
+            {addMsg && <span style={{fontSize:13,color:addMsg.includes('Error')?'#8B2020':'var(--green-dark)'}}>{addMsg}</span>}
+          </div>
+        </div>
+      )}
+
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(440px,1fr))',gap:24}}>
         {ALL_D.map(d => {
           const p = profiles[d.id] || {};
