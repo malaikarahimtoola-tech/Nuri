@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,24 +17,6 @@
   window._supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 </script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-<form name="recipe-submission" data-netlify="true" netlify-honeypot="bot-field" hidden>
-  <input type="text" name="dietician-name" />
-  <input type="email" name="dietician-email" />
-  <input type="text" name="credentials" />
-  <input type="text" name="recipe-title" />
-  <input type="text" name="recipe-subtitle" />
-  <input type="text" name="health-labels" />
-  <input type="text" name="prep-time" />
-  <input type="text" name="cook-time" />
-  <input type="text" name="servings" />
-  <textarea name="ingredients"></textarea>
-  <textarea name="instructions"></textarea>
-  <textarea name="note"></textarea>
-  <input type="text" name="illustration" />
-  <input type="text" name="background" />
-  <input type="text" name="bot-field" />
-</form>
 
 <style>
 
@@ -697,23 +680,25 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
 
   const handlePublish = async () => {
     setSubmitting(true);
-    const body = new URLSearchParams({
-      'form-name':'recipe-submission','dietician-name':user.name,'dietician-email':user.email,
-      'credentials':user.creds,'recipe-title':title,'recipe-subtitle':subtitle,
-      'health-labels':labels.join(', '),'prep-time':prepTime,'cook-time':cookTime,'servings':servings,
-      'ingredients':ingredients.filter(Boolean).join('\n'),'instructions':instructions.filter(Boolean).join('\n'),
-      'note':note,'illustration':illus?illus.id:'none','background':gingham,
-    });
-    try { await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()}); } catch {}
-    const gData = GINGHAM_OPTIONS.find(g=>g.id===gingham)||GINGHAM_OPTIONS[0];
-    const dieticianId = 'rd_'+user.email.replace(/[^a-z0-9]/gi,'').slice(0,12);
-    const rec = { id:'r_'+Date.now(), title:title.trim(), subtitle:subtitle.trim(), dieticianId, healthLabels:labels, prepTime:prepTime||'—', cookTime:cookTime||'—', servings:Number(servings)||0, ingredients:ingredients.filter(Boolean), instructions:instructions.filter(Boolean), note, emoji:'🍽', illusSvg:illus?illus.svg:null, ginghamBg:gData.bg, ginghamS:gData.s };
     try {
-      const ex = JSON.parse(localStorage.getItem('tee_community_recipes')||'[]');
-      localStorage.setItem('tee_community_recipes', JSON.stringify([...ex,rec]));
-      const exDs = JSON.parse(localStorage.getItem('tee_community_dieticians')||'[]');
-      localStorage.setItem('tee_community_dieticians', JSON.stringify(exDs.map(d=>d.id===dieticianId?{...d,recipeIds:[...(d.recipeIds||[]),rec.id]}:d)));
-    } catch {}
+      const { error } = await db.from('recipes').insert({
+        dietitian_id: user.dietitianId || null,
+        title: title.trim(),
+        subtitle: subtitle.trim(),
+        emoji: '🍽',
+        health_labels: labels,
+        prep_time: prepTime || '—',
+        cook_time: cookTime || '—',
+        servings: Number(servings) || 0,
+        ingredients: ingredients.filter(Boolean),
+        instructions: instructions.filter(Boolean),
+        note: note,
+        is_published: true,
+      });
+      if (error) throw error;
+    } catch(e) {
+      console.error('Publish error:', e);
+    }
     setSubmitting(false);
     onPublish();
   };
@@ -935,6 +920,88 @@ function SuccessPage({ user, onAnother }) {
 }
 
 // ── APP ───────────────────────────────────────────────────────
+
+// ── UPLOAD HELPER ─────────────────────────────────────────────
+async function uploadToStorage(bucket, path, file) {
+  const { data, error } = await db.storage.from(bucket).upload(path, file, { upsert: true, contentType: file.type });
+  if (error) throw error;
+  const { data: urlData } = db.storage.from(bucket).getPublicUrl(path);
+  return urlData.publicUrl;
+}
+
+// ── PROFILE SETTINGS ─────────────────────────────────────────
+function ProfileSettings({ user }) {
+  const [photo, setPhoto] = useState('');
+  const [bio, setBio] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  useEffect(() => {
+    db.from('dietitians').select('photo, bio').eq('id', user.dietitianId).single().then(({ data }) => {
+      if (data) { setPhoto(data.photo || ''); setBio(data.bio || ''); }
+    });
+  }, [user.dietitianId]);
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setUploading(true); setMsg('');
+    try {
+      const url = await uploadToStorage('dietitian-avatars', `dietitian-${user.dietitianId}-${Date.now()}`, file);
+      setPhoto(url);
+      setMsg('Photo uploaded ✓ — click Save to apply');
+    } catch(e) { setMsg('Upload failed: ' + e.message); }
+    setUploading(false);
+  };
+
+  const handleSave = async () => {
+    setSaving(true); setMsg('');
+    try {
+      await db.from('dietitians').update({ photo, bio }).eq('id', user.dietitianId);
+      setMsg('Saved ✓');
+    } catch(e) { setMsg('Error saving'); }
+    setSaving(false);
+  };
+
+  return (
+    <div className="portal-body">
+      <div style={{marginBottom:32}}>
+        <div className="section-eyebrow">Account</div>
+        <h1 style={{fontFamily:'var(--font-serif)',fontSize:32,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>Profile Settings</h1>
+      </div>
+      <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:32,boxShadow:'var(--shadow)',maxWidth:560}}>
+        <div style={{marginBottom:24}}>
+          <div className="section-eyebrow" style={{marginBottom:10}}>Profile photo</div>
+          <div style={{display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
+            {photo ? (
+              <img src={photo} style={{width:72,height:72,borderRadius:'50%',objectFit:'cover',border:'3px solid var(--border)'}} />
+            ) : (
+              <div style={{width:72,height:72,borderRadius:'50%',background:'var(--warm-beige)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,border:'3px solid var(--border)'}}>👤</div>
+            )}
+            <label style={{padding:'10px 20px',background:'var(--warm-beige)',border:'1.5px solid var(--border)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,cursor:'pointer',fontWeight:500}}>
+              {uploading ? 'Uploading…' : photo ? '↺ Replace photo' : '+ Upload photo'}
+              <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{display:'none'}} disabled={uploading} />
+            </label>
+          </div>
+        </div>
+
+        <div style={{marginBottom:24}}>
+          <div className="section-eyebrow" style={{marginBottom:8}}>Bio</div>
+          <textarea value={bio} onChange={e => setBio(e.target.value)} rows={5} placeholder="Write your bio..."
+            style={{width:'100%',padding:'12px 16px',border:'1.5px solid var(--border)',borderRadius:10,fontFamily:'var(--font-body)',fontSize:14,color:'var(--text)',background:'var(--cream)',outline:'none',resize:'vertical'}} />
+        </div>
+
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <button onClick={handleSave} disabled={saving} style={{padding:'12px 28px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:14,fontWeight:600,cursor:'pointer',opacity:saving?0.6:1}}>
+            {saving ? 'Saving…' : 'Save changes'}
+          </button>
+          {msg && <span style={{fontSize:13,color:msg.includes('Error')||msg.includes('failed')?'#8B2020':'var(--green-dark)'}}>{msg}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -975,6 +1042,7 @@ function App() {
           <div className="portal-nav-tabs">
             <button className={`portal-nav-tab ${tab==='dashboard'?'active':''}`} onClick={() => { setTab('dashboard'); setPublished(false); }}>📊 Dashboard</button>
             <button className={`portal-nav-tab ${tab==='create'?'active':''}`} onClick={() => { setTab('create'); setPublished(false); }}>✦ Create Recipe</button>
+            <button className={`portal-nav-tab ${tab==='profile'?'active':''}`} onClick={() => { setTab('profile'); setPublished(false); }}>👤 My Profile</button>
           </div>
           <div className="portal-nav-right">
             <span className="portal-user">👋 {user.name || user.email?.split('@')[0]}</span>
@@ -983,6 +1051,7 @@ function App() {
         </div>
       </nav>
       {tab === 'dashboard' && <Dashboard user={user} onSignOut={handleSignOut} />}
+      {tab === 'profile' && <ProfileSettings user={user} />}
       {tab === 'create' && !published && <RecipeStudio user={{ name: user.name || rd.name, email: user.email, creds: rd.credentials || 'RD' }} onPublish={() => setPublished(true)} hideHeader={true} />}
       {tab === 'create' && published && <SuccessPage user={{ name: user.name, email: user.email }} onAnother={() => setPublished(false)} />}
     </>
