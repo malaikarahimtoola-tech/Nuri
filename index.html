@@ -695,20 +695,7 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 </style>
 </head>
 <body>
-<!-- Hidden form for Netlify's bot to detect -->
-<form name="rd-application" data-netlify="true" netlify-honeypot="bot-field" hidden>
-  <input type="text" name="full-name" />
-  <input type="email" name="email" />
-  <input type="text" name="credentials" />
-  <input type="text" name="license-number" />
-  <input type="text" name="country" />
-  <input type="text" name="institution" />
-  <input type="text" name="years-of-practice" />
-  <input type="text" name="specialties" />
-  <textarea name="bio"></textarea>
-  <input type="url" name="profile-link" />
-  <input type="text" name="bot-field" />
-</form>
+
 <div id="root"></div>
 <script type="text/babel">
 const { useState, useMemo, useEffect } = React;
@@ -847,9 +834,15 @@ function getGingham(id) {
     ].join(','),
   };
 }
-function photoUrl(id) {
-  return `https://images.unsplash.com/photo-${PHOTO_IDS[id-1]}?w=800&q=70&auto=format&fit=crop`;
+function photoUrl(id, supaPhoto) {
+  if (supaPhoto) return supaPhoto;
+  const pid = PHOTO_IDS[id-1];
+  if (!pid) return null;
+  return `https://images.unsplash.com/photo-${pid}?w=800&q=70&auto=format&fit=crop`;
 }
+const SUPA_STORAGE_URL = 'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public';
+function recipePhotoUrl(r) { return r.supaPhoto || (r.photo) || photoUrl(r.id); }
+function dietitianAvatarUrl(d) { return d.supaAvatar || d.photo || null; }
 function ls(k, fb) { try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : fb; } catch { return fb; } }
 function lsSave(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 
@@ -926,10 +919,10 @@ function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
             </button>
           </div>
           <div className="sub-modal-price">
-            <span className="sub-modal-price-num">{billingPeriod === 'annual' ? '£99.99' : '£9.99'}</span>
+            <span className="sub-modal-price-num">{billingPeriod === 'annual' ? '$99.99' : '$9.99'}</span>
             <span className="sub-modal-price-period">{billingPeriod === 'annual' ? '/ year' : '/ month'}</span>
           </div>
-          {billingPeriod === 'annual' && <div style={{ fontSize:12, color:'var(--text-light)', marginTop:-16, marginBottom:16 }}>That's just £8.33/month</div>}
+          {billingPeriod === 'annual' && <div style={{ fontSize:12, color:'var(--text-light)', marginTop:-16, marginBottom:16 }}>That's just $8.33/month</div>}
           <div className="sub-modal-perks">
             {[
               { icon:'🔓', text:'Unlock all exclusive recipes' },
@@ -945,7 +938,7 @@ function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
           </div>
           {error && <div style={{color:'#8B2020',fontSize:13,marginBottom:12}}>{error}</div>}
           <button className="sub-modal-cta" onClick={handleSubscribe} disabled={loading}>
-            {loading ? 'Redirecting to checkout…' : user ? `Subscribe for ${billingPeriod === 'annual' ? '£99.99/year' : '£9.99/month'} →` : 'Sign up to subscribe →'}
+            {loading ? 'Redirecting to checkout…' : user ? `Subscribe for ${billingPeriod === 'annual' ? '$99.99/year' : '$9.99/month'} →` : 'Sign up to subscribe →'}
           </button>
           <div className="sub-modal-note">Secure payment via Stripe · Cancel anytime</div>
         </div>
@@ -999,6 +992,9 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
   const [showUnlock, setShowUnlock] = useState(false);
 
   const handleClick = () => { if (isPremiumLocked) { onSubscribe(); } else if (isLocked) { setShowUnlock(true); } else { onRecipeClick(recipe); } };
+  const photoSrc = recipePhotoUrl(recipe);
+  const hasPhoto = photoSrc && !imgFailed;
+  const avatarSrc = dietitianAvatarUrl(d);
 
   return (
     <>
@@ -1013,9 +1009,9 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
               <div style={{ width: 80, height: 80 }} dangerouslySetInnerHTML={{ __html: recipe.illusSvg }} />
               <div className="fallback-title">{recipe.title}</div>
             </div>
-          ) : !imgFailed ? (
+          ) : hasPhoto ? (
             <>
-              <img className="recipe-card-photo" src={photoUrl(recipe.id)} alt={recipe.title} onError={() => setImgFailed(true)} />
+              <img className="recipe-card-photo" src={photoSrc} alt={recipe.title} onError={() => setImgFailed(true)} />
               <div className="recipe-card-photo-overlay" />
             </>
           ) : (
@@ -1032,13 +1028,13 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
         </div>
         <div className="recipe-card-body">
           <div className="card-dietician" onClick={e => { e.stopPropagation(); if (!isLocked) onDieticianClick(d); }}>
-            <Avatar initials={d.initials} color={d.avatarColor} photo={d.photo} cls="avatar-sm" />
+            <Avatar initials={d.initials} color={d.avatarColor} photo={avatarSrc} cls="avatar-sm" />
             <div>
               <div className="dietician-name-sm">{d.name}</div>
               <div className="dietician-creds-sm">{d.credentials}</div>
             </div>
           </div>
-          <div className="card-title">{recipe.title}</div>
+          <div className="card-title">{hasPhoto ? `${recipe.emoji} ${recipe.title}` : recipe.title}</div>
           <div className="card-subtitle">{recipe.subtitle}</div>
           <div className="health-tags">{recipe.healthLabels.slice(0,3).map(l => <HealthTag key={l} label={l} />)}</div>
           <div className="card-meta">
@@ -1177,12 +1173,18 @@ const STRIPE_PAYMENT_LINK_ANNUAL  = 'https://buy.stripe.com/test_aFadR1aztdmR1ON
 const FREE_DIETITIANS = [1, 2, 3]; // Emily, Malaika, Claire — always free
 const FREE_RECIPE_IDS = [22, 23, 24]; // First 3 Alysse recipes free for everyone
 
-function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe }) {
+function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians }) {
   const [active, setActive] = useState(healthGoals?.length > 0 ? healthGoals[0] : 'all');
+  const mergedRecipes = useMemo(() => ALL_RECIPES.map(r => ({
+    ...r, ...(supaRecipes?.[r.id] || {}),
+  })), [supaRecipes]);
+  const mergedDietitians = useMemo(() => ALL_DIETICIANS.map(d => ({
+    ...d, ...(supaDietitians?.[d.id] || {}),
+  })), [supaDietitians]);
   const filtered = useMemo(() => {
-    const base = active === 'all' ? ALL_RECIPES : ALL_RECIPES.filter(r => r.healthLabels.includes(active));
+    const base = active === 'all' ? mergedRecipes : mergedRecipes.filter(r => r.healthLabels.includes(active));
     return interleaveByAuthor(base);
-  }, [active]);
+  }, [active, mergedRecipes]);
   const goalLabel = HEALTH_GOALS.find(g => g.id === active);
   const ALL = [{ id:'all', label:'All Recipes' }, ...HEALTH_GOALS.map(g => ({ id:g.id, label:g.label }))];
   return (
@@ -1462,8 +1464,9 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
   );
 }
 
-function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFollow, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe }) {
-  const dRecipes = getRecipesByD(d.id);
+function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFollow, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians }) {
+  const dRecipes = getRecipesByD(d.id).map(r => ({ ...r, ...(supaRecipes?.[r.id] || {}) }));
+  const mergedD = { ...d, ...(supaDietitians?.[d.id] || {}) };
 
   // Track time spent on profile
   useEffect(() => {
@@ -1480,7 +1483,7 @@ function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFo
       <div className="profile-hero" style={{ background: `linear-gradient(135deg, ${d.avatarColor}88, ${d.avatarColor}33)` }}>
         <button className="back-btn" onClick={onBack}>← Back</button>
         <div className="profile-hero-inner">
-          <Avatar initials={d.initials} color={d.avatarColor} photo={d.photo} cls="avatar-xl" />
+          <Avatar initials={mergedD.initials} color={mergedD.avatarColor} photo={dietitianAvatarUrl(mergedD)} cls="avatar-xl" />
         </div>
       </div>
       <div className="profile-body">
@@ -2465,7 +2468,14 @@ function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
 }
 
 // ── ABOUT TAB ─────────────────────────────────────────────────
-function AboutTab({ onApply }) {
+function AboutTab({ onApply, supaDietitians }) {
+  // Emily = id:1, Malaika = id:2
+  const emily = { name:'Emily', role:'Co-founder', initials:'EY', color:'#C4A882', bio:'Passionate about making clinical nutrition accessible to every woman, regardless of budget or background. Building nuri. to close the gap between dietitian expertise and everyday kitchens.' };
+  const malaika = { name:'Malaika', role:'Co-founder', initials:'MR', color:'#8FA888', bio:'Believes nutrition is one of the most powerful tools women have — and that it should feel empowering, not restrictive. Focused on community, content and the science of eating well.' };
+  const founderData = [
+    { ...emily, ...(supaDietitians?.[1] ? { bio: supaDietitians[1].supaBio || emily.bio, photo: supaDietitians[1].supaAvatar } : {}) },
+    { ...malaika, ...(supaDietitians?.[2] ? { bio: supaDietitians[2].supaBio || malaika.bio, photo: supaDietitians[2].supaAvatar } : {}) },
+  ];
   return (
     <div>
       <div className="about-hero">
@@ -2502,13 +2512,16 @@ function AboutTab({ onApply }) {
           <h2 className="about-section-title">Built by women, for women.</h2>
           <p className="about-section-text">nuri. was co-founded by Emily and Malaika — two women who experienced first-hand how hard it is to find reliable, actionable nutrition guidance for chronic conditions.</p>
           <div className="about-team">
-            {[
-              { name:'Emily', role:'Co-founder', initials:'EY', color:'#C4A882', bio:'Passionate about making clinical nutrition accessible to every woman, regardless of budget or background. Building nuri. to close the gap between dietitian expertise and everyday kitchens.' },
-              { name:'Malaika', role:'Co-founder', initials:'MR', color:'#8FA888', bio:'Believes nutrition is one of the most powerful tools women have — and that it should feel empowering, not restrictive. Focused on community, content and the science of eating well.' },
-            ].map(m => (
+            {founderData.map(m => (
               <div key={m.name} className="about-team-card">
                 <div className="about-team-banner" style={{ background:`linear-gradient(135deg, ${m.color}88, ${m.color}33)` }}>
-                  <div className="about-team-avatar" style={{ background: m.color }}>{m.initials}</div>
+                  {m.photo ? (
+                    <div className="about-team-avatar" style={{ overflow:'hidden', padding:0 }}>
+                      <img src={m.photo} style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                    </div>
+                  ) : (
+                    <div className="about-team-avatar" style={{ background: m.color }}>{m.initials}</div>
+                  )}
                 </div>
                 <div className="about-team-body">
                   <div className="about-team-name">{m.name}</div>
@@ -2547,6 +2560,8 @@ function App() {
   const [showSubModal, setShowSubModal] = useState(false);
   const [user, setUser] = useState(null);
   const [tried, setTried] = useState(() => new Set());
+  const [supaRecipes, setSupaRecipes] = useState({}); // id -> {supaPhoto, note overrides from DB}
+  const [supaDietitians, setSupaDietitians] = useState({}); // id -> {photo, bio overrides from DB}
   const [triedPhotos, setTriedPhotos] = useState({});
   const [comments, setComments] = useState(() => ls('tee_comments', {}));
   const [isRD, setIsRD] = useState(false);
@@ -2597,6 +2612,25 @@ function App() {
       }
     };
     init();
+    // Load recipe photos and dietitian data from Supabase
+    const loadSupaData = async () => {
+      const [{ data: rData }, { data: dData }] = await Promise.all([
+        db.from('recipes').select('id, photo'),
+        db.from('dietitians').select('id, photo, bio'),
+      ]);
+      if (rData) {
+        const rm = {};
+        rData.forEach(r => { if (r.photo) rm[r.id] = { supaPhoto: r.photo }; });
+        setSupaRecipes(rm);
+      }
+      if (dData) {
+        const dm = {};
+        dData.forEach(d => { if (d.photo || d.bio) dm[d.id] = { supaAvatar: d.photo, supaBio: d.bio }; });
+        setSupaDietitians(dm);
+      }
+    };
+    loadSupaData();
+
     const { data: { subscription } } = db.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') { setUser(null); setSaved(new Set()); setFollowed(new Set()); setTried(new Set()); setScreen('welcome'); }
     });
@@ -2704,6 +2738,7 @@ function App() {
     saved, onToggleSave: toggleSave,
     user, onSignIn: (mode = 'signup') => setShowAuthModal(mode),
     isPremium, onSubscribe: () => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } },
+    supaRecipes, supaDietitians,
   };
 
   if (view?.type === 'recipe') return (
@@ -2718,7 +2753,7 @@ function App() {
   if (view?.type === 'profile') return (
     <>
       <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
-      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={(mode='signup') => setShowAuthModal(mode)} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} />
+      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={(mode='signup') => setShowAuthModal(mode)} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaRecipes={supaRecipes} supaDietitians={supaDietitians} />
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
       {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
     </>
@@ -2730,7 +2765,7 @@ function App() {
       {tab === 'feed'    && <FeedTab healthGoals={healthGoals} {...sharedProps} />}
       {tab === 'explore' && <ExploreTab followed={followed} onToggleFollow={toggleFollow} onDieticianClick={d => navigate('profile', d)} />}
       {tab === 'saved'   && <SavedTab {...sharedProps} />}
-      {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} />}
+      {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} supaDietitians={supaDietitians} />}
       {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} />}
       {showApplyModal && <RDApplicationModal onClose={() => setShowApplyModal(false)} />}
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
