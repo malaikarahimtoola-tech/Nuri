@@ -2665,8 +2665,13 @@ function App() {
 
     // Reload photo data whenever user returns to this tab (e.g. after uploading in portal)
     const handleVisibility = () => { if (document.visibilityState === 'visible') loadSupaData(); };
+    const handleFocus = () => loadSupaData();
     document.addEventListener('visibilitychange', handleVisibility);
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', handleFocus);
+    };
 
     const { data: { subscription } } = db.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') { setUser(null); setSaved(new Set()); setFollowed(new Set()); setTried(new Set()); setScreen('welcome'); }
