@@ -931,7 +931,7 @@ function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
           <div style={{ display:'flex', gap:8, marginBottom:20, background:'var(--warm-beige)', padding:4, borderRadius:50 }}>
             <button onClick={() => setBillingPeriod('monthly')} style={{ flex:1, padding:'8px 0', borderRadius:50, border:'none', fontFamily:'var(--font-body)', fontSize:13, fontWeight:600, cursor:'pointer', background: billingPeriod==='monthly' ? 'var(--brown)' : 'transparent', color: billingPeriod==='monthly' ? 'white' : 'var(--text-mid)', transition:'all 0.18s' }}>Monthly</button>
             <button onClick={() => setBillingPeriod('annual')} style={{ flex:1, padding:'8px 0', borderRadius:50, border:'none', fontFamily:'var(--font-body)', fontSize:13, fontWeight:600, cursor:'pointer', background: billingPeriod==='annual' ? 'var(--brown)' : 'transparent', color: billingPeriod==='annual' ? 'white' : 'var(--text-mid)', transition:'all 0.18s', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-              Annual <span style={{ fontSize:10, background:'#C8E6C9', color:'#2E7D32', padding:'2px 6px', borderRadius:50 }}>Save £20</span>
+              Annual <span style={{ fontSize:10, background:'#C8E6C9', color:'#2E7D32', padding:'2px 6px', borderRadius:50 }}>Save $20</span>
             </button>
           </div>
           <div className="sub-modal-price">
@@ -1187,14 +1187,14 @@ function interleaveByAuthor(recipes) {
 const FREE_PREVIEW_COUNT = 3;
 
 // ── STRIPE CONFIG ─────────────────────────────────────────────
-// One subscription unlocks ALL premium dietitians — new RDs added in future auto-included
 const NURI_PREMIUM_PRICE_ID = 'price_1TWUKf1strcTxBlboRSq9F53';
 const STRIPE_PAYMENT_LINK_MONTHLY = 'https://buy.stripe.com/test_00w00b0YT3Mh2SRcvMeIw00';
 const STRIPE_PAYMENT_LINK_ANNUAL  = 'https://buy.stripe.com/test_aFadR1aztdmR1ONgM2eIw01';
-const FREE_DIETITIANS = [1, 2, 3]; // Emily, Malaika, Claire — always free
-const FREE_RECIPE_IDS = [22, 23, 24]; // First 3 Alysse recipes free for everyone
+// Premium settings loaded from Supabase (is_premium, free_recipe_count per dietitian)
+const FALLBACK_FREE_DIETITIANS = [1, 2, 3];
+const FALLBACK_FREE_RECIPE_COUNT = 3;
 
-function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians }) {
+function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings }) {
   const [active, setActive] = useState(healthGoals?.length > 0 ? healthGoals[0] : 'all');
   const mergedRecipes = useMemo(() => ALL_RECIPES.map(r => ({
     ...r, ...(supaRecipes?.[r.id] || {}),
@@ -1237,9 +1237,12 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
       ) : (
         <div className="recipe-grid">
           {filtered.map((r, i) => {
-            const isFreeDietitian = FREE_DIETITIANS.includes(r.dieticianId);
-            const isFreeRecipe = FREE_RECIPE_IDS.includes(r.id);
-            const isPremiumRecipe = !isFreeDietitian && !isFreeRecipe;
+            const rdSettings = premiumSettings?.[r.dieticianId] || {};
+            const isFreeDietitian = !rdSettings.is_premium;
+            const freeCount = rdSettings.free_recipe_count ?? FALLBACK_FREE_RECIPE_COUNT;
+            const rdRecipes = filtered.filter(x => x.dieticianId === r.dieticianId);
+            const rdIndex = rdRecipes.indexOf(r);
+            const isPremiumRecipe = !isFreeDietitian && rdIndex >= freeCount;
             const locked = !user && i >= FREE_PREVIEW_COUNT;
             const premiumLocked = isPremiumRecipe && !isPremium;
             return <RecipeCard key={r.id} recipe={{...r, _gridIndex: i}} onRecipeClick={onRecipeClick} onDieticianClick={onDieticianClick} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} isLocked={locked} onSignIn={onSignIn} isPremiumLocked={premiumLocked && !locked} onSubscribe={onSubscribe} supaDietitians={supaDietitians} />;
@@ -1514,7 +1517,7 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
   );
 }
 
-function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFollow, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians }) {
+function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFollow, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings }) {
   const dRecipes = getRecipesByD(d.id).map(r => ({ ...r, ...(supaRecipes?.[r.id] || {}) }));
   const mergedD = { ...d, ...(supaDietitians?.[d.id] || {}) };
 
@@ -1566,9 +1569,11 @@ function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFo
           )}
           <div className="recipe-grid">
             {dRecipes.map((r, i) => {
-              const isFreeDietitian = FREE_DIETITIANS.includes(d.id);
-              const isFreeRecipe = FREE_RECIPE_IDS.includes(r.id);
-              const isPremiumRecipe = !isFreeDietitian && !isFreeRecipe;
+              const rdSettings = premiumSettings?.[d.id] || {};
+              const isFreeDietitian = !rdSettings.is_premium;
+              const freeCount = rdSettings.free_recipe_count ?? FALLBACK_FREE_RECIPE_COUNT;
+              const rdIndex = dRecipes.indexOf(r);
+              const isPremiumRecipe = !isFreeDietitian && rdIndex >= freeCount;
               const locked = !user && i >= FREE_PREVIEW_COUNT;
               const premiumLocked = isPremiumRecipe && !isPremium;
               return <RecipeCard key={r.id} recipe={r} onRecipeClick={onRecipeClick} onDieticianClick={() => {}} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} isLocked={locked} onSignIn={onSignIn} isPremiumLocked={premiumLocked && !locked} onSubscribe={onSubscribe} supaDietitians={supaDietitians} />;
@@ -2638,7 +2643,8 @@ function App() {
   const [tried, setTried] = useState(() => new Set());
   const [supaRecipes, setSupaRecipes] = useState({});
   const [supaDietitians, setSupaDietitians] = useState({});
-  const [supaSaves, setSupaSaves] = useState({}); // recipe_id -> save count
+  const [supaSaves, setSupaSaves] = useState({});
+  const [premiumSettings, setPremiumSettings] = useState({}); // recipe_id -> save count
   const [triedPhotos, setTriedPhotos] = useState({});
   const [comments, setComments] = useState(() => ls('tee_comments', {}));
   const [isRD, setIsRD] = useState(false);
@@ -2693,7 +2699,7 @@ function App() {
     const loadSupaData = async () => {
       const [{ data: rData }, { data: dData }, { data: followsData }, { data: savesData }] = await Promise.all([
         db.from('recipes').select('id, photo'),
-        db.from('dietitians').select('id, photo, bio'),
+        db.from('dietitians').select('id, photo, bio, is_premium, free_recipe_count'),
         db.from('follows').select('dietitian_id'),
         db.from('saves').select('recipe_id'),
       ]);
@@ -2710,10 +2716,14 @@ function App() {
         // Count saves per recipe
         const saveCounts = {};
         if (savesData) savesData.forEach(s => { saveCounts[s.recipe_id] = (saveCounts[s.recipe_id] || 0) + 1; });
+        const pm = {};
         dData.forEach(d => {
-          dm[parseInt(d.id,10)] = { supaAvatar: d.photo, supaBio: d.bio, supaFollowers: followerCounts[parseInt(d.id,10)] || 0 };
+          const did = parseInt(d.id,10);
+          dm[did] = { supaAvatar: d.photo, supaBio: d.bio, supaFollowers: followerCounts[did] || 0 };
+          pm[did] = { is_premium: d.is_premium || false, free_recipe_count: d.free_recipe_count ?? FALLBACK_FREE_RECIPE_COUNT };
         });
         setSupaDietitians(dm);
+        setPremiumSettings(pm);
         setSupaSaves(saveCounts);
       }
     };
@@ -2853,7 +2863,7 @@ function App() {
     saved, onToggleSave: toggleSave,
     user, onSignIn: (mode = 'signup') => setShowAuthModal(mode),
     isPremium, onSubscribe: () => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } },
-    supaRecipes, supaDietitians, supaSaves,
+    supaRecipes, supaDietitians, supaSaves, premiumSettings,
   };
 
   if (view?.type === 'recipe') return (
@@ -2868,7 +2878,7 @@ function App() {
   if (view?.type === 'profile') return (
     <>
       <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
-      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={(mode='signup') => setShowAuthModal(mode)} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaRecipes={supaRecipes} supaDietitians={supaDietitians} />
+      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={(mode='signup') => setShowAuthModal(mode)} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaRecipes={supaRecipes} supaDietitians={supaDietitians} premiumSettings={premiumSettings} />
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
       {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
     </>
