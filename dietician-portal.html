@@ -697,7 +697,7 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
     setSubmitting(true);
     try {
       const { error } = await db.from('recipes').insert({
-        dietitian_id: user.dietitianId || null,
+        dietitian_id: parseInt(user.dietitianId, 10) || null,
         title: title.trim(),
         subtitle: subtitle.trim(),
         emoji: '🍽',
@@ -708,7 +708,7 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
         ingredients: ingredients.filter(Boolean),
         instructions: instructions.filter(Boolean),
         note: note,
-        is_published: true,
+        is_published: false, // Requires admin approval before going live
       });
       if (error) throw error;
     } catch(e) {
