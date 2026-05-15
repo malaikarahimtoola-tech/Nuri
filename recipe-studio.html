@@ -1256,11 +1256,133 @@ function EditDietitians() {
   );
 }
 
+
+// ── PENDING RECIPES ───────────────────────────────────────────
+function PendingRecipes() {
+  const [pending, setPending] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState({});
+
+  const ALL_D = {
+    1:'Emily', 2:'Malaika', 3:'Claire Pettitt', 4:'Alysse Vocca'
+  };
+
+  useEffect(() => {
+    db.from('recipes')
+      .select('*')
+      .eq('is_published', false)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { if (data) setPending(data); setLoading(false); });
+  }, []);
+
+  const handleApprove = async (recipe) => {
+    setMsg(m => ({...m, [recipe.id]: 'Approving…'}));
+    const { error } = await db.from('recipes').update({ is_published: true }).eq('id', recipe.id);
+    if (error) { setMsg(m => ({...m, [recipe.id]: 'Error: ' + error.message})); return; }
+    await db.from('recipe_notifications').update({ status: 'approved' }).eq('recipe_id', recipe.id);
+    setPending(p => p.filter(r => r.id !== recipe.id));
+    setMsg(m => ({...m, [recipe.id]: 'Approved ✓ — recipe is now live'}));
+  };
+
+  const handleReject = async (recipe) => {
+    if (!window.confirm(`Reject "${recipe.title}"? This will delete it permanently.`)) return;
+    setMsg(m => ({...m, [recipe.id]: 'Rejecting…'}));
+    await db.from('recipe_notifications').update({ status: 'rejected' }).eq('recipe_id', recipe.id);
+    const { error } = await db.from('recipes').delete().eq('id', recipe.id);
+    if (error) { setMsg(m => ({...m, [recipe.id]: 'Error: ' + error.message})); return; }
+    setPending(p => p.filter(r => r.id !== recipe.id));
+  };
+
+  return (
+    <div className="overview-body">
+      <div style={{marginBottom:32}}>
+        <div className="section-eyebrow">Review</div>
+        <h1 style={{fontFamily:'var(--font-serif)',fontSize:32,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>
+          Pending Recipes
+          {pending.length > 0 && <span style={{marginLeft:12,fontSize:16,background:'#C47A7A',color:'white',padding:'3px 12px',borderRadius:50,fontFamily:'var(--font-body)',fontStyle:'normal',fontWeight:600}}>{pending.length}</span>}
+        </h1>
+        <p style={{fontSize:14,color:'var(--text-light)',marginTop:8}}>Recipes submitted by dietitians awaiting your approval.</p>
+      </div>
+
+      {loading ? (
+        <div style={{fontSize:14,color:'var(--text-light)'}}>Loading…</div>
+      ) : pending.length === 0 ? (
+        <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:48,textAlign:'center',boxShadow:'var(--shadow)'}}>
+          <div style={{fontSize:40,marginBottom:12}}>✅</div>
+          <div style={{fontFamily:'var(--font-serif)',fontSize:20,fontStyle:'italic',color:'var(--text)',marginBottom:8}}>All caught up</div>
+          <div style={{fontSize:14,color:'var(--text-light)'}}>No recipes pending approval.</div>
+        </div>
+      ) : (
+        <div style={{display:'flex',flexDirection:'column',gap:16}}>
+          {pending.map(r => (
+            <div key={r.id} style={{background:'var(--white)',borderRadius:'var(--radius)',padding:24,boxShadow:'var(--shadow)',borderLeft:'3px solid var(--tan)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:12,marginBottom:16}}>
+                <div>
+                  <div style={{fontFamily:'var(--font-serif)',fontSize:20,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:4}}>
+                    {r.emoji || '🍽'} {r.title}
+                  </div>
+                  <div style={{fontSize:13,color:'var(--text-light)'}}>
+                    By {ALL_D[r.dietitian_id] || `Dietitian ${r.dietitian_id}`} · Submitted {new Date(r.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                  {msg[r.id] && <span style={{fontSize:13,color:msg[r.id].includes('Error')?'#8B2020':'var(--green-dark)'}}>{msg[r.id]}</span>}
+                  <button onClick={() => handleReject(r)} style={{padding:'8px 18px',background:'none',border:'1.5px solid #F4C4C4',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer',color:'#8B2020'}}>
+                    ✕ Reject
+                  </button>
+                  <button onClick={() => handleApprove(r)} style={{padding:'8px 18px',background:'var(--green-dark)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                    ✓ Approve
+                  </button>
+                </div>
+              </div>
+
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:12,marginBottom:16}}>
+                {r.subtitle && <div><div className="section-eyebrow" style={{marginBottom:3}}>Subtitle</div><div style={{fontSize:13,color:'var(--text)'}}>{r.subtitle}</div></div>}
+                <div><div className="section-eyebrow" style={{marginBottom:3}}>Prep / Cook</div><div style={{fontSize:13,color:'var(--text)'}}>{r.prep_time} / {r.cook_time}</div></div>
+                <div><div className="section-eyebrow" style={{marginBottom:3}}>Servings</div><div style={{fontSize:13,color:'var(--text)'}}>{r.servings}</div></div>
+                <div><div className="section-eyebrow" style={{marginBottom:3}}>Conditions</div><div style={{fontSize:13,color:'var(--text)'}}>{(r.health_labels||[]).join(', ') || '—'}</div></div>
+              </div>
+
+              {r.ingredients?.length > 0 && (
+                <div style={{marginBottom:12}}>
+                  <div className="section-eyebrow" style={{marginBottom:6}}>Ingredients</div>
+                  <div style={{fontSize:13,color:'var(--text)',lineHeight:1.6}}>{r.ingredients.join(' · ')}</div>
+                </div>
+              )}
+
+              {r.instructions?.length > 0 && (
+                <div>
+                  <div className="section-eyebrow" style={{marginBottom:6}}>Instructions</div>
+                  <ol style={{paddingLeft:16,fontSize:13,color:'var(--text)',lineHeight:1.8}}>
+                    {r.instructions.map((step, i) => <li key={i}>{step}</li>)}
+                  </ol>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function App() {
   const [authed, setAuthed] = useState(false);
   const [user, setUser] = useState(null);
   const [tab, setTab] = useState('overview');
   const [published, setPublished] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const loadPending = async () => {
+      const { count } = await db.from('recipes').select('*', { count: 'exact', head: true }).eq('is_published', false);
+      setPendingCount(count || 0);
+    };
+    loadPending();
+    // Refresh every 60 seconds
+    const interval = setInterval(loadPending, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (!authed) return <AuthScreen onAuth={u => { setAuthed(true); setUser(u); }} />;
 
@@ -1274,6 +1396,9 @@ function App() {
           </div>
           <div className="nav-tabs">
             <button className={`nav-tab ${tab==='overview'?'active':''}`} onClick={()=>{setTab('overview');setPublished(false);}}>📊 Overview</button>
+            <button className={`nav-tab ${tab==='pending'?'active':''}`} onClick={()=>{setTab('pending');setPublished(false);}}>
+              ⏳ Pending {pendingCount > 0 && <span style={{marginLeft:4,background:'#C47A7A',color:'white',borderRadius:50,padding:'1px 7px',fontSize:11,fontWeight:700}}>{pendingCount}</span>}
+            </button>
             <button className={`nav-tab ${tab==='create'?'active':''}`} onClick={()=>{setTab('create');setPublished(false);}}>✦ Create Recipe</button>
             <button className={`nav-tab ${tab==='edit'?'active':''}`} onClick={()=>{setTab('edit');setPublished(false);}}>✏️ Edit Recipes</button>
             <button className={`nav-tab ${tab==='profiles'?'active':''}`} onClick={()=>{setTab('profiles');setPublished(false);}}>👤 Profiles</button>
@@ -1286,6 +1411,7 @@ function App() {
       {tab==='overview' && <Overview onSignOut={()=>setAuthed(false)} />}
       {tab==='create' && !published && <RecipeStudio user={{name:user?.name||'Admin',email:'admin@nuri.com',creds:'Admin'}} onPublish={()=>setPublished(true)} />}
       {tab==='create' && published && <SuccessPage user={{name:user?.name||'Admin',email:'admin@nuri.com'}} onAnother={()=>setPublished(false)} />}
+      {tab==='pending' && <PendingRecipes />}
       {tab==='edit' && <EditRecipes />}
       {tab==='profiles' && <EditDietitians />}
     </>
