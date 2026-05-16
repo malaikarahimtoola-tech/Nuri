@@ -1479,6 +1479,7 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
           </button>
         </div>
 
+        {(communityPhotos.length > 0 || user) && (
         <div className="community-photos-section">
           <div className="community-photos-head">📸 Community dishes</div>
           <div className="community-photos-grid">
@@ -1511,6 +1512,7 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
             ))}
           </div>
         </div>
+        )}
       </div>
 
       <CommentsSection recipeId={recipe.id} dieticianId={recipe.dieticianId} comments={comments} onAddComment={onAddComment} />
