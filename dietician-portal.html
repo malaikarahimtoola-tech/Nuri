@@ -696,7 +696,7 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
   const handlePublish = async () => {
     setSubmitting(true);
     try {
-      const { error } = await db.from('recipes').insert({
+      const insertData = {
         dietitian_id: parseInt(user.dietitianId, 10) || null,
         title: title.trim(),
         subtitle: subtitle.trim(),
@@ -708,9 +708,12 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
         ingredients: ingredients.filter(Boolean),
         instructions: instructions.filter(Boolean),
         note: note,
-        is_published: false, // Requires admin approval before going live
-      });
-      if (error) throw error;
+        is_published: false,
+      };
+      console.log('Publishing recipe:', insertData);
+      const { data: insertedData, error } = await db.from('recipes').insert(insertData).select();
+      console.log('Insert result:', insertedData, 'Error:', error);
+      if (error) throw new Error(error.message + ' (code: ' + error.code + ')');
     } catch(e) {
       console.error('Publish error:', e);
     }
