@@ -710,15 +710,18 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
         note: note,
         is_published: false,
       };
-      console.log('Publishing recipe:', insertData);
       const { data: insertedData, error } = await db.from('recipes').insert(insertData).select();
-      console.log('Insert result:', insertedData, 'Error:', error);
-      if (error) throw new Error(error.message + ' (code: ' + error.code + ')');
+      if (error) {
+        alert('Error saving recipe: ' + error.message + '\nCode: ' + error.code);
+        setSubmitting(false);
+        return;
+      }
+      setSubmitting(false);
+      onPublish();
     } catch(e) {
-      console.error('Publish error:', e);
+      alert('Unexpected error: ' + e.message);
+      setSubmitting(false);
     }
-    setSubmitting(false);
-    onPublish();
   };
 
   return (
