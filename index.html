@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -518,6 +517,25 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .kitchen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 14px; }
 .kitchen-photo { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); box-shadow: var(--shadow); }
 .kitchen-empty-slot { aspect-ratio: 1; border: 2px dashed var(--border); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--border); }
+
+/* ── FEEDBACK ────────────────────────────────────────────── */
+.feedback-btn { position: fixed; bottom: 24px; right: 24px; z-index: 200; background: var(--brown); color: white; border: none; border-radius: 50px; padding: 12px 22px; font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 20px rgba(44,24,16,0.28); transition: all 0.18s; }
+.feedback-btn:hover { background: #4A3024; transform: translateY(-2px); }
+.feedback-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(44,24,16,0.45); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.feedback-modal { background: var(--cream); border-radius: 20px; width: 100%; max-width: 460px; overflow: hidden; box-shadow: 0 32px 80px rgba(44,24,16,0.28); }
+.feedback-header { padding: 28px 32px 20px; background: linear-gradient(135deg, #3A6B4A 0%, #2A5038 100%); position: relative; overflow: hidden; }
+.feedback-header::before { content:''; position:absolute; inset:0; background-image: repeating-linear-gradient(transparent 0,transparent 24px,rgba(255,255,255,0.07) 24px,rgba(255,255,255,0.07) 48px),repeating-linear-gradient(90deg,transparent 0,transparent 24px,rgba(255,255,255,0.07) 24px,rgba(255,255,255,0.07) 48px); }
+.feedback-inner { position: relative; z-index: 1; }
+.feedback-close { position: absolute; top: 14px; right: 16px; background: rgba(255,255,255,0.18); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; font-size: 14px; cursor: pointer; z-index: 2; }
+.feedback-body { padding: 28px 32px 32px; }
+.feedback-type-row { display: flex; gap: 10px; margin-bottom: 20px; }
+.feedback-type-btn { flex: 1; padding: 14px 12px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--white); cursor: pointer; text-align: center; transition: all 0.18s; font-family: var(--font-body); }
+.feedback-type-btn:hover { border-color: var(--tan); background: var(--warm-beige); }
+.feedback-type-btn.active { border-color: var(--brown); background: var(--warm-beige); }
+.feedback-textarea { width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: var(--font-body); font-size: 14px; color: var(--text); background: var(--white); outline: none; resize: none; line-height: 1.6; }
+.feedback-textarea:focus { border-color: var(--brown); }
+.feedback-submit { width: 100%; padding: 14px; background: var(--brown); color: white; border: none; border-radius: 50px; font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px; }
+.feedback-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ── AUTH MODAL ──────────────────────────────────────────── */
 .auth-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(44,24,16,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 24px; }
@@ -2629,6 +2647,80 @@ function AboutTab({ onApply, supaDietitians }) {
   );
 }
 
+// ── FEEDBACK MODAL ───────────────────────────────────────────
+function FeedbackModal({ onClose, user }) {
+  const [type, setType] = useState(null);
+  const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!message.trim()) return;
+    setSubmitting(true);
+    await window._supa.from('feedback').insert({
+      type, message: message.trim(),
+      user_id: user?.id || null,
+      user_email: user?.email || null,
+    });
+    setSubmitting(false);
+    setSubmitted(true);
+  };
+
+  return (
+    <div className="feedback-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="feedback-modal">
+        <div className="feedback-header">
+          <button className="feedback-close" onClick={onClose}>✕</button>
+          <div className="feedback-inner">
+            <div style={{ fontFamily:'var(--font-logo)', fontSize:28, fontStyle:'italic', fontWeight:600, color:'white', display:'inline-flex', alignItems:'flex-end', marginBottom:4 }}>
+              nuri<span style={{ display:'inline-block', width:7, height:7, borderRadius:'50%', background:'var(--rose)', marginLeft:2, marginBottom:2 }}/>
+            </div>
+            <div style={{ fontSize:13, color:'rgba(255,255,255,0.75)' }}>We'd love to hear from you</div>
+          </div>
+        </div>
+        <div className="feedback-body">
+          {submitted ? (
+            <div style={{ textAlign:'center', padding:'12px 0' }}>
+              <div style={{ fontSize:40, marginBottom:12 }}>{type === 'love' ? '💌' : '🙏'}</div>
+              <div style={{ fontFamily:'var(--font-serif)', fontSize:22, fontStyle:'italic', color:'var(--text)', marginBottom:8 }}>
+                {type === 'love' ? 'Thank you!' : 'We hear you.'}
+              </div>
+              <p style={{ fontSize:14, color:'var(--text-light)', lineHeight:1.6 }}>
+                {type === 'love' ? "Your kind words mean everything to us. We're so glad nuri. is making a difference." : "Thank you for helping us grow. We read every single note and take it seriously."}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="feedback-type-row">
+                <div className={`feedback-type-btn ${type==='love'?'active':''}`} onClick={() => setType('love')}>
+                  <div style={{ fontSize:24, marginBottom:6 }}>💌</div>
+                  <div style={{ fontSize:12, fontWeight:600, color:'var(--text)' }}>Write us a love note</div>
+                  <div style={{ fontSize:11, color:'var(--text-light)', marginTop:2 }}>Share what you love</div>
+                </div>
+                <div className={`feedback-type-btn ${type==='improve'?'active':''}`} onClick={() => setType('improve')}>
+                  <div style={{ fontSize:24, marginBottom:6 }}>💡</div>
+                  <div style={{ fontSize:12, fontWeight:600, color:'var(--text)' }}>Tell us what to improve</div>
+                  <div style={{ fontSize:11, color:'var(--text-light)', marginTop:2 }}>Help us do better</div>
+                </div>
+              </div>
+              {type && (
+                <>
+                  <textarea className="feedback-textarea" rows={5}
+                    placeholder={type==='love' ? "Tell us what you love about nuri. — a recipe that helped, something that made your day..." : "What could we do better? Features you'd love, recipes you wish we had..."}
+                    value={message} onChange={e => setMessage(e.target.value)} autoFocus />
+                  <button className="feedback-submit" onClick={handleSubmit} disabled={submitting || !message.trim()}>
+                    {submitting ? 'Sending…' : 'Send →'}
+                  </button>
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── APP ───────────────────────────────────────────────────────
 function App() {
   const db = window._supa;
@@ -2639,6 +2731,7 @@ function App() {
   const [saved, setSaved] = useState(() => new Set());
   const [view, setView] = useState(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [showSubModal, setShowSubModal] = useState(false);
@@ -2896,6 +2989,8 @@ function App() {
       {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} supaDietitians={supaDietitians} />}
       {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} />}
       {showApplyModal && <RDApplicationModal onClose={() => setShowApplyModal(false)} />}
+      <button className="feedback-btn" onClick={() => setShowFeedback(true)}>✉️ Feedback</button>
+      {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} user={user} />}
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
       {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
     </>
