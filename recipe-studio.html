@@ -789,24 +789,11 @@ function RecipeStudio({ user, onPublish }) {
 function SuccessPage({ user, onAnother }) {
   return (
     <>
-      <header className="studio-bar">
-        <div className="studio-bar-brand">
-          <span className="studio-bar-logo">nuri<span className="studio-bar-logo-dot"/></span>
-          <div className="studio-bar-divider"/>
-          <span className="studio-bar-title">Recipe Studio</span>
-          <div className="studio-bar-divider"/>
-          <select value={selectedDietitian || ''} onChange={e => setSelectedDietitian(Number(e.target.value) || null)}
-            style={{padding:'6px 12px',borderRadius:50,border:'1.5px solid var(--border)',fontFamily:'var(--font-body)',fontSize:13,color:'var(--text)',background:'var(--cream)',outline:'none',cursor:'pointer'}}>
-            <option value="">— Select dietitian —</option>
-            {dietitians.map(d => <option key={d.id} value={d.id}>{d.name} ({d.credentials})</option>)}
-          </select>
-        </div>
-      </header>
       <div className="success-page">
         <div className="success-card fade-up">
           <div className="success-icon">🌿</div>
           <div className="success-title">Recipe submitted!</div>
-          <p className="success-text">Your recipe has been sent to the nuri. team for review. We'll publish it to the feed within 1–2 business days and email you at <strong>{user.email}</strong> when it's live.</p>
+          <p className="success-text">Recipe published successfully to the feed.</p>
           <button className="success-btn" onClick={onAnother}>Create another recipe</button>
         </div>
       </div>
