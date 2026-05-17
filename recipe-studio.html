@@ -1264,7 +1264,8 @@ function PendingRecipes() {
   const [msg, setMsg] = useState({});
 
   const ALL_D = {
-    1:'Emily', 2:'Malaika', 3:'Claire Pettitt', 4:'Alysse Vocca'
+    1:'Emily', 2:'Malaika', 3:'Claire Pettitt', 4:'Alysse Vocca',
+    '1':'Emily', '2':'Malaika', '3':'Claire Pettitt', '4':'Alysse Vocca'
   };
   const [dietitianNames, setDietitianNames] = useState(ALL_D);
   useEffect(() => {
@@ -1332,7 +1333,7 @@ function PendingRecipes() {
                     {r.emoji || '🍽'} {r.title}
                   </div>
                   <div style={{fontSize:13,color:'var(--text-light)'}}>
-                    By {dietitianNames[r.dietitian_id] || `Dietitian ${r.dietitian_id}`} · Submitted {new Date(r.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}
+                    By {dietitianNames[parseInt(r.dietitian_id,10)] || 'Unknown RD'} · Submitted {new Date(r.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}
                   </div>
                 </div>
                 <div style={{display:'flex',gap:8,alignItems:'center'}}>
