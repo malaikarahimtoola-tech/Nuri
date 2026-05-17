@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1213,11 +1214,13 @@ const STRIPE_PAYMENT_LINK_ANNUAL  = 'https://buy.stripe.com/test_aFadR1aztdmR1ON
 const FALLBACK_FREE_DIETITIANS = [1, 2, 3];
 const FALLBACK_FREE_RECIPE_COUNT = 3;
 
-function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings }) {
+function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings, newSupaRecipes }) {
   const [active, setActive] = useState(healthGoals?.length > 0 ? healthGoals[0] : 'all');
-  const mergedRecipes = useMemo(() => ALL_RECIPES.map(r => ({
-    ...r, ...(supaRecipes?.[r.id] || {}),
-  })), [supaRecipes]);
+  const mergedRecipes = useMemo(() => {
+    const hardcoded = ALL_RECIPES.map(r => ({ ...r, ...(supaRecipes?.[r.id] || {}) }));
+    const newOnes = (newSupaRecipes || []).filter(r => !ALL_RECIPES.find(x => x.id === r.id));
+    return [...hardcoded, ...newOnes];
+  }, [supaRecipes, newSupaRecipes]);
   const mergedDietitians = useMemo(() => ALL_DIETICIANS.map(d => ({
     ...d, ...(supaDietitians?.[d.id] || {}),
   })), [supaDietitians]);
@@ -2740,7 +2743,8 @@ function App() {
   const [supaRecipes, setSupaRecipes] = useState({});
   const [supaDietitians, setSupaDietitians] = useState({});
   const [supaSaves, setSupaSaves] = useState({});
-  const [premiumSettings, setPremiumSettings] = useState({}); // recipe_id -> save count
+  const [premiumSettings, setPremiumSettings] = useState({});
+  const [newSupaRecipes, setNewSupaRecipes] = useState([]); // recipes from Supabase not in hardcoded list // recipe_id -> save count
   const [triedPhotos, setTriedPhotos] = useState({});
   const [comments, setComments] = useState(() => ls('tee_comments', {}));
   const [isRD, setIsRD] = useState(false);
@@ -2793,17 +2797,39 @@ function App() {
     init();
     // Load recipe photos and dietitian data from Supabase
     const loadSupaData = async () => {
-      const [{ data: rData }, { data: dData }, { data: followsData }, { data: savesData }] = await Promise.all([
+      const hardcodedIds = ALL_RECIPES.map(r => r.id);
+      const [{ data: rData }, { data: dData }, { data: followsData }, { data: savesData }, { data: newRData }] = await Promise.all([
         db.from('recipes').select('id, photo'),
         db.from('dietitians').select('id, photo, bio, is_premium, free_recipe_count'),
         db.from('follows').select('dietitian_id'),
         db.from('saves').select('recipe_id'),
+        db.from('recipes').select('*').eq('is_published', true).not('id', 'in', `(${ALL_RECIPES.map(r=>r.id).join(',')})`),
       ]);
       if (rData) {
         const rm = {};
         rData.forEach(r => { if (r.photo) rm[r.id] = { supaPhoto: r.photo }; });
         setSupaRecipes(rm);
       }
+      if (newRData && newRData.length > 0) {
+        const mapped = newRData.map(r => ({
+          id: r.id,
+          title: r.title,
+          subtitle: r.subtitle || '',
+          dieticianId: r.dietitian_id,
+          healthLabels: r.health_labels || [],
+          prepTime: r.prep_time || '—',
+          cookTime: r.cook_time || '—',
+          servings: r.servings || 0,
+          ingredients: r.ingredients || [],
+          instructions: r.instructions || [],
+          note: r.note || '',
+          emoji: r.emoji || '🍽',
+          supaPhoto: r.photo || null,
+          isNew: true,
+        }));
+        setNewSupaRecipes(mapped);
+      }
+
       if (dData) {
         const dm = {};
         // Count followers per dietitian
@@ -2959,7 +2985,7 @@ function App() {
     saved, onToggleSave: toggleSave,
     user, onSignIn: (mode = 'signup') => setShowAuthModal(mode),
     isPremium, onSubscribe: () => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } },
-    supaRecipes, supaDietitians, supaSaves, premiumSettings,
+    supaRecipes, supaDietitians, supaSaves, premiumSettings, newSupaRecipes,
   };
 
   if (view?.type === 'recipe') return (
