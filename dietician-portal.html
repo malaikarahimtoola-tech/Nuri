@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -700,7 +701,7 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
         dietitian_id: parseInt(user.dietitianId, 10) || null,
         title: title.trim(),
         subtitle: subtitle.trim(),
-        emoji: '🍽',
+        emoji: illus?.emoji || '🍽',
         health_labels: labels,
         prep_time: prepTime || '—',
         cook_time: cookTime || '—',
@@ -1246,7 +1247,7 @@ function App() {
       {tab === 'dashboard' && <Dashboard user={user} onSignOut={handleSignOut} />}
       {tab === 'edit' && <EditMyRecipes user={user} />}
       {tab === 'profile' && <ProfileSettings user={user} />}
-      {tab === 'create' && !published && <RecipeStudio user={{ name: user.name || rd.name, email: user.email, creds: rd.credentials || 'RD' }} onPublish={() => setPublished(true)} hideHeader={true} />}
+      {tab === 'create' && !published && <RecipeStudio user={{ name: user.name || rd.name, email: user.email, creds: rd.credentials || 'RD', dietitianId: user.dietitianId }} onPublish={() => setPublished(true)} hideHeader={true} />}
       {tab === 'create' && published && <SuccessPage user={{ name: user.name, email: user.email }} onAnother={() => setPublished(false)} />}
     </>
   );
