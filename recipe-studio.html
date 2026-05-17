@@ -555,16 +555,26 @@ function RecipeStudio({ user, onPublish }) {
   const [showFull, setShowFull] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const [selectedDietitian, setSelectedDietitian] = useState(null);
+  const [dietitians, setDietitians] = useState([]);
+
+  useEffect(() => {
+    db.from('dietitians').select('id, name, credentials').then(({ data }) => {
+      if (data) setDietitians(data.filter(d => d.id > 2)); // exclude Emily/Malaika
+    });
+  }, []);
+
   const toggleLabel = id => setLabels(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
   const decoData = DECORATIONS.find(d=>d.id===deco)||DECORATIONS[0];
-  const canPublish = title.trim() && ingredients.some(i=>i.trim()) && instructions.some(i=>i.trim());
-  const initials = user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const canPublish = title.trim() && ingredients.some(i=>i.trim()) && instructions.some(i=>i.trim()) && selectedDietitian;
+  const activeDietitian = dietitians.find(d => d.id === selectedDietitian);
+  const initials = activeDietitian ? activeDietitian.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
 
   const handlePublish = async () => {
     setSubmitting(true);
     try {
       const { error } = await db.from('recipes').insert({
-        dietitian_id: user.dietitianId || null,
+        dietitian_id: selectedDietitian || user.dietitianId || null,
         title: title.trim(),
         subtitle: subtitle.trim(),
         emoji: '🍽',
@@ -592,11 +602,17 @@ function RecipeStudio({ user, onPublish }) {
           <span className="studio-bar-logo">nuri<span className="studio-bar-logo-dot"/></span>
           <div className="studio-bar-divider"/>
           <span className="studio-bar-title">Recipe Studio</span>
+          <div className="studio-bar-divider"/>
+          <select value={selectedDietitian || ''} onChange={e => setSelectedDietitian(Number(e.target.value) || null)}
+            style={{padding:'6px 12px',borderRadius:50,border:'1.5px solid var(--border)',fontFamily:'var(--font-body)',fontSize:13,color:'var(--text)',background:'var(--cream)',outline:'none',cursor:'pointer'}}>
+            <option value="">— Select dietitian —</option>
+            {dietitians.map(d => <option key={d.id} value={d.id}>{d.name} ({d.credentials})</option>)}
+          </select>
         </div>
         <div className="studio-bar-right">
           <span className="bar-user">👤 {user.name} · {user.creds}</span>
-          <button className="bar-btn bar-btn-primary" disabled={!canPublish||submitting} onClick={handlePublish}>
-            {submitting?'Publishing…':'✦ Publish Recipe'}
+          <button className="bar-btn bar-btn-primary" disabled={!canPublish||submitting} onClick={handlePublish} title={!selectedDietitian?'Select a dietitian first':''}>
+            {submitting?'Publishing…':!selectedDietitian?'Select dietitian first':'✦ Publish Recipe'}
           </button>
         </div>
       </header>
@@ -716,8 +732,8 @@ function RecipeStudio({ user, onPublish }) {
               <div className="preview-rd">
                 <div className="preview-avatar">{initials}</div>
                 <div>
-                  <div className="preview-rd-name">{user.name}</div>
-                  <div className="preview-rd-creds">{user.creds}</div>
+                  <div className="preview-rd-name">{activeDietitian?.name || 'Select a dietitian'}</div>
+                  <div className="preview-rd-creds">{activeDietitian?.credentials || ''}</div>
                 </div>
               </div>
               <div className="preview-title">{title||'Your recipe title'}</div>
@@ -778,6 +794,12 @@ function SuccessPage({ user, onAnother }) {
           <span className="studio-bar-logo">nuri<span className="studio-bar-logo-dot"/></span>
           <div className="studio-bar-divider"/>
           <span className="studio-bar-title">Recipe Studio</span>
+          <div className="studio-bar-divider"/>
+          <select value={selectedDietitian || ''} onChange={e => setSelectedDietitian(Number(e.target.value) || null)}
+            style={{padding:'6px 12px',borderRadius:50,border:'1.5px solid var(--border)',fontFamily:'var(--font-body)',fontSize:13,color:'var(--text)',background:'var(--cream)',outline:'none',cursor:'pointer'}}>
+            <option value="">— Select dietitian —</option>
+            {dietitians.map(d => <option key={d.id} value={d.id}>{d.name} ({d.credentials})</option>)}
+          </select>
         </div>
       </header>
       <div className="success-page">
