@@ -711,6 +711,91 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .rd-stat strong { color: var(--text-mid); font-weight: 600; }
 .rd-portal-btn { display: flex; align-items: center; gap: 8px; padding: 11px 20px; background: var(--brown); color: white; border: none; border-radius: 50px; font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; margin-top: 16px; width: fit-content; transition: opacity 0.15s; }
 .rd-portal-btn:hover { opacity: 0.85; }
+
+/* ── MOBILE ──────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  /* Welcome page */
+  .welcome-page { grid-template-columns: 1fr; min-height: 100vh; }
+  .welcome-left { padding: 48px 24px 40px; justify-content: flex-start; }
+  .welcome-right { display: none; }
+  .welcome-headline { font-size: 52px; }
+  .welcome-sub { font-size: 15px; margin-bottom: 32px; }
+  .welcome-cta { width: 100%; text-align: center; padding: 16px 24px; font-size: 16px; }
+  .welcome-note { text-align: center; }
+
+  /* Nav */
+  .nav-inner { padding: 0 16px; height: 56px; }
+  .nav-logo { font-size: 22px; }
+  .nav-tabs { gap: 0; }
+  .nav-tab { font-size: 11px; padding: 6px 8px; }
+  .nav-tab-label { display: none; }
+  .nav-right { gap: 8px; }
+  .nav-user-name { display: none; }
+  .nav-signin { padding: 7px 12px; font-size: 12px; }
+
+  /* Welcome */
+  .welcome-wrap { padding: 40px 20px 60px; }
+  .welcome-title { font-size: 36px; }
+  .welcome-sub { font-size: 14px; }
+  .welcome-btn { padding: 14px 28px; font-size: 15px; }
+
+  /* Feed */
+  .page-wrap { padding: 24px 16px 80px; }
+  .page-wrap-narrow { padding: 24px 16px 80px; }
+  .feed-page-header { padding: 0 0 16px; }
+  .condition-chips { gap: 6px; padding-bottom: 4px; }
+  .condition-chip { font-size: 12px; padding: 7px 14px; }
+  .recipe-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .recipe-card-img { height: 160px; }
+  .card-title { font-size: 14px; }
+  .card-subtitle { font-size: 12px; }
+
+  /* Recipe detail */
+  .detail-layout { padding: 16px 16px 60px; gap: 16px; }
+  .detail-title { font-size: 26px; }
+  .detail-meta { flex-wrap: wrap; gap: 8px; }
+
+  /* Profile */
+  .profile-hero { height: 160px; }
+  .profile-hero-inner { padding: 0 16px; }
+  .profile-body { padding: 20px 16px 60px; }
+  .profile-name { font-size: 26px; }
+
+  /* Explore */
+  .explore-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Onboarding */
+  .onboarding-wrap { padding: 32px 16px; }
+  .onboarding-title { font-size: 26px; }
+  .onboarding-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .goal-card { padding: 14px 10px; }
+  .goal-icon { font-size: 22px; }
+  .goal-label { font-size: 11px; }
+
+  /* You tab */
+  .you-grid { grid-template-columns: 1fr; gap: 16px; }
+  .card-block { padding: 16px; }
+
+  /* Modals */
+  .auth-modal { margin: 0 16px; }
+  .sub-modal { margin: 0 8px; }
+  .feedback-modal { margin: 0 8px; }
+
+  /* Feedback button */
+  .feedback-btn { bottom: 16px; right: 16px; padding: 10px 16px; font-size: 12px; }
+
+  /* About */
+  .about-body { padding: 32px 16px 60px; }
+  .about-hero { padding: 40px 16px; }
+  .about-team { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 400px) {
+  .recipe-grid { grid-template-columns: 1fr; }
+  .explore-grid { grid-template-columns: 1fr; }
+  .nav-tab { font-size: 10px; padding: 6px 6px; }
+}
+
 </style>
 </head>
 <body>
@@ -1543,8 +1628,13 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
   );
 }
 
-function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFollow, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings, supaAllDietitians }) {
-  const dRecipes = getRecipesByD(d.id).map(r => ({ ...r, ...(supaRecipes?.[r.id] || {}) }));
+function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFollow, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings, supaAllDietitians, newSupaRecipes }) {
+  const allRecipesForD = useMemo(() => {
+    const hardcoded = getRecipesByD(d.id).map(r => ({ ...r, ...(supaRecipes?.[r.id] || {}) }));
+    const newOnes = (newSupaRecipes || []).filter(r => r.dieticianId === d.id);
+    return [...hardcoded, ...newOnes];
+  }, [d.id, supaRecipes, newSupaRecipes]);
+  const dRecipes = allRecipesForD;
   const mergedD = { ...d, ...(supaDietitians?.[d.id] || {}) };
 
   // Track time spent on profile
@@ -3028,7 +3118,7 @@ function App() {
   if (view?.type === 'profile') return (
     <>
       <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
-      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={(mode='signup') => setShowAuthModal(mode)} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaRecipes={supaRecipes} supaDietitians={supaDietitians} premiumSettings={premiumSettings} supaAllDietitians={supaAllDietitians} />
+      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={(mode='signup') => setShowAuthModal(mode)} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaRecipes={supaRecipes} supaDietitians={supaDietitians} premiumSettings={premiumSettings} supaAllDietitians={supaAllDietitians} newSupaRecipes={newSupaRecipes} />
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
       {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
     </>
