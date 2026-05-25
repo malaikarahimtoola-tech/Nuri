@@ -88,6 +88,8 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 }
 .top-nav-brand { cursor: pointer; }
 .top-nav-sub { font-family: var(--font-body); font-size: 11px; font-weight: 300; letter-spacing: 0.08em; color: var(--tan); display: block; line-height: 1; margin-bottom: 2px; }
+.nav-icon { display: none; font-size: 18px; }
+.nav-label { display: inline; }
 .top-nav-logo { font-family: var(--font-logo); font-size: 26px; font-weight: 600; font-style: italic; color: var(--green-dark); line-height: 1; display: inline-flex; align-items: flex-end; }
 .logo-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--rose); margin-left: 2px; margin-bottom: 2px; flex-shrink: 0; }
 .top-nav-links { display: flex; align-items: center; gap: 4px; }
@@ -715,13 +717,33 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 /* ── MOBILE ──────────────────────────────────────────────── */
 @media (max-width: 600px) {
   /* Welcome page */
-  .welcome-page { grid-template-columns: 1fr; min-height: 100vh; }
-  .welcome-left { padding: 48px 24px 40px; justify-content: flex-start; }
-  .welcome-right { display: none; }
-  .welcome-headline { font-size: 52px; }
-  .welcome-sub { font-size: 15px; margin-bottom: 32px; }
+  .welcome-page { grid-template-columns: 1fr; min-height: 100vh; display: flex; flex-direction: column; }
+  .welcome-left { padding: 60px 28px 48px; justify-content: center; align-items: center; text-align: center; flex: 1; }
+  .welcome-right { 
+    display: block; 
+    height: 140px; 
+    order: -1;
+    background-color: #D4B87A;
+    background-image:
+      repeating-linear-gradient(transparent 0px, transparent 20px, rgba(140,95,20,0.28) 20px, rgba(140,95,20,0.28) 40px),
+      repeating-linear-gradient(90deg, transparent 0px, transparent 20px, rgba(140,95,20,0.28) 20px, rgba(140,95,20,0.28) 40px);
+    flex-shrink: 0;
+  }
+  .welcome-recipe-stack { display: none; }
+  .welcome-brand-line { text-align: center; }
+  .welcome-headline { font-size: 52px; text-align: center; }
+  .welcome-sub { font-size: 15px; margin-bottom: 32px; text-align: center; }
   .welcome-cta { width: 100%; text-align: center; padding: 16px 24px; font-size: 16px; }
   .welcome-note { text-align: center; }
+
+  /* Top nav */
+  .top-nav-inner { padding: 0 12px; height: 52px; }
+  .top-nav-sub { display: none; }
+  .top-nav-logo { font-size: 22px; }
+  .top-nav-links { gap: 0; }
+  .top-nav-link { font-size: 11px; padding: 6px 8px; }
+  .nav-label { display: none; }
+  .nav-icon { display: inline !important; }
 
   /* Nav */
   .nav-inner { padding: 0 16px; height: 56px; }
@@ -1170,11 +1192,11 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
 
 function TopNav({ current, onChange, user, onSignIn, onSignOut }) {
   const links = [
-    { id:'feed', label:'Feed' },
-    { id:'explore', label:'Explore' },
-    { id:'saved', label:'Saved ♡' },
-    { id:'about', label:'About' },
-    { id:'you', label:'You' },
+    { id:'feed',    label:'Feed',    icon:'🏠' },
+    { id:'explore', label:'Explore', icon:'🔍' },
+    { id:'saved',   label:'Saved',   icon:'🤍' },
+    { id:'about',   label:'About',   icon:'✦'  },
+    { id:'you',     label:'You',     icon:'👤' },
   ];
   return (
     <header className="top-nav">
@@ -1186,16 +1208,19 @@ function TopNav({ current, onChange, user, onSignIn, onSignOut }) {
         <nav className="top-nav-links">
           {links.map(l => (
             <button key={l.id} className={`top-nav-link ${current === l.id ? 'active' : ''}`} onClick={() => onChange(l.id)}>
-              {l.id === 'saved' ? (current === 'saved' ? 'Saved ❤️' : 'Saved 🤍') : l.label}
+              <span className="nav-icon">{l.id === 'saved' ? (current === 'saved' ? '❤️' : '🤍') : l.icon}</span>
+              <span className="nav-label">{l.id === 'saved' ? 'Saved' : l.label}</span>
             </button>
           ))}
           {user ? (
             <button className="top-nav-link" style={{ background:'var(--warm-beige)', color:'var(--brown)', fontWeight:600, marginLeft:4 }} onClick={onSignOut}>
-              {(user.name || user.email || '').split(/[@\s]/)[0]} · Sign out
+              <span className="nav-label">{(user.name || user.email || '').split(/[@\s]/)[0]} · Sign out</span>
+              <span className="nav-icon">👤</span>
             </button>
           ) : (
             <button className="top-nav-link" style={{ background:'var(--brown)', color:'white', fontWeight:600, marginLeft:4 }} onClick={onSignIn}>
-              Sign in
+              <span className="nav-label">Sign in</span>
+              <span className="nav-icon">→</span>
             </button>
           )}
         </nav>
@@ -1203,6 +1228,7 @@ function TopNav({ current, onChange, user, onSignIn, onSignOut }) {
     </header>
   );
 }
+
 
 // ── PAGES ─────────────────────────────────────────────────────
 function Welcome({ onStart }) {
