@@ -2812,18 +2812,23 @@ function App() {
       if (newRData && newRData.length > 0) {
         const mapped = newRData.map(r => ({
           id: r.id,
-          title: r.title,
+          title: r.title || '',
           subtitle: r.subtitle || '',
-          dieticianId: r.dietitian_id,
+          dieticianId: parseInt(r.dietitian_id, 10),
           healthLabels: r.health_labels || [],
           prepTime: r.prep_time || '—',
           cookTime: r.cook_time || '—',
           servings: r.servings || 0,
-          ingredients: r.ingredients || [],
-          instructions: r.instructions || [],
+          ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
+          instructions: Array.isArray(r.instructions) ? r.instructions : [],
           note: r.note || '',
           emoji: r.emoji || '🍽',
           supaPhoto: r.photo || null,
+          photo: r.photo || null,
+          ginghamBg: null,
+          ginghamS: null,
+          illusSvg: null,
+          tags: r.health_labels || [],
           isNew: true,
         }));
         setNewSupaRecipes(mapped);
