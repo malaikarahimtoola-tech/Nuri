@@ -1021,8 +1021,9 @@ function UnlockModal({ recipe, onClose, onSignIn }) {
   );
 }
 
-function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggleSave, isLocked, onSignIn, isPremiumLocked, onSubscribe, supaDietitians }) {
-  const d = { ...getD(recipe.dieticianId), ...(supaDietitians?.[recipe.dieticianId] || {}) };
+function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggleSave, isLocked, onSignIn, isPremiumLocked, onSubscribe, supaDietitians, supaAllDietitians }) {
+  const baseD = getD(recipe.dieticianId) || (supaAllDietitians || []).find(d => d.id === recipe.dieticianId) || { id: recipe.dieticianId, name:'Unknown', credentials:'RD', initials:'?', avatarColor:'#C4A882', photo:null };
+  const d = { ...baseD, ...(supaDietitians?.[recipe.dieticianId] || {}) };
   const [imgFailed, setImgFailed] = useState(false);
   const [showUnlock, setShowUnlock] = useState(false);
 
@@ -1213,8 +1214,10 @@ const STRIPE_PAYMENT_LINK_ANNUAL  = 'https://buy.stripe.com/test_aFadR1aztdmR1ON
 const FALLBACK_FREE_DIETITIANS = [1, 2, 3];
 const FALLBACK_FREE_RECIPE_COUNT = 3;
 
-function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings, newSupaRecipes }) {
+function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings, newSupaRecipes, supaAllDietitians }) {
   const [active, setActive] = useState(healthGoals?.length > 0 ? healthGoals[0] : 'all');
+  const getLocalD = (id) => ALL_DIETICIANS.find(d => d.id === id) || (supaAllDietitians || []).find(d => d.id === id) || { id, name:'Unknown', credentials:'RD', initials:'?', avatarColor:'#C4A882', photo:null };
+
   const mergedRecipes = useMemo(() => {
     const hardcoded = ALL_RECIPES.map(r => ({ ...r, ...(supaRecipes?.[r.id] || {}) }));
     const newOnes = (newSupaRecipes || []).filter(r => !ALL_RECIPES.find(x => x.id === r.id));
@@ -1266,7 +1269,7 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
             const isPremiumRecipe = !isFreeDietitian && rdIndex >= freeCount;
             const locked = !user && i >= FREE_PREVIEW_COUNT;
             const premiumLocked = isPremiumRecipe && !isPremium;
-            return <RecipeCard key={r.id} recipe={{...r, _gridIndex: i}} onRecipeClick={onRecipeClick} onDieticianClick={onDieticianClick} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} isLocked={locked} onSignIn={onSignIn} isPremiumLocked={premiumLocked && !locked} onSubscribe={onSubscribe} supaDietitians={supaDietitians} />;
+            return <RecipeCard key={r.id} recipe={{...r, _gridIndex: i}} onRecipeClick={onRecipeClick} onDieticianClick={onDieticianClick} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} isLocked={locked} onSignIn={onSignIn} isPremiumLocked={premiumLocked && !locked} onSubscribe={onSubscribe} supaDietitians={supaDietitians} supaAllDietitians={supaAllDietitians} />;
           })}
         </div>
       )}
@@ -1403,8 +1406,8 @@ function NutritionNote({ note }) {
   );
 }
 
-function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFollow, isSaved, onToggleSave, tried, onToggleTried, triedPhotos, comments, onAddComment, user }) {
-  const d = getD(recipe.dieticianId);
+function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFollow, isSaved, onToggleSave, tried, onToggleTried, triedPhotos, comments, onAddComment, user, supaAllDietitians }) {
+  const d = getD(recipe.dieticianId) || (supaAllDietitians || []).find(x => x.id === recipe.dieticianId) || { id: recipe.dieticianId, name:'Unknown', credentials:'RD', initials:'?', avatarColor:'#C4A882', photo:null, bio:'' };
   const isTried = tried.has(recipe.id);
   const [showMadeIt, setShowMadeIt] = useState(false);
   const [communityPhotos, setCommunityPhotos] = useState([]);
@@ -1540,7 +1543,7 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
   );
 }
 
-function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFollow, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings }) {
+function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFollow, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings, supaAllDietitians }) {
   const dRecipes = getRecipesByD(d.id).map(r => ({ ...r, ...(supaRecipes?.[r.id] || {}) }));
   const mergedD = { ...d, ...(supaDietitians?.[d.id] || {}) };
 
@@ -2743,7 +2746,8 @@ function App() {
   const [supaDietitians, setSupaDietitians] = useState({});
   const [supaSaves, setSupaSaves] = useState({});
   const [premiumSettings, setPremiumSettings] = useState({});
-  const [newSupaRecipes, setNewSupaRecipes] = useState([]); // recipes from Supabase not in hardcoded list // recipe_id -> save count
+  const [newSupaRecipes, setNewSupaRecipes] = useState([]);
+  const [supaAllDietitians, setSupaAllDietitians] = useState([]); // all dietitians from Supabase // recipe_id -> save count
   const [triedPhotos, setTriedPhotos] = useState({});
   const [comments, setComments] = useState(() => ls('tee_comments', {}));
   const [isRD, setIsRD] = useState(false);
@@ -2797,18 +2801,38 @@ function App() {
     // Load recipe photos and dietitian data from Supabase
     const loadSupaData = async () => {
       const hardcodedIds = ALL_RECIPES.map(r => r.id);
-      const [{ data: rData }, { data: dData }, { data: followsData }, { data: savesData }, { data: newRData }] = await Promise.all([
+      const [{ data: rData }, { data: dData }, { data: followsData }, { data: savesData }, { data: newRData }, { data: allDData }] = await Promise.all([
         db.from('recipes').select('id, photo'),
         db.from('dietitians').select('id, photo, bio, is_premium, free_recipe_count'),
         db.from('follows').select('dietitian_id'),
         db.from('saves').select('recipe_id'),
         db.from('recipes').select('*').eq('is_published', true).not('id', 'in', `(${ALL_RECIPES.map(r=>r.id).join(',')})`),
+        db.from('dietitians').select('*'),
       ]);
       if (rData) {
         const rm = {};
         rData.forEach(r => { if (r.photo) rm[r.id] = { supaPhoto: r.photo }; });
         setSupaRecipes(rm);
       }
+      if (allDData) {
+        const COLORS = ['#C4A882','#8FA888','#7A9E7E','#C47A7A','#A8BBD4','#BBA8CC','#D4B87A','#C8A080'];
+        const mapped = allDData.map((d, i) => ({
+          id: parseInt(d.id, 10),
+          name: d.name || 'Dietitian',
+          credentials: d.credentials || 'RD',
+          specialty: d.specialty || '',
+          bio: d.bio || '',
+          photo: d.photo || null,
+          initials: (d.name || 'RD').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+          avatarColor: COLORS[i % COLORS.length],
+          followers: 0,
+          following: 0,
+          tags: d.tags || [],
+          recipeIds: [],
+        }));
+        setSupaAllDietitians(mapped);
+      }
+
       if (newRData && newRData.length > 0) {
         const mapped = newRData.map(r => ({
           id: r.id,
@@ -2989,13 +3013,13 @@ function App() {
     saved, onToggleSave: toggleSave,
     user, onSignIn: (mode = 'signup') => setShowAuthModal(mode),
     isPremium, onSubscribe: () => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } },
-    supaRecipes, supaDietitians, supaSaves, premiumSettings, newSupaRecipes,
+    supaRecipes, supaDietitians, supaSaves, premiumSettings, newSupaRecipes, supaAllDietitians,
   };
 
   if (view?.type === 'recipe') return (
     <>
       <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
-      <RecipeDetail recipe={view.data} onBack={goBack} onDieticianClick={d => navigate('profile', d)} followed={followed.has(view.data.dieticianId)} onToggleFollow={toggleFollow} isSaved={saved.has(view.data.id)} onToggleSave={toggleSave} tried={tried} onToggleTried={toggleTried} triedPhotos={triedPhotos} comments={comments} onAddComment={addComment} user={user} />
+      <RecipeDetail recipe={view.data} onBack={goBack} onDieticianClick={d => navigate('profile', d)} followed={followed.has(view.data.dieticianId)} onToggleFollow={toggleFollow} isSaved={saved.has(view.data.id)} onToggleSave={toggleSave} tried={tried} onToggleTried={toggleTried} triedPhotos={triedPhotos} comments={comments} onAddComment={addComment} user={user} supaAllDietitians={supaAllDietitians} />
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
       {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
     </>
@@ -3004,7 +3028,7 @@ function App() {
   if (view?.type === 'profile') return (
     <>
       <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
-      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={(mode='signup') => setShowAuthModal(mode)} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaRecipes={supaRecipes} supaDietitians={supaDietitians} premiumSettings={premiumSettings} />
+      <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={(mode='signup') => setShowAuthModal(mode)} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaRecipes={supaRecipes} supaDietitians={supaDietitians} premiumSettings={premiumSettings} supaAllDietitians={supaAllDietitians} />
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
       {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
     </>
