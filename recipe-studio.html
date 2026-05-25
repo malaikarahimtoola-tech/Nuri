@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -472,12 +473,12 @@ const HEALTH_GOALS = [
   { id:'endometriosis', label:'Endometriosis', icon:'🔴', color:'#FFCDD2' },
 ];
 
-const ALL_DIETICIANS = [
-  { id:1, name:'Emily', credentials:'Co-founder', initials:'EY', avatarColor:'#C4A882', recipeIds:[], tags:[] },
-  { id:2, name:'Malaika', credentials:'Co-founder', initials:'MR', avatarColor:'#8FA888', recipeIds:[], tags:[] },
-  { id:3, name:'Claire Pettitt', credentials:'PhD, RD', specialty:"PCOS & Women's Health", initials:'CP', avatarColor:'#7A9E7E', recipeIds:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21], tags:['pcos','hormones','period','gut','fertility','endometriosis'] },
-  { id:4, name:'Alysse Vocca', credentials:'RD', specialty:"Eating Disorders & Women's Health", initials:'AV', avatarColor:'#C47A7A', recipeIds:[22,23,24,25,26,27,28,29,30,31], tags:['pcos','hormones','period','endometriosis'] },
-];
+// ALL_DIETICIANS now loaded dynamically from Supabase in Overview component
+const AVATAR_COLORS = ['#C4A882','#8FA888','#7A9E7E','#C47A7A','#A8BBD4','#BBA8CC','#D4B87A','#C8A080'];
+const HARDCODED_RECIPE_IDS = {
+  3: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],
+  4: [22,23,24,25,26,27,28,29,30,31],
+};
 
 const ALL_RECIPES = [
   { id:1, dieticianId:3, title:'Pumpkin, Orange & Zaatar Soup', emoji:'🎃', healthLabels:['pcos'] },
@@ -809,15 +810,28 @@ function Overview({ onSignOut }) {
   const [userCount, setUserCount] = useState(0);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [allDietitians, setAllDietitians] = useState([]);
 
   useEffect(() => {
     const load = async () => {
-      const [{ data: savesData }, { data: followsData }, { data: viewsData }, { count: users }] = await Promise.all([
+      const [{ data: savesData }, { data: followsData }, { data: viewsData }, { count: users }, { data: dData }, { data: newRecipes }] = await Promise.all([
         db.from('saves').select('recipe_id, user_id'),
         db.from('follows').select('dietitian_id'),
         db.from('views').select('entity_type, entity_id'),
         db.from('profiles').select('*', { count:'exact', head:true }),
+        db.from('dietitians').select('*'),
+        db.from('recipes').select('id, dietitian_id').eq('is_published', true),
       ]);
+      if (dData) {
+        const mapped = dData.map((d, i) => ({
+          ...d,
+          id: parseInt(d.id, 10),
+          initials: (d.name||'RD').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+          avatarColor: AVATAR_COLORS[i % AVATAR_COLORS.length],
+          recipeIds: newRecipes ? newRecipes.filter(r => parseInt(r.dietitian_id,10) === parseInt(d.id,10)).map(r => r.id) : (HARDCODED_RECIPE_IDS[d.id] || []),
+        }));
+        setAllDietitians(mapped);
+      }
       if (savesData) setSaves(savesData);
       if (followsData) { const fc = {}; followsData.forEach(f => { fc[f.dietitian_id] = (fc[f.dietitian_id]||0)+1; }); setFollows(fc); }
       if (viewsData) { const vc = {}; viewsData.forEach(v => { const k=`${v.entity_type}:${v.entity_id}`; vc[k]=(vc[k]||0)+1; }); setViews(vc); }
@@ -829,7 +843,7 @@ function Overview({ onSignOut }) {
 
   const totalSaves = saves.length;
   const totalViews = Object.values(views).reduce((a,b)=>a+b,0);
-  const rdStats = ALL_DIETICIANS.map(rd => ({
+  const rdStats = allDietitians.map(rd => ({
     ...rd,
     saves: saves.filter(s=>rd.recipeIds.includes(s.recipe_id)).length,
     views: rd.recipeIds.reduce((n,rid)=>n+(views[`recipe:${rid}`]||0),0),
@@ -842,7 +856,7 @@ function Overview({ onSignOut }) {
   const conditionSaves = {};
   saves.forEach(s => { const r=ALL_RECIPES.find(x=>x.id===s.recipe_id); if(r) r.healthLabels.forEach(l=>{ conditionSaves[l]=(conditionSaves[l]||0)+1; }); });
 
-  const selectedRd = selected ? ALL_DIETICIANS.find(d=>d.id===selected) : null;
+  const selectedRd = selected ? allDietitians.find(d=>d.id===selected) : null;
   const selectedRecipes = selectedRd ? ALL_RECIPES.filter(r=>r.dieticianId===selected) : [];
 
   if (loading) return <div className="loading"><div style={{fontFamily:'var(--font-logo)',fontSize:40,fontStyle:'italic',color:'var(--green-dark)'}}>nuri.</div><div style={{fontSize:13,color:'var(--text-light)'}}>Loading…</div></div>;
@@ -855,7 +869,7 @@ function Overview({ onSignOut }) {
       </div>
 
       <div className="overview-grid">
-        {[{icon:'👥',num:userCount,lbl:'Total users'},{icon:'📖',num:ALL_RECIPES.length,lbl:'Total recipes'},{icon:'🩺',num:ALL_DIETICIANS.length,lbl:'Dietitians'},{icon:'❤️',num:totalSaves,lbl:'Total saves'},{icon:'👁',num:totalViews,lbl:'Total views'}].map((s,i)=>(
+        {[{icon:'👥',num:userCount,lbl:'Total users'},{icon:'📖',num:ALL_RECIPES.length,lbl:'Total recipes'},{icon:'🩺',num:allDietitians.length,lbl:'Dietitians'},{icon:'❤️',num:totalSaves,lbl:'Total saves'},{icon:'👁',num:totalViews,lbl:'Total views'}].map((s,i)=>(
           <div key={i} className="stat-card"><div className="stat-icon">{s.icon}</div><div className="stat-num">{s.num}</div><div className="stat-lbl">{s.lbl}</div></div>
         ))}
       </div>
@@ -1118,18 +1132,20 @@ function EditRecipes() {
 
 // ── EDIT DIETITIANS ───────────────────────────────────────────
 function EditDietitians() {
-  const ALL_D = [
-    {id:1,name:'Emily',credentials:'Co-founder',initials:'EY',avatarColor:'#C4A882'},
-    {id:2,name:'Malaika',credentials:'Co-founder',initials:'MR',avatarColor:'#8FA888'},
-    {id:3,name:'Claire Pettitt',credentials:'PhD, RD',initials:'CP',avatarColor:'#7A9E7E'},
-    {id:4,name:'Alysse Vocca',credentials:'RD',initials:'AV',avatarColor:'#C47A7A'},
-  ];
+  const [ALL_D, setALL_D] = useState([]);
   const [profiles, setProfiles] = useState({});
   const [saving, setSaving] = useState(null);
   const [msg, setMsg] = useState({});
   const [uploading, setUploading] = useState(null);
 
   useEffect(() => {
+    db.from('dietitians').select('*').then(({ data }) => {
+      if (data) setALL_D(data.map((d,i) => ({
+        id: parseInt(d.id,10), name: d.name, credentials: d.credentials,
+        initials: (d.name||'RD').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+        avatarColor: AVATAR_COLORS[i % AVATAR_COLORS.length],
+      })));
+    });
     db.from('dietitians').select('id,bio,photo').then(({ data }) => {
       if (data) { const m = {}; data.forEach(d => { m[d.id] = d; }); setProfiles(m); }
     });
