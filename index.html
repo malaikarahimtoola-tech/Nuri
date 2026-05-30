@@ -700,6 +700,150 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .about-cta-title { font-family: var(--font-serif); font-size: 26px; font-style: italic; color: var(--text); margin-bottom: 10px; }
 .about-cta-text { font-size: 15px; color: var(--text-mid); margin-bottom: 24px; }
 
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── MACRO BAR ──────────────────────────────────────────────── */
+.macro-bar { display:flex; gap:0; border-radius:var(--radius-sm); overflow:hidden; height:6px; margin-bottom:6px; }
+.macro-seg { height:100%; transition:width 0.4s ease; }
+.macro-legend { display:flex; gap:12px; flex-wrap:wrap; }
+.macro-item { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--text-mid); }
+.macro-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.macro-val { font-weight:600; color:var(--text); }
+.macro-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:12px 0; }
+.macro-cell { background:var(--warm-beige); border-radius:var(--radius-sm); padding:10px 8px; text-align:center; }
+.macro-cell-val { font-family:var(--font-serif); font-size:20px; font-weight:600; color:var(--text); display:block; }
+.macro-cell-label { font-size:10px; color:var(--text-light); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-top:2px; }
+.macro-card-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+.macro-pill-sm { font-size:10px; padding:2px 7px; border-radius:50px; font-weight:600; }
+
+/* ── MEAL PLAN TAB ──────────────────────────────────────────── */
+.plan-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+.plan-week-nav { display:flex; align-items:center; gap:10px; }
+.plan-week-btn { width:32px; height:32px; border-radius:50%; border:1.5px solid var(--border); background:var(--white); cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; color:var(--text-mid); transition:all 0.15s; }
+.plan-week-btn:hover { border-color:var(--tan); background:var(--warm-beige); }
+.plan-week-label { font-family:var(--font-serif); font-size:15px; font-style:italic; color:var(--text-mid); }
+.plan-days { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:24px; }
+@media(max-width:760px){ .plan-days { grid-template-columns:repeat(3,1fr); } }
+@media(max-width:480px){ .plan-days { grid-template-columns:repeat(2,1fr); } }
+.plan-day { background:var(--white); border:1.5px solid var(--border); border-radius:var(--radius); padding:14px 12px; cursor:pointer; transition:all 0.18s; }
+.plan-day:hover { border-color:var(--tan); transform:translateY(-2px); box-shadow:var(--shadow); }
+.plan-day.selected { border-color:var(--brown); background:var(--warm-beige); }
+.plan-day-name { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--tan); margin-bottom:8px; }
+.plan-day-meals { display:flex; flex-direction:column; gap:4px; }
+.plan-day-slot { font-size:11px; color:var(--text-light); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.plan-day-slot i { color:var(--sage); margin-right:3px; }
+.plan-detail { background:var(--white); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); margin-bottom:24px; }
+.plan-detail-day { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--tan); margin-bottom:4px; }
+.plan-detail-title { font-family:var(--font-serif); font-size:22px; font-style:italic; font-weight:600; color:var(--text); margin-bottom:16px; }
+.plan-meal-rows { display:flex; flex-direction:column; gap:8px; }
+.plan-meal-row { display:grid; grid-template-columns:70px 1fr auto auto; align-items:center; gap:10px; padding:12px 14px; background:var(--cream); border-radius:var(--radius-sm); border:1px solid var(--border); }
+.plan-meal-type { font-size:11px; font-weight:600; color:var(--text-light); text-transform:uppercase; letter-spacing:0.06em; }
+.plan-meal-name { font-family:var(--font-serif); font-size:14px; font-style:italic; color:var(--text); }
+.plan-meal-kcal { font-size:11px; color:var(--text-light); white-space:nowrap; }
+.plan-add-btn { font-size:12px; padding:5px 12px; border:1.5px solid var(--border); border-radius:50px; background:none; color:var(--text-mid); cursor:pointer; font-family:var(--font-body); transition:all 0.15s; white-space:nowrap; }
+.plan-add-btn:hover { border-color:var(--tan); color:var(--brown); }
+.plan-add-btn.added { background:var(--green-dark); border-color:var(--green-dark); color:white; }
+.plan-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:24px; }
+@media(max-width:600px){ .plan-summary { grid-template-columns:repeat(2,1fr); } }
+.plan-sum-box { background:var(--white); border-radius:var(--radius); padding:16px; text-align:center; box-shadow:var(--shadow); }
+.plan-sum-val { font-family:var(--font-serif); font-size:28px; font-weight:600; color:var(--text); display:block; }
+.plan-sum-label { font-size:11px; color:var(--text-light); text-transform:uppercase; letter-spacing:0.06em; display:block; margin-top:2px; }
+.plan-picker { background:var(--white); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); }
+.plan-picker-title { font-size:13px; font-weight:600; color:var(--text-mid); margin-bottom:12px; }
+.plan-picker-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+@media(max-width:600px){ .plan-picker-grid { grid-template-columns:repeat(2,1fr); } }
+.plan-recipe-opt { padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:all 0.15s; background:var(--cream); }
+.plan-recipe-opt:hover { border-color:var(--tan); background:var(--warm-beige); }
+.plan-recipe-opt-emoji { font-size:22px; margin-bottom:4px; }
+.plan-recipe-opt-name { font-family:var(--font-serif); font-size:12px; font-style:italic; color:var(--text); line-height:1.3; }
+.plan-recipe-opt-kcal { font-size:10px; color:var(--text-light); margin-top:3px; }
+.plan-premium-gate { background:linear-gradient(135deg, var(--warm-beige), var(--cream)); border:2px dashed var(--tan); border-radius:var(--radius); padding:48px 32px; text-align:center; }
+
+/* ── PLAN SECTION TABS ──────────────────────────────────────── */
+.plan-section-tabs { display:flex; gap:6px; margin-bottom:28px; flex-wrap:wrap; }
+.plan-section-tab { padding:9px 20px; border-radius:50px; border:1.5px solid var(--border); background:var(--white); font-family:var(--font-body); font-size:13px; font-weight:500; color:var(--text-mid); cursor:pointer; transition:all 0.18s; display:flex; align-items:center; gap:6px; }
+.plan-section-tab:hover { border-color:var(--tan); }
+.plan-section-tab.active { background:var(--brown); border-color:var(--brown); color:white; }
+/* ── PLAN SETUP ─────────────────────────────────────────────── */
+.plan-setup-card { background:var(--white); border-radius:var(--radius); padding:28px; box-shadow:var(--shadow); margin-bottom:20px; }
+.plan-setup-label { font-size:11px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--tan); margin-bottom:12px; display:block; }
+.plan-count-btns { display:flex; gap:10px; }
+.plan-count-btn { flex:1; padding:14px 8px; border:2px solid var(--border); border-radius:var(--radius-sm); background:var(--cream); font-family:var(--font-serif); font-size:22px; font-weight:600; color:var(--text); cursor:pointer; transition:all 0.18s; text-align:center; }
+.plan-count-btn:hover { border-color:var(--tan); }
+.plan-count-btn.selected { border-color:var(--brown); background:var(--warm-beige); }
+.plan-count-sub { font-family:var(--font-body); font-size:11px; color:var(--text-light); display:block; margin-top:3px; }
+.plan-type-chips { display:flex; gap:8px; flex-wrap:wrap; }
+.plan-type-chip { padding:8px 18px; border-radius:50px; border:1.5px solid var(--border); background:var(--white); font-size:13px; font-weight:500; color:var(--text-mid); cursor:pointer; transition:all 0.15s; font-family:var(--font-body); }
+.plan-type-chip:hover { border-color:var(--tan); }
+.plan-type-chip.selected { background:var(--brown); border-color:var(--brown); color:white; }
+.plan-generate-btn { width:100%; padding:16px; background:var(--brown); color:white; border:none; border-radius:50px; font-family:var(--font-body); font-size:15px; font-weight:600; cursor:pointer; transition:opacity 0.15s; margin-top:8px; }
+.plan-generate-btn:hover { opacity:0.88; }
+.plan-generate-btn:disabled { opacity:0.4; cursor:default; }
+/* ── PLAN WEEK VIEW ─────────────────────────────────────────── */
+.plan-week-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; margin-bottom:24px; }
+.plan-week-card { background:var(--white); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); }
+.plan-week-card-day { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--tan); margin-bottom:10px; }
+.plan-week-meal-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.plan-week-meal-row:last-child { border-bottom:none; }
+.plan-week-meal-type { font-size:10px; font-weight:600; color:var(--text-light); text-transform:uppercase; width:56px; flex-shrink:0; }
+.plan-week-meal-name { font-family:var(--font-serif); font-size:13px; font-style:italic; color:var(--text); flex:1; cursor:pointer; }
+.plan-week-meal-name:hover { text-decoration:underline; color:var(--brown); }
+.plan-week-swap { font-size:11px; padding:3px 10px; border:1px solid var(--border); border-radius:50px; background:none; color:var(--text-light); cursor:pointer; font-family:var(--font-body); white-space:nowrap; transition:all 0.15s; flex-shrink:0; }
+.plan-week-swap:hover { border-color:var(--tan); color:var(--brown); }
+/* ── PICKER MODAL ───────────────────────────────────────────── */
+.picker-overlay { position:fixed; inset:0; background:rgba(44,24,16,0.45); z-index:300; display:flex; align-items:flex-end; justify-content:center; }
+@media(min-width:600px){ .picker-overlay { align-items:center; } }
+.picker-sheet { background:var(--cream); border-radius:24px 24px 0 0; width:100%; max-width:640px; max-height:85vh; display:flex; flex-direction:column; overflow:hidden; }
+@media(min-width:600px){ .picker-sheet { border-radius:var(--radius); max-height:80vh; } }
+.picker-header { padding:20px 20px 0; flex-shrink:0; }
+.picker-title { font-family:var(--font-serif); font-size:20px; font-style:italic; font-weight:600; color:var(--text); margin-bottom:12px; }
+.picker-filter-row { display:flex; gap:6px; overflow-x:auto; padding-bottom:12px; }
+.picker-filter-row::-webkit-scrollbar { display:none; }
+.picker-filter-btn { padding:6px 14px; border-radius:50px; border:1.5px solid var(--border); background:var(--white); font-size:12px; font-weight:500; color:var(--text-mid); cursor:pointer; white-space:nowrap; transition:all 0.15s; font-family:var(--font-body); flex-shrink:0; }
+.picker-filter-btn.active { background:var(--brown); border-color:var(--brown); color:white; }
+.picker-body { flex:1; overflow-y:auto; padding:12px 20px 20px; }
+.picker-recipe-list { display:flex; flex-direction:column; gap:8px; }
+.picker-recipe-row { display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--white); border-radius:var(--radius-sm); border:1.5px solid var(--border); cursor:pointer; transition:all 0.15s; }
+.picker-recipe-row:hover { border-color:var(--tan); background:var(--warm-beige); }
+.picker-recipe-emoji { font-size:24px; flex-shrink:0; }
+.picker-recipe-info { flex:1; min-width:0; }
+.picker-recipe-title { font-family:var(--font-serif); font-size:14px; font-style:italic; font-weight:600; color:var(--text); }
+.picker-recipe-meta { font-size:11px; color:var(--text-light); margin-top:2px; }
+.picker-recipe-tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:5px; }
+/* ── PLAN GROCERY ───────────────────────────────────────────── */
+.plan-grocery-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+.plan-grocery-actions { display:flex; gap:8px; }
+.plan-grocery-btn { padding:8px 16px; border:1.5px solid var(--border); border-radius:50px; background:var(--white); font-size:12px; font-weight:500; color:var(--text-mid); cursor:pointer; font-family:var(--font-body); transition:all 0.15s; }
+.plan-grocery-btn:hover { border-color:var(--tan); color:var(--brown); }
+.plan-grocery-btn.primary { background:var(--brown); border-color:var(--brown); color:white; }
+/* ── FOOD LOG ───────────────────────────────────────────────── */
+.log-entry-form { background:var(--white); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); margin-bottom:24px; }
+.log-form-title { font-family:var(--font-serif); font-size:20px; font-style:italic; font-weight:600; color:var(--text); margin-bottom:20px; }
+.log-form-row { margin-bottom:16px; }
+.log-form-label { font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--tan); display:block; margin-bottom:8px; }
+.log-text-input { width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:var(--font-body); font-size:14px; color:var(--text); background:var(--cream); outline:none; transition:border-color 0.15s; }
+.log-text-input:focus { border-color:var(--tan); }
+.log-feel-row { display:flex; gap:8px; flex-wrap:wrap; }
+.log-feel-btn { padding:8px 16px; border-radius:50px; border:1.5px solid var(--border); background:var(--white); font-size:13px; cursor:pointer; transition:all 0.15s; font-family:var(--font-body); }
+.log-feel-btn:hover { border-color:var(--tan); }
+.log-feel-btn.selected { border-color:var(--brown); background:var(--warm-beige); font-weight:600; }
+.log-tag-chips { display:flex; gap:6px; flex-wrap:wrap; }
+.log-tag-chip { padding:6px 14px; border-radius:50px; border:1.5px solid var(--border); background:var(--white); font-size:12px; font-weight:500; color:var(--text-mid); cursor:pointer; transition:all 0.15s; font-family:var(--font-body); }
+.log-tag-chip:hover { border-color:var(--tan); }
+.log-tag-chip.selected { border-color:var(--sage); background:#7A9E7E22; color:var(--green-dark); }
+.log-save-btn { width:100%; padding:14px; background:var(--brown); color:white; border:none; border-radius:50px; font-family:var(--font-body); font-size:14px; font-weight:600; cursor:pointer; transition:opacity 0.15s; margin-top:4px; }
+.log-save-btn:hover { opacity:0.88; }
+.log-entries { display:flex; flex-direction:column; gap:10px; }
+.log-entry-card { background:var(--white); border-radius:var(--radius); padding:16px 20px; box-shadow:var(--shadow); }
+.log-entry-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.log-entry-meal { font-family:var(--font-serif); font-size:16px; font-style:italic; font-weight:600; color:var(--text); }
+.log-entry-meta { font-size:11px; color:var(--text-light); }
+.log-entry-feel { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:50px; font-size:12px; font-weight:600; }
+.log-entry-tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:8px; }
+.log-entry-tag { font-size:11px; padding:3px 9px; border-radius:50px; background:#7A9E7E22; color:var(--green-dark); border:1px solid #7A9E7E44; }
+.log-entry-note { font-size:13px; color:var(--text-mid); margin-top:8px; font-style:italic; line-height:1.5; }
+.log-empty { text-align:center; padding:40px 20px; }
+
 /* ── RD DASHBOARD ─────────────────────────────────────────── */
 .rd-dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .rd-dash-toggle { padding: 7px 16px; border-radius: 50px; border: 1.5px solid var(--brown); background: transparent; color: var(--brown); font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
@@ -871,6 +1015,64 @@ const PHOTO_IDS = [
 
 // Claire's Squarespace image base URL
 const CP = 'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/5f6f182a4ca040062e7a8003/';
+
+// ── AI MACRO ESTIMATION ───────────────────────────────────────
+// Cache lives in localStorage under 'nuri_macros_v1'
+function getMacroCache() {
+  try { return JSON.parse(localStorage.getItem('nuri_macros_v1') || '{}'); } catch { return {}; }
+}
+function setMacroCache(id, data) {
+  try {
+    const c = getMacroCache();
+    c[id] = data;
+    localStorage.setItem('nuri_macros_v1', JSON.stringify(c));
+  } catch {}
+}
+
+async function estimateMacros(recipe) {
+  const cached = getMacroCache()[recipe.id];
+  if (cached) return cached;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        system: 'You are a nutrition expert. Respond ONLY with a JSON object, no markdown, no explanation.',
+        messages: [{
+          role: 'user',
+          content: `Estimate nutrition per serving for this recipe.\nTitle: ${recipe.title}\nServings: ${recipe.servings}\nIngredients:\n${recipe.ingredients.join('\n')}\n\nRespond with ONLY this JSON (integers only): {"kcal":0,"protein":0,"carbs":0,"fat":0}`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const macros = JSON.parse(clean);
+    // Validate shape
+    if (typeof macros.kcal === 'number') {
+      setMacroCache(recipe.id, macros);
+      return macros;
+    }
+  } catch (e) {
+    console.warn('Macro estimation failed for recipe', recipe.id, e);
+  }
+  return null;
+}
+
+// Hook: returns { macros, loading } for a given recipe
+function useMacros(recipe) {
+  const [macros, setMacros] = React.useState(() => getMacroCache()[recipe?.id] || null);
+  const [loading, setLoading] = React.useState(!getMacroCache()[recipe?.id]);
+  useEffect(() => {
+    if (!recipe) return;
+    if (getMacroCache()[recipe.id]) { setMacros(getMacroCache()[recipe.id]); setLoading(false); return; }
+    setLoading(true);
+    estimateMacros(recipe).then(m => { setMacros(m); setLoading(false); });
+  }, [recipe?.id]);
+  return { macros, loading };
+}
 
 const RECIPES = [
   { id:1,  dieticianId:3, title:'Pumpkin, Orange & Zaatar Soup', subtitle:'Middle Eastern twist on a winter warmer', emoji:'🎃', photo:`${CP}6955a58e920e3020578746fb/1770821699612/soup+2.jpg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'75 min', servings:4, ingredients:['1 pumpkin, cut into large chunks','2 tbsp zaatar','1 white onion, peeled and diced','1 tsp sumac','Juice of 2 oranges','500 ml vegetable stock','2 tbsp cream or crème fraîche','Olive oil, salt & pepper'], instructions:['Preheat oven to 185°C.','Cut pumpkin into roughly 8 large pieces. Lay on a baking tray, drizzle with olive oil, zaatar, salt and pepper.','Roast for 45–60 minutes until flesh is soft.','Remove seeds and peel from the pumpkin.','Heat oil in a pan and fry the onion until soft. Add sumac and a pinch of salt.','Add pumpkin and 500 ml stock. Pour in orange juice and mix.','Bring to the boil, then simmer for 10 minutes.','Blend with a hand blender. Stir in cream or crème fraîche.'], note:'Keeps in the fridge for 2 days or freeze for up to 2 months. Reheat well before serving.' },
@@ -1184,6 +1386,17 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
             <span className="meta-item">🔥 {recipe.cookTime}</span>
             <span className="meta-item">🍽 {recipe.servings} servings</span>
           </div>
+          {(() => {
+            const m = getMacroCache()[recipe.id];
+            if (!m) return null;
+            return (
+              <div className="macro-card-row">
+                <span className="macro-pill-sm" style={{ background:'#7A9E7E22', color:'#3A6B4A' }}>{m.kcal} kcal</span>
+                <span className="macro-pill-sm" style={{ background:'#7A9E7E22', color:'#3A6B4A' }}>{m.protein}g protein</span>
+                <span className="macro-pill-sm" style={{ background:'#C4A26522', color:'#5C3D2E' }}>{m.carbs}g carbs</span>
+              </div>
+            );
+          })()}
         </div>
       </div>
     </>
@@ -1194,6 +1407,7 @@ function TopNav({ current, onChange, user, onSignIn, onSignOut }) {
   const links = [
     { id:'feed',    label:'Feed',    icon:'🏠' },
     { id:'explore', label:'Explore', icon:'🔍' },
+    { id:'plan',    label:'Plan',    icon:'📅' },
     { id:'saved',   label:'Saved',   icon:'🤍' },
     { id:'about',   label:'About',   icon:'✦'  },
     { id:'you',     label:'You',     icon:'👤' },
@@ -1263,21 +1477,64 @@ function Welcome({ onStart }) {
   );
 }
 
+function WelcomeSlide({ userName, healthGoals, onContinue }) {
+  const firstName = userName ? userName.split(/[@\s]/)[0] : null;
+  const matchedGoals = HEALTH_GOALS.filter(g => healthGoals?.includes(g.id));
+  return (
+    <div className="onboarding-wrap" style={{ textAlign:'center', maxWidth:600 }}>
+      <div style={{ fontFamily:'var(--font-logo)', fontSize:48, fontStyle:'italic', fontWeight:600, color:'var(--green-dark)', display:'inline-flex', alignItems:'flex-end', marginBottom:24 }}>
+        nuri<span style={{ display:'inline-block', width:10, height:10, borderRadius:'50%', background:'var(--rose)', marginLeft:2, marginBottom:3 }} />
+      </div>
+
+      <h1 style={{ fontFamily:'var(--font-serif)', fontSize:36, fontStyle:'italic', fontWeight:600, color:'var(--text)', lineHeight:1.2, marginBottom:12 }}>
+        {firstName ? `Welcome, ${firstName}.` : 'Welcome.'}
+      </h1>
+      <p style={{ fontSize:16, color:'var(--text-mid)', lineHeight:1.7, marginBottom:32, maxWidth:460, margin:'0 auto 32px' }}>
+        nuri. is a recipe platform built specifically for women managing hormonal and digestive conditions — every recipe created by a registered dietitian who specialises in your condition.
+      </p>
+
+      {matchedGoals.length > 0 && (
+        <div style={{ background:'var(--warm-beige)', borderRadius:'var(--radius)', padding:'20px 24px', marginBottom:32, display:'inline-block', textAlign:'left', maxWidth:400 }}>
+          <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--tan)', marginBottom:12 }}>Your feed is personalised for</div>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+            {matchedGoals.map(g => (
+              <span key={g.id} style={{ padding:'6px 14px', borderRadius:50, background:g.color, fontSize:13, fontWeight:500, color:'var(--text)' }}>
+                {g.icon} {g.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{ display:'flex', flexDirection:'column', gap:14, maxWidth:380, margin:'0 auto 36px' }}>
+        {[
+          { icon:'🩺', text:'Every recipe written by a verified registered dietitian' },
+          { icon:'🌸', text:'Condition-specific — not generic "healthy eating"' },
+          { icon:'📅', text:'Build your weekly meal plan and track how food makes you feel' },
+        ].map(({ icon, text }) => (
+          <div key={text} style={{ display:'flex', alignItems:'center', gap:12, textAlign:'left' }}>
+            <span style={{ fontSize:20, flexShrink:0 }}>{icon}</span>
+            <span style={{ fontSize:14, color:'var(--text-mid)', lineHeight:1.5 }}>{text}</span>
+          </div>
+        ))}
+      </div>
+
+      <button className="onboarding-btn" onClick={onContinue}>
+        Explore my recipes →
+      </button>
+    </div>
+  );
+}
+
 function Onboarding({ onComplete, userName }) {
   const [selected, setSelected] = useState([]);
   const toggle = id => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
-  const firstName = userName ? userName.split(/[@\s]/)[0] : null;
   return (
     <div className="onboarding-wrap">
       <div className="onboarding-head">
-        {firstName && (
-          <div style={{ fontFamily:'var(--font-serif)', fontSize:28, fontStyle:'italic', color:'var(--green-dark)', marginBottom:8 }}>
-            Welcome, {firstName} 👋
-          </div>
-        )}
         <div className="onboarding-step">Personalise your feed</div>
         <h1 className="onboarding-title">What are you managing?</h1>
-        <p className="onboarding-sub">Select all that feel relevant — we'll tailor your recipe feed. We're growing our library rapidly. Welcome to the community — excited to be on this journey with you.</p>
+        <p className="onboarding-sub">Select all that feel relevant — we'll tailor your recipe feed to your condition.</p>
       </div>
       <div className="onboarding-grid">
         {HEALTH_GOALS.map(g => (
@@ -1523,6 +1780,7 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
   const [showMadeIt, setShowMadeIt] = useState(false);
   const [communityPhotos, setCommunityPhotos] = useState([]);
   const isAdmin = user?.email === 'nuriteam@nuri.com' || user?.role === 'admin';
+  const { macros, loading: macrosLoading } = useMacros(recipe);
 
   useEffect(() => {
     // Load all community photos for this recipe from Supabase
@@ -1570,6 +1828,43 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
               </div>
             ))}
           </div>
+          {(() => {
+            const m = macros;
+            if (macrosLoading) return (
+              <div style={{ margin:'12px 0', padding:'12px 14px', background:'var(--warm-beige)', borderRadius:'var(--radius-sm)', display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ width:16, height:16, border:'2px solid var(--tan)', borderTopColor:'transparent', borderRadius:'50%', animation:'spin 0.8s linear infinite', flexShrink:0 }} />
+                <span style={{ fontSize:12, color:'var(--text-light)' }}>Calculating nutrition…</span>
+              </div>
+            );
+            if (!m) return null;
+            const total = m.protein * 4 + m.carbs * 4 + m.fat * 9;
+            const pp = Math.round((m.protein * 4 / total) * 100);
+            const cp = Math.round((m.carbs * 4 / total) * 100);
+            const fp = 100 - pp - cp;
+            return (
+              <div style={{ marginBottom:16 }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+                  <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--tan)' }}>Nutrition per serving</div>
+                  <div style={{ fontSize:10, color:'var(--text-light)', fontStyle:'italic' }}>AI-estimated</div>
+                </div>
+                <div className="macro-grid">
+                  {[{val:m.kcal,lbl:'kcal'},{val:`${m.protein}g`,lbl:'protein'},{val:`${m.carbs}g`,lbl:'carbs'},{val:`${m.fat}g`,lbl:'fat'}].map(({val,lbl}) => (
+                    <div key={lbl} className="macro-cell"><span className="macro-cell-val">{val}</span><span className="macro-cell-label">{lbl}</span></div>
+                  ))}
+                </div>
+                <div className="macro-bar">
+                  <div className="macro-seg" style={{ width:`${pp}%`, background:'#7A9E7E' }} title={`Protein ${pp}%`} />
+                  <div className="macro-seg" style={{ width:`${cp}%`, background:'#C4A265' }} title={`Carbs ${cp}%`} />
+                  <div className="macro-seg" style={{ width:`${fp}%`, background:'#C47A7A' }} title={`Fat ${fp}%`} />
+                </div>
+                <div className="macro-legend">
+                  {[{color:'#7A9E7E',label:'Protein'},{color:'#C4A265',label:'Carbs'},{color:'#C47A7A',label:'Fat'}].map(({color,label}) => (
+                    <div key={label} className="macro-item"><div className="macro-dot" style={{background:color}} />{label}</div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
           <div className="detail-section">
             <div className="section-script">Ingredients</div>
             <ul className="ingredient-list">
@@ -1999,7 +2294,485 @@ function GroceryList({ savedRecipes }) {
   );
 }
 
-function SavedTab({ saved, onRecipeClick, onDieticianClick, onToggleSave }) {
+// ── PLAN TAB ──────────────────────────────────────────────────
+const DAYS_OF_WEEK = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const PLAN_MEAL_TYPES = ['Breakfast','Lunch','Dinner','Snack'];
+
+// Rough meal-type tagging based on recipe characteristics
+function guessMealType(recipe) {
+  const t = (recipe.title + ' ' + (recipe.subtitle || '')).toLowerCase();
+  if (/pancake|oat|porridge|egg|breakfast|yoghurt|smoothie|chia|granola|frittata/.test(t)) return 'Breakfast';
+  if (/cookie|ball|bite|snack|bar|energy/.test(t)) return 'Snack';
+  if (/soup|salad|wrap|dahl|stew|curry|traybake|bowl/.test(t)) return ['Lunch','Dinner'][Math.floor(recipe.id % 2)];
+  return recipe.id % 3 === 0 ? 'Lunch' : 'Dinner';
+}
+
+function buildWeekPlan(recipeCount, mealTypes, healthGoals) {
+  const pool = ALL_RECIPES.filter(r =>
+    (!healthGoals?.length || r.healthLabels.some(l => healthGoals.includes(l)))
+  );
+  const src = pool.length >= recipeCount ? pool : ALL_RECIPES;
+  // Shuffle deterministically by date so refresh gives new results
+  const seed = new Date().toDateString();
+  const shuffled = [...src].sort((a, b) => {
+    const ha = (a.id * seed.length) % 97;
+    const hb = (b.id * seed.length) % 97;
+    return ha - hb;
+  });
+  // Pick recipeCount unique recipes
+  const picked = shuffled.slice(0, recipeCount);
+  // Build plan: spread across week, use meal type guessing
+  const plan = {};
+  DAYS_OF_WEEK.forEach(d => { plan[d] = {}; });
+  picked.forEach((r, i) => {
+    const day = DAYS_OF_WEEK[i % 7];
+    const type = mealTypes.includes(guessMealType(r)) ? guessMealType(r) : mealTypes[i % mealTypes.length];
+    // Avoid collision on same day/type
+    let finalType = type;
+    if (plan[day][finalType]) {
+      const alt = mealTypes.find(t => !plan[day][t]);
+      if (alt) finalType = alt;
+    }
+    plan[day][finalType] = r;
+  });
+  return plan;
+}
+
+// Grocery list from plan
+function buildGroceryFromPlan(plan) {
+  const recipes = [];
+  DAYS_OF_WEEK.forEach(day => {
+    PLAN_MEAL_TYPES.forEach(type => {
+      const r = plan[day]?.[type];
+      if (r && !recipes.find(x => x.id === r.id)) recipes.push(r);
+    });
+  });
+  return recipes;
+}
+
+// Recipe picker sheet
+function RecipePickerSheet({ slot, pool, onPick, onClose }) {
+  const [filter, setFilter] = useState('All');
+  const filters = ['All', ...PLAN_MEAL_TYPES];
+  const filtered = filter === 'All' ? pool : pool.filter(r => guessMealType(r) === filter);
+  return (
+    <div className="picker-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="picker-sheet" onClick={e => e.stopPropagation()}>
+        <div className="picker-header">
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+            <div className="picker-title">
+              {slot ? `Swap ${slot.type} · ${slot.day}` : 'Choose a recipe'}
+            </div>
+            <button style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'var(--text-light)', lineHeight:1 }} onClick={onClose}>✕</button>
+          </div>
+          <div className="picker-filter-row">
+            {filters.map(f => (
+              <button key={f} className={`picker-filter-btn ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f}</button>
+            ))}
+          </div>
+        </div>
+        <div className="picker-body">
+          <div className="picker-recipe-list">
+            {filtered.map(r => (
+              <div key={r.id} className="picker-recipe-row" onClick={() => onPick(r)}>
+                <div className="picker-recipe-emoji">{r.emoji}</div>
+                <div className="picker-recipe-info">
+                  <div className="picker-recipe-title">{r.title}</div>
+                  <div className="picker-recipe-meta">{guessMealType(r)} · ⏱ {r.prepTime} · 🍽 {r.servings} servings</div>
+                  <div className="picker-recipe-tags">
+                    {r.healthLabels.slice(0,3).map(l => {
+                      const lm = LABEL_MAP[l];
+                      return lm ? <span key={l} style={{ fontSize:10, padding:'2px 7px', borderRadius:50, background:lm.color, color:lm.text, fontWeight:600 }}>{lm.label}</span> : null;
+                    })}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {filtered.length === 0 && <div style={{ textAlign:'center', padding:'32px 0', color:'var(--text-light)', fontSize:14 }}>No recipes for this filter yet.</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Food log tags
+const FOOD_LOG_TAGS = [
+  'High protein','Low GI','Anti-inflammatory','Gut-friendly','Hormone-supporting',
+  'Iron-rich','Omega-3','High fibre','Fermented','Plant-based','Dairy-free','Gluten-free',
+];
+const FEEL_OPTIONS = [
+  { label:'Energised', emoji:'⚡' },
+  { label:'Good', emoji:'🌿' },
+  { label:'Okay', emoji:'😐' },
+  { label:'Bloated', emoji:'😮‍💨' },
+  { label:'Tired', emoji:'😴' },
+  { label:'Unsettled', emoji:'🤢' },
+];
+const SYMPTOM_TAGS = ['No symptoms','Bloating','Cravings','Brain fog','Cramps','Fatigue','Mood dip','Skin flare'];
+
+function FoodLogSection() {
+  const [mealName, setMealName] = useState('');
+  const [mealType, setMealType] = useState('');
+  const [feel, setFeel] = useState('');
+  const [tags, setTags] = useState([]);
+  const [symptoms, setSymptoms] = useState([]);
+  const [note, setNote] = useState('');
+  const [entries, setEntries] = useState(() => ls('nuri_food_log', []));
+
+  useEffect(() => { lsSave('nuri_food_log', entries); }, [entries]);
+
+  const toggleTag = t => setTags(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
+  const toggleSymptom = s => setSymptoms(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
+
+  const save = () => {
+    if (!mealName.trim()) return;
+    const entry = {
+      id: Date.now(),
+      meal: mealName.trim(),
+      type: mealType,
+      feel,
+      tags,
+      symptoms,
+      note: note.trim(),
+      date: new Date().toISOString(),
+    };
+    setEntries(p => [entry, ...p]);
+    setMealName(''); setMealType(''); setFeel(''); setTags([]); setSymptoms([]); setNote('');
+  };
+
+  const feelOpt = FEEL_OPTIONS.find(f => f.label === feel);
+
+  return (
+    <div>
+      <div className="log-entry-form">
+        <div className="log-form-title">Log a meal</div>
+
+        <div className="log-form-row">
+          <label className="log-form-label">What did you eat?</label>
+          <input className="log-text-input" placeholder="e.g. Salmon tray bake, homemade lentil soup…" value={mealName} onChange={e => setMealName(e.target.value)} />
+        </div>
+
+        <div className="log-form-row">
+          <label className="log-form-label">Meal type</label>
+          <div className="log-feel-row">
+            {PLAN_MEAL_TYPES.map(t => (
+              <button key={t} className={`log-feel-btn ${mealType === t ? 'selected' : ''}`} onClick={() => setMealType(t)}>{t}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="log-form-row">
+          <label className="log-form-label">How did you feel?</label>
+          <div className="log-feel-row">
+            {FEEL_OPTIONS.map(f => (
+              <button key={f.label} className={`log-feel-btn ${feel === f.label ? 'selected' : ''}`} onClick={() => setFeel(f.label)}>
+                {f.emoji} {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="log-form-row">
+          <label className="log-form-label">Tag this meal</label>
+          <div className="log-tag-chips">
+            {FOOD_LOG_TAGS.map(t => (
+              <button key={t} className={`log-tag-chip ${tags.includes(t) ? 'selected' : ''}`} onClick={() => toggleTag(t)}>{t}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="log-form-row">
+          <label className="log-form-label">Any symptoms?</label>
+          <div className="log-tag-chips">
+            {SYMPTOM_TAGS.map(s => (
+              <button key={s} className={`log-tag-chip ${symptoms.includes(s) ? 'selected' : ''}`} onClick={() => toggleSymptom(s)}>{s}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="log-form-row">
+          <label className="log-form-label">Notes (optional)</label>
+          <input className="log-text-input" placeholder="Anything else worth noting…" value={note} onChange={e => setNote(e.target.value)} />
+        </div>
+
+        <button className="log-save-btn" onClick={save} disabled={!mealName.trim()}>Save entry →</button>
+      </div>
+
+      {entries.length === 0 ? (
+        <div className="log-empty">
+          <div style={{ fontSize:36, marginBottom:12 }}>🌿</div>
+          <div style={{ fontFamily:'var(--font-serif)', fontSize:18, fontStyle:'italic', color:'var(--text-mid)' }}>No entries yet</div>
+          <div style={{ fontSize:13, color:'var(--text-light)', marginTop:6 }}>Start logging to build your personal food diary.</div>
+        </div>
+      ) : (
+        <div className="log-entries">
+          <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text-light)', marginBottom:12 }}>Recent entries</div>
+          {entries.map(e => {
+            const fOpt = FEEL_OPTIONS.find(f => f.label === e.feel);
+            const feelColor = { 'Energised':'#C8E6C4','Good':'#C4DEB8','Okay':'#F5E6A3','Bloated':'#FFD9B3','Tired':'#D4B8E8','Unsettled':'#F4C4C4' }[e.feel] || 'var(--warm-beige)';
+            const feelText = { 'Energised':'#2E6B3E','Good':'#2E5E1E','Okay':'#7A6000','Bloated':'#8B4A00','Tired':'#4A2E6E','Unsettled':'#8B2020' }[e.feel] || 'var(--text-mid)';
+            return (
+              <div key={e.id} className="log-entry-card">
+                <div className="log-entry-top">
+                  <div>
+                    <div className="log-entry-meal">{e.meal}</div>
+                    <div className="log-entry-meta">
+                      {e.type && <span style={{ marginRight:8 }}>{e.type}</span>}
+                      {new Date(e.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}
+                    </div>
+                  </div>
+                  {e.feel && (
+                    <div className="log-entry-feel" style={{ background:feelColor, color:feelText }}>
+                      {fOpt?.emoji} {e.feel}
+                    </div>
+                  )}
+                </div>
+                {e.tags.length > 0 && (
+                  <div className="log-entry-tags">
+                    {e.tags.map(t => <span key={t} className="log-entry-tag">{t}</span>)}
+                  </div>
+                )}
+                {e.symptoms.length > 0 && (
+                  <div className="log-entry-tags" style={{ marginTop:4 }}>
+                    {e.symptoms.map(s => <span key={s} style={{ fontSize:11, padding:'3px 9px', borderRadius:50, background:'#F2C4CE44', color:'#8B3A52', border:'1px solid #F2C4CE' }}>{s}</span>)}
+                  </div>
+                )}
+                {e.note && <div className="log-entry-note">"{e.note}"</div>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MealPlanTab({ user, onSignIn, isPremium, onSubscribe, healthGoals, onRecipeClick }) {
+  const [section, setSection] = useState('plan');
+
+  // Plan setup state — default 5 recipes, all meal types
+  const [recipeCount, setRecipeCount] = useState(() => ls('nuri_plan_count', 5));
+  const [mealTypes, setMealTypes] = useState(() => ls('nuri_plan_types', ['Breakfast','Lunch','Dinner']));
+  const [plan, setPlan] = useState(() => ls('nuri_plan_week', null));
+  const [showPicker, setShowPicker] = useState(null);
+  const [showSetup, setShowSetup] = useState(false);
+
+  // Auto-generate on first load if no plan exists and user is premium
+  const hasAutoGenerated = React.useRef(false);
+  useEffect(() => {
+    if (isPremium && user && !plan && !hasAutoGenerated.current) {
+      hasAutoGenerated.current = true;
+      const newPlan = buildWeekPlan(recipeCount, mealTypes, healthGoals);
+      setPlan(newPlan);
+      lsSave('nuri_plan_week', newPlan);
+    }
+  }, [isPremium, user]);
+
+  useEffect(() => { lsSave('nuri_plan_count', recipeCount); }, [recipeCount]);
+  useEffect(() => { lsSave('nuri_plan_types', mealTypes); }, [mealTypes]);
+  useEffect(() => { if (plan) lsSave('nuri_plan_week', plan); }, [plan]);
+
+  const toggleMealType = t => setMealTypes(p => p.includes(t) ? (p.length > 1 ? p.filter(x => x !== t) : p) : [...p, t]);
+
+  const conditionPool = useMemo(() => {
+    const pool = ALL_RECIPES.filter(r => !healthGoals?.length || r.healthLabels.some(l => healthGoals.includes(l)));
+    return pool.length >= 4 ? pool : ALL_RECIPES;
+  }, [healthGoals]);
+
+  const generate = () => {
+    const newPlan = buildWeekPlan(recipeCount, mealTypes, healthGoals);
+    setPlan(newPlan);
+    setShowSetup(false);
+  };
+
+  const swapRecipe = (recipe) => {
+    if (!showPicker) return;
+    setPlan(p => ({ ...p, [showPicker.day]: { ...p[showPicker.day], [showPicker.type]: recipe } }));
+    setShowPicker(null);
+  };
+
+  const groceryRecipes = useMemo(() => plan ? buildGroceryFromPlan(plan) : [], [plan]);
+
+  // Gate: not logged in
+  if (!user) return (
+    <div className="page-wrap">
+      <div className="page-hero">
+        <div className="page-hero-script">plan ahead</div>
+        <h1 className="page-hero-title">My Plan</h1>
+      </div>
+      <div className="plan-premium-gate">
+        <div style={{ fontSize:40, marginBottom:16 }}>📅</div>
+        <div style={{ fontFamily:'var(--font-serif)', fontSize:24, fontStyle:'italic', color:'var(--text)', marginBottom:8 }}>Sign in to unlock Plan</div>
+        <p style={{ fontSize:15, color:'var(--text-mid)', maxWidth:400, margin:'0 auto 24px', lineHeight:1.6 }}>
+          Build your weekly meal plan, generate a grocery list, and log how food makes you feel — all in one place.
+        </p>
+        <button className="welcome-cta" onClick={onSignIn}>Sign in / Sign up →</button>
+      </div>
+    </div>
+  );
+
+  // Gate: not premium
+  if (!isPremium) return (
+    <div className="page-wrap">
+      <div className="page-hero">
+        <div className="page-hero-script">plan ahead</div>
+        <h1 className="page-hero-title">My Plan</h1>
+      </div>
+      <div className="plan-premium-gate">
+        <div style={{ fontSize:40, marginBottom:16 }}>✨</div>
+        <div style={{ fontFamily:'var(--font-serif)', fontSize:24, fontStyle:'italic', color:'var(--text)', marginBottom:8 }}>Premium feature</div>
+        <p style={{ fontSize:15, color:'var(--text-mid)', maxWidth:400, margin:'0 auto 24px', lineHeight:1.6 }}>
+          My Plan includes your weekly meal planner, auto-generated grocery list, and food & wellness log. Upgrade to unlock.
+        </p>
+        <div style={{ display:'flex', flexDirection:'column', gap:10, maxWidth:320, margin:'0 auto 28px', textAlign:'left' }}>
+          {['📅 Weekly meal plan — 3, 5 or 7 recipes','🛒 Auto grocery list from your plan','📓 Food & wellness log with mood tags','📖 Downloadable recipe book'].map(f => (
+            <div key={f} style={{ fontSize:14, color:'var(--text-mid)', display:'flex', gap:8 }}>{f}</div>
+          ))}
+        </div>
+        <button className="welcome-cta" onClick={onSubscribe}>Upgrade to Premium →</button>
+      </div>
+    </div>
+  );
+
+  const weekStart = (() => {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(new Date().setDate(diff));
+  })();
+  const weekLabel = weekStart.toLocaleDateString('en-GB', { day:'numeric', month:'short' }) + ' – ' +
+    new Date(weekStart.getTime() + 6*86400000).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+
+  const conditionLabel = healthGoals?.length
+    ? healthGoals.map(id => HEALTH_GOALS.find(g => g.id === id)?.icon).filter(Boolean).join(' ')
+    : '🌿';
+
+  return (
+    <div className="page-wrap">
+      {showPicker && (
+        <RecipePickerSheet slot={showPicker} pool={conditionPool} onPick={swapRecipe} onClose={() => setShowPicker(null)} />
+      )}
+
+      <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:28, flexWrap:'wrap', gap:12 }}>
+        <div>
+          <div style={{ fontFamily:'var(--font-body)', fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--tan)', marginBottom:4 }}>plan ahead</div>
+          <h1 style={{ fontFamily:'var(--font-serif)', fontSize:36, fontStyle:'italic', fontWeight:600, color:'var(--text)' }}>My Plan</h1>
+          <div style={{ fontSize:13, color:'var(--text-light)', marginTop:2 }}>
+            {conditionLabel} Week of {weekLabel}
+          </div>
+        </div>
+        <div style={{ display:'flex', gap:8 }}>
+          <button
+            onClick={() => setShowSetup(s => !s)}
+            style={{ padding:'9px 18px', border:'1.5px solid var(--border)', borderRadius:50, background:'var(--white)', color:'var(--text-mid)', fontSize:13, fontFamily:'var(--font-body)', cursor:'pointer', fontWeight:500 }}
+          >
+            ⚙ Customise
+          </button>
+          <button
+            onClick={generate}
+            style={{ padding:'9px 18px', border:'1.5px solid var(--tan)', borderRadius:50, background:'var(--warm-beige)', color:'var(--brown)', fontSize:13, fontFamily:'var(--font-body)', cursor:'pointer', fontWeight:600 }}
+          >
+            ↺ Regenerate
+          </button>
+        </div>
+      </div>
+
+      {/* Customise panel — collapsed by default */}
+      {showSetup && (
+        <div className="plan-setup-card" style={{ marginBottom:20 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+            <div>
+              <span className="plan-setup-label">Recipes per week</span>
+              <div className="plan-count-btns">
+                {[3,5,7].map(n => (
+                  <div key={n} className={`plan-count-btn ${recipeCount===n?'selected':''}`} onClick={() => setRecipeCount(n)}>
+                    {n}
+                    <span className="plan-count-sub">{n===3?'Light':n===5?'Regular':'Full week'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span className="plan-setup-label">Meal types</span>
+              <div className="plan-type-chips">
+                {PLAN_MEAL_TYPES.map(t => (
+                  <button key={t} className={`plan-type-chip ${mealTypes.includes(t)?'selected':''}`} onClick={() => toggleMealType(t)}>{t}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <button className="plan-generate-btn" onClick={generate}>Apply & regenerate</button>
+        </div>
+      )}
+
+      <div className="plan-section-tabs">
+        <button className={`plan-section-tab ${section==='plan'?'active':''}`} onClick={() => setSection('plan')}>📅 Meal Plan</button>
+        <button className={`plan-section-tab ${section==='grocery'?'active':''}`} onClick={() => setSection('grocery')}>🛒 Grocery List</button>
+        <button className={`plan-section-tab ${section==='log'?'active':''}`} onClick={() => setSection('log')}>📓 Food Log</button>
+      </div>
+
+      {/* ── MEAL PLAN SECTION ── */}
+      {section === 'plan' && (
+        <div>
+          {plan ? (
+            <>
+              <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text-light)', marginBottom:14 }}>
+                {recipeCount} recipes · {healthGoals?.length ? healthGoals.map(id => HEALTH_GOALS.find(g=>g.id===id)?.label).filter(Boolean).join(', ') : 'All recipes'}
+              </div>
+              <div className="plan-week-grid">
+                {DAYS_OF_WEEK.map(day => {
+                  const dayMeals = plan[day] || {};
+                  if (!Object.keys(dayMeals).length) return null;
+                  return (
+                    <div key={day} className="plan-week-card">
+                      <div className="plan-week-card-day">{day}</div>
+                      {PLAN_MEAL_TYPES.map(type => {
+                        const r = dayMeals[type];
+                        if (!r) return null;
+                        return (
+                          <div key={type} className="plan-week-meal-row">
+                            <div className="plan-week-meal-type">{type}</div>
+                            <div className="plan-week-meal-name" onClick={() => onRecipeClick(r)}>{r.emoji} {r.title}</div>
+                            <button className="plan-week-swap" onClick={() => setShowPicker({ day, type })}>swap</button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign:'center', padding:'48px 0', color:'var(--text-light)' }}>
+              <div style={{ fontSize:40, marginBottom:12 }}>🥗</div>
+              <div style={{ fontFamily:'var(--font-serif)', fontSize:18, fontStyle:'italic', color:'var(--text-mid)' }}>Building your plan…</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── GROCERY LIST SECTION ── */}
+      {section === 'grocery' && (
+        groceryRecipes.length === 0 ? (
+          <div style={{ textAlign:'center', padding:'48px 0' }}>
+            <div style={{ fontSize:40, marginBottom:12 }}>🛒</div>
+            <div style={{ fontFamily:'var(--font-serif)', fontSize:18, fontStyle:'italic', color:'var(--text-mid)' }}>No plan yet</div>
+            <div style={{ fontSize:13, color:'var(--text-light)', marginTop:6, marginBottom:20 }}>Build your meal plan first, then your grocery list generates automatically.</div>
+            <button className="welcome-cta" style={{ fontSize:14, padding:'12px 28px' }} onClick={() => setSection('plan')}>Go to Meal Plan →</button>
+          </div>
+        ) : (
+          <GroceryList savedRecipes={groceryRecipes} />
+        )
+      )}
+
+      {/* ── FOOD LOG SECTION ── */}
+      {section === 'log' && <FoodLogSection />}
+    </div>
+  );
+}
+
+function SavedTab({ saved, onRecipeClick, onDieticianClick, onToggleSave, isPremium, onSubscribe }) {
   const [view, setView] = useState('recipes');
   const savedRecipes = ALL_RECIPES.filter(r => saved.has(r.id));
 
@@ -2023,20 +2796,25 @@ function SavedTab({ saved, onRecipeClick, onDieticianClick, onToggleSave }) {
           <h1 className="page-hero-title">{view === 'grocery' ? 'Grocery List' : 'Recipe Book'}</h1>
           <p className="page-hero-sub">{savedRecipes.length} recipe{savedRecipes.length !== 1 ? 's' : ''} saved</p>
         </div>
-        {view === 'recipes' && (
+      {view === 'recipes' && (
           <button
-            onClick={() => downloadBook(savedRecipes)}
+            onClick={() => {
+              if (!isPremium) { onSubscribe(); return; }
+              downloadBook(savedRecipes);
+            }}
             style={{
               display:'flex', alignItems:'center', gap:8,
-              padding:'12px 24px', background:'var(--brown)', color:'white',
-              border:'none', borderRadius:50, fontSize:14, fontWeight:600,
+              padding:'12px 24px', background: isPremium ? 'var(--brown)' : 'var(--warm-beige)',
+              color: isPremium ? 'white' : 'var(--brown)',
+              border: isPremium ? 'none' : '1.5px solid var(--tan)',
+              borderRadius:50, fontSize:14, fontWeight:600,
               cursor:'pointer', fontFamily:'var(--font-body)', flexShrink:0,
               boxShadow:'var(--shadow-md)', transition:'opacity 0.15s',
             }}
             onMouseEnter={e=>e.currentTarget.style.opacity='0.85'}
             onMouseLeave={e=>e.currentTarget.style.opacity='1'}
           >
-            ↓ Download Recipe Book
+            {isPremium ? '↓ Download Recipe Book' : '🔒 Premium — Download Recipe Book'}
           </button>
         )}
       </div>
@@ -3025,8 +3803,15 @@ function App() {
       window._ph.capture('signed_in');
     }
     const profile = await loadUserData(u.id);
-    // Only show onboarding for new signups (no goals set yet)
-    if (!profile?.health_goals?.length) {
+    // If user already went through onboarding before signing up, persist those goals
+    if (window._pendingGoals?.length) {
+      const goals = window._pendingGoals;
+      window._pendingGoals = null;
+      setHealthGoals(goals);
+      await db.from('profiles').update({ health_goals: goals }).eq('id', u.id);
+      setScreen('welcome_new');
+    } else if (!profile?.health_goals?.length) {
+      // Brand new user who skipped pre-auth onboarding — show condition picker then welcome
       setScreen('onboarding');
     } else {
       setScreen('app');
@@ -3106,8 +3891,14 @@ function App() {
   const completeOnboarding = async (goals) => {
     setHealthGoals(goals);
     if (window._ph) window._ph.capture('onboarding_completed', { conditions: goals });
-    if (user) await db.from('profiles').update({ health_goals: goals }).eq('id', user.id);
-    setScreen('app');
+    if (user) {
+      await db.from('profiles').update({ health_goals: goals }).eq('id', user.id);
+      setScreen('welcome_new');
+    } else {
+      // Store goals temporarily so handleAuth can persist them after signup
+      window._pendingGoals = goals;
+      setScreen('app');
+    }
   };
 
   if (screen === 'loading') return (
@@ -3121,6 +3912,7 @@ function App() {
 
   if (screen === 'welcome') return <Welcome onStart={() => setScreen('onboarding')} />;
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} userName={user?.name || user?.email} />;
+  if (screen === 'welcome_new') return <WelcomeSlide userName={user?.name || user?.email} healthGoals={healthGoals} onContinue={() => setScreen('app')} />;
 
   const navProps = { user, onSignIn: () => setShowAuthModal('signin'), onSignOut: handleSignOut };
   const sharedProps = {
@@ -3155,7 +3947,8 @@ function App() {
       <TopNav current={tab} onChange={setTab} {...navProps} />
       {tab === 'feed'    && <FeedTab healthGoals={healthGoals} {...sharedProps} />}
       {tab === 'explore' && <ExploreTab followed={followed} onToggleFollow={toggleFollow} onDieticianClick={d => navigate('profile', d)} supaDietitians={supaDietitians} />}
-      {tab === 'saved'   && <SavedTab {...sharedProps} />}
+      {tab === 'plan'    && <MealPlanTab user={user} onSignIn={() => setShowAuthModal('signup')} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} healthGoals={healthGoals} onRecipeClick={r => navigate('recipe', r)} />}
+      {tab === 'saved'   && <SavedTab {...sharedProps} isPremium={isPremium} onSubscribe={() => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } }} />}
       {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} supaDietitians={supaDietitians} />}
       {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} />}
       {showApplyModal && <RDApplicationModal onClose={() => setShowApplyModal(false)} />}
