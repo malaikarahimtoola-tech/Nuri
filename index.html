@@ -972,7 +972,7 @@ const { useState, useMemo, useEffect } = React;
 
 // ── DATA ─────────────────────────────────────────────────────
 const HEALTH_GOALS = [
-  { id: 'pcos', label: 'PCOS Support', icon: '🌸', description: 'Recipes to support hormone balance and reduce inflammation', color: '#F2C4CE' },
+  { id: 'pcos', label: 'PCOS / PMOS', icon: '🌸', description: 'Recipes to support hormone balance and reduce inflammation', color: '#F2C4CE' },
   { id: 'fertility', label: 'Fertility & Conception', icon: '🌱', description: 'Nourish your body for conception', color: '#C8E6C4' },
   { id: 'hormones', label: 'Hormone Balance', icon: '⚖️', description: 'Regulate mood, energy & cycle', color: '#F5E6A3' },
   { id: 'energy', label: 'Low Energy & Fatigue', icon: '✨', description: 'Fuel your body from the inside out', color: '#FFD9B3' },
@@ -985,7 +985,7 @@ const HEALTH_GOALS = [
 ];
 
 const LABEL_MAP = {
-  pcos: { label: 'PCOS', color: '#F2C4CE', text: '#8B3A52' },
+  pcos: { label: 'PCOS / PMOS', color: '#F2C4CE', text: '#8B3A52' },
   fertility: { label: 'Fertility', color: '#C8E6C4', text: '#2E6B3E' },
   hormones: { label: 'Hormones', color: '#F5E6A3', text: '#7A6000' },
   energy: { label: 'Energy', color: '#FFD9B3', text: '#8B4A00' },
@@ -1309,7 +1309,7 @@ function UnlockModal({ recipe, onClose, onSignIn }) {
           <div className="unlock-modal-perks">
             {[
               { icon:'🩺', text:'Recipes by verified registered dietitians' },
-              { icon:'🔬', text:'Condition-specific: PCOS, endo, hormones & more' },
+              { icon:'🔬', text:'Condition-specific: PCOS / PMOS, endo, hormones & more' },
               { icon:'🛒', text:'Auto grocery lists from your saved recipes' },
               { icon:'❤️', text:'Save recipes and build your personal recipe book' },
             ].map(p => (
@@ -1455,7 +1455,7 @@ function Welcome({ onStart }) {
           nuri<span style={{display:'inline-block',width:12,height:12,borderRadius:'50%',background:'var(--rose)',marginLeft:3,marginBottom:3,flexShrink:0}} />
         </h1>
         <p className="welcome-sub">
-          Recipes built by registered dietitians — for PCOS, IBS, endometriosis, and more. Not generic wellness. Real clinical expertise, in your kitchen.
+          Recipes built by registered dietitians — for PCOS / PMOS, IBS, endometriosis, and more. Not generic wellness. Real clinical expertise, in your kitchen.
         </p>
         <button className="welcome-cta" onClick={onStart}>Find your recipes 🌿</button>
         <p className="welcome-note">🩺 Recipes by verified registered dietitians</p>
@@ -2224,11 +2224,37 @@ function parseGroceryItems(ingredient) {
   return [item.charAt(0).toUpperCase() + item.slice(1)];
 }
 
-function GroceryList({ savedRecipes }) {
-  const [checked, setChecked] = useState(() => ls('nuri_grocery_checked', []));
-  useEffect(() => { lsSave('nuri_grocery_checked', checked); }, [checked]);
+function GroceryList({ savedRecipes, user }) {
+  const db = window._supa;
+  const [checked, setChecked] = useState([]);
+  const [extras, setExtras] = useState([]);
+  const [newItem, setNewItem] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // Build per-recipe item lists (parsed)
+  // Load from Supabase on mount
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    Promise.all([
+      db.from('grocery_extras').select('*').eq('user_id', user.id).order('created_at'),
+      db.from('grocery_checked').select('checked_keys').eq('user_id', user.id).maybeSingle(),
+    ]).then(([{ data: extData }, { data: chkData }]) => {
+      if (extData) setExtras(extData.map(e => ({ id: e.id, item: e.item, checked: e.checked })));
+      if (chkData?.checked_keys) setChecked(chkData.checked_keys);
+      setLoading(false);
+    });
+  }, [user?.id]);
+
+  // Persist checked state to Supabase (debounced)
+  const checkedRef = React.useRef(checked);
+  checkedRef.current = checked;
+  useEffect(() => {
+    if (!user || loading) return;
+    const t = setTimeout(() => {
+      db.from('grocery_checked').upsert({ user_id: user.id, checked_keys: checkedRef.current, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+    }, 600);
+    return () => clearTimeout(t);
+  }, [checked, user?.id]);
+
   const recipeItems = useMemo(() =>
     savedRecipes.map(r => ({
       ...r,
@@ -2240,19 +2266,41 @@ function GroceryList({ savedRecipes }) {
 
   const toggle = key => setChecked(p => p.includes(key) ? p.filter(x => x !== key) : [...p, key]);
   const clearChecked = () => setChecked([]);
-  const checkAll = () => setChecked(recipeItems.flatMap(r => r.parsedItems.map(i => i.key)));
+  const checkAll = () => setChecked([
+    ...recipeItems.flatMap(r => r.parsedItems.map(i => i.key)),
+    ...extras.map(e => `extra:${e.id}`),
+  ]);
 
-  const totalItems = recipeItems.reduce((n, r) => n + r.parsedItems.length, 0);
+  const addExtra = async () => {
+    const val = newItem.trim();
+    if (!val || !user) return;
+    const { data } = await db.from('grocery_extras').insert({ user_id: user.id, item: val, checked: false }).select().single();
+    if (data) setExtras(p => [...p, { id: data.id, item: data.item }]);
+    setNewItem('');
+  };
+
+  const removeExtra = async (id) => {
+    setExtras(p => p.filter(e => e.id !== id));
+    setChecked(p => p.filter(k => k !== `extra:${id}`));
+    await db.from('grocery_extras').delete().eq('id', id).eq('user_id', user.id);
+  };
+
+  const totalItems = recipeItems.reduce((n, r) => n + r.parsedItems.length, 0) + extras.length;
   const doneCount = checked.length;
 
   const copyList = () => {
-    const lines = recipeItems.flatMap(r => [`\n${r.title}`, ...r.parsedItems.map(i => `  • ${i.item}`)]);
+    const lines = [
+      ...recipeItems.flatMap(r => [`\n${r.title}`, ...r.parsedItems.map(i => `  • ${i.item}`)]),
+      ...(extras.length ? ['\nMiscellaneous', ...extras.map(e => `  • ${e.item}`)] : []),
+    ];
     navigator.clipboard.writeText(lines.join('\n').trim()).catch(() => {});
   };
 
   if (savedRecipes.length === 0) {
     return <div className="empty-state"><div className="empty-icon">🛒</div><div className="empty-title">No recipes saved</div><div className="empty-text">Save recipes to automatically generate a grocery list.</div></div>;
   }
+
+  if (loading) return <div style={{ padding:'32px 0', textAlign:'center', color:'var(--text-light)', fontSize:14 }}>Loading your list…</div>;
 
   return (
     <div>
@@ -2290,6 +2338,35 @@ function GroceryList({ savedRecipes }) {
           </div>
         </div>
       ))}
+      <div className="grocery-section">
+        <div className="grocery-section-title">
+          ✏️ Miscellaneous
+          <span className="grocery-recipe-badge">{extras.length} items</span>
+        </div>
+        <div style={{ background:'var(--white)', borderRadius:'var(--radius)', overflow:'hidden', boxShadow:'var(--shadow)' }}>
+          {extras.map(e => {
+            const key = `extra:${e.id}`;
+            const done = checked.includes(key);
+            return (
+              <div key={e.id} className={`grocery-item ${done ? 'checked' : ''}`} style={{ display:'flex', alignItems:'center' }}>
+                <div className={`grocery-check ${done ? 'done' : ''}`} onClick={() => toggle(key)}>{done ? '✓' : ''}</div>
+                <span className="grocery-item-text" style={{ flex:1 }} onClick={() => toggle(key)}>{e.item}</span>
+                <button onClick={() => removeExtra(e.id)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, color:'var(--text-light)', padding:'0 12px', lineHeight:1, flexShrink:0 }}>✕</button>
+              </div>
+            );
+          })}
+          <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderTop: extras.length ? '1px solid var(--border)' : 'none' }}>
+            <input
+              style={{ flex:1, border:'none', outline:'none', fontSize:14, fontFamily:'var(--font-body)', background:'transparent', color:'var(--text)' }}
+              placeholder="Add an item…"
+              value={newItem}
+              onChange={e => setNewItem(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') addExtra(); }}
+            />
+            <button onClick={addExtra} disabled={!newItem.trim()} style={{ padding:'5px 14px', background:'var(--brown)', color:'white', border:'none', borderRadius:50, fontSize:13, fontFamily:'var(--font-body)', fontWeight:600, cursor:'pointer', opacity: newItem.trim() ? 1 : 0.4, flexShrink:0 }}>Add</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -2312,29 +2389,35 @@ function buildWeekPlan(recipeCount, mealTypes, healthGoals) {
     (!healthGoals?.length || r.healthLabels.some(l => healthGoals.includes(l)))
   );
   const src = pool.length >= recipeCount ? pool : ALL_RECIPES;
-  // Shuffle deterministically by date so refresh gives new results
+
+  // Shuffle by today's date so regenerate gives new results
   const seed = new Date().toDateString();
-  const shuffled = [...src].sort((a, b) => {
-    const ha = (a.id * seed.length) % 97;
-    const hb = (b.id * seed.length) % 97;
-    return ha - hb;
-  });
-  // Pick recipeCount unique recipes
+  const shuffled = [...src].sort((a, b) => ((a.id * seed.length) % 97) - ((b.id * seed.length) % 97));
   const picked = shuffled.slice(0, recipeCount);
-  // Build plan: spread across week, use meal type guessing
+
+  // Build empty full week — every day has all 4 meal type slots
   const plan = {};
-  DAYS_OF_WEEK.forEach(d => { plan[d] = {}; });
+  DAYS_OF_WEEK.forEach(d => {
+    plan[d] = {};
+    PLAN_MEAL_TYPES.forEach(t => { plan[d][t] = null; });
+  });
+
+  // Spread picked recipes across the week, one per day where possible
+  // Prefer to put them in the meal type that matches the recipe, falling back to any slot
+  const activeMealTypes = mealTypes.length > 0 ? mealTypes : PLAN_MEAL_TYPES;
   picked.forEach((r, i) => {
     const day = DAYS_OF_WEEK[i % 7];
-    const type = mealTypes.includes(guessMealType(r)) ? guessMealType(r) : mealTypes[i % mealTypes.length];
-    // Avoid collision on same day/type
-    let finalType = type;
-    if (plan[day][finalType]) {
-      const alt = mealTypes.find(t => !plan[day][t]);
-      if (alt) finalType = alt;
+    const preferred = guessMealType(r);
+    const type = activeMealTypes.includes(preferred) ? preferred : activeMealTypes[i % activeMealTypes.length];
+    // If slot taken, find next free slot on the same day
+    if (!plan[day][type]) {
+      plan[day][type] = r;
+    } else {
+      const free = activeMealTypes.find(t => !plan[day][t]);
+      if (free) plan[day][free] = r;
     }
-    plan[day][finalType] = r;
   });
+
   return plan;
 }
 
@@ -2411,33 +2494,39 @@ const FEEL_OPTIONS = [
 ];
 const SYMPTOM_TAGS = ['No symptoms','Bloating','Cravings','Brain fog','Cramps','Fatigue','Mood dip','Skin flare'];
 
-function FoodLogSection() {
+function FoodLogSection({ user }) {
+  const db = window._supa;
   const [mealName, setMealName] = useState('');
   const [mealType, setMealType] = useState('');
   const [feel, setFeel] = useState('');
   const [tags, setTags] = useState([]);
   const [symptoms, setSymptoms] = useState([]);
   const [note, setNote] = useState('');
-  const [entries, setEntries] = useState(() => ls('nuri_food_log', []));
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => { lsSave('nuri_food_log', entries); }, [entries]);
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    db.from('food_log').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50)
+      .then(({ data }) => { if (data) setEntries(data); setLoading(false); });
+  }, [user?.id]);
 
   const toggleTag = t => setTags(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
   const toggleSymptom = s => setSymptoms(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
 
-  const save = () => {
-    if (!mealName.trim()) return;
-    const entry = {
-      id: Date.now(),
+  const save = async () => {
+    if (!mealName.trim() || !user) return;
+    const row = {
+      user_id: user.id,
       meal: mealName.trim(),
-      type: mealType,
-      feel,
+      meal_type: mealType || null,
+      feel: feel || null,
       tags,
       symptoms,
-      note: note.trim(),
-      date: new Date().toISOString(),
+      note: note.trim() || null,
     };
-    setEntries(p => [entry, ...p]);
+    const { data } = await db.from('food_log').insert(row).select().single();
+    if (data) setEntries(p => [data, ...p]);
     setMealName(''); setMealType(''); setFeel(''); setTags([]); setSymptoms([]); setNote('');
   };
 
@@ -2447,12 +2536,10 @@ function FoodLogSection() {
     <div>
       <div className="log-entry-form">
         <div className="log-form-title">Log a meal</div>
-
         <div className="log-form-row">
           <label className="log-form-label">What did you eat?</label>
           <input className="log-text-input" placeholder="e.g. Salmon tray bake, homemade lentil soup…" value={mealName} onChange={e => setMealName(e.target.value)} />
         </div>
-
         <div className="log-form-row">
           <label className="log-form-label">Meal type</label>
           <div className="log-feel-row">
@@ -2461,7 +2548,6 @@ function FoodLogSection() {
             ))}
           </div>
         </div>
-
         <div className="log-form-row">
           <label className="log-form-label">How did you feel?</label>
           <div className="log-feel-row">
@@ -2472,7 +2558,6 @@ function FoodLogSection() {
             ))}
           </div>
         </div>
-
         <div className="log-form-row">
           <label className="log-form-label">Tag this meal</label>
           <div className="log-tag-chips">
@@ -2481,7 +2566,6 @@ function FoodLogSection() {
             ))}
           </div>
         </div>
-
         <div className="log-form-row">
           <label className="log-form-label">Any symptoms?</label>
           <div className="log-tag-chips">
@@ -2490,16 +2574,16 @@ function FoodLogSection() {
             ))}
           </div>
         </div>
-
         <div className="log-form-row">
           <label className="log-form-label">Notes (optional)</label>
           <input className="log-text-input" placeholder="Anything else worth noting…" value={note} onChange={e => setNote(e.target.value)} />
         </div>
-
         <button className="log-save-btn" onClick={save} disabled={!mealName.trim()}>Save entry →</button>
       </div>
 
-      {entries.length === 0 ? (
+      {loading ? (
+        <div style={{ padding:'32px 0', textAlign:'center', color:'var(--text-light)', fontSize:14 }}>Loading your log…</div>
+      ) : entries.length === 0 ? (
         <div className="log-empty">
           <div style={{ fontSize:36, marginBottom:12 }}>🌿</div>
           <div style={{ fontFamily:'var(--font-serif)', fontSize:18, fontStyle:'italic', color:'var(--text-mid)' }}>No entries yet</div>
@@ -2518,8 +2602,8 @@ function FoodLogSection() {
                   <div>
                     <div className="log-entry-meal">{e.meal}</div>
                     <div className="log-entry-meta">
-                      {e.type && <span style={{ marginRight:8 }}>{e.type}</span>}
-                      {new Date(e.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}
+                      {e.meal_type && <span style={{ marginRight:8 }}>{e.meal_type}</span>}
+                      {new Date(e.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}
                     </div>
                   </div>
                   {e.feel && (
@@ -2528,12 +2612,12 @@ function FoodLogSection() {
                     </div>
                   )}
                 </div>
-                {e.tags.length > 0 && (
+                {e.tags?.length > 0 && (
                   <div className="log-entry-tags">
                     {e.tags.map(t => <span key={t} className="log-entry-tag">{t}</span>)}
                   </div>
                 )}
-                {e.symptoms.length > 0 && (
+                {e.symptoms?.length > 0 && (
                   <div className="log-entry-tags" style={{ marginTop:4 }}>
                     {e.symptoms.map(s => <span key={s} style={{ fontSize:11, padding:'3px 9px', borderRadius:50, background:'#F2C4CE44', color:'#8B3A52', border:'1px solid #F2C4CE' }}>{s}</span>)}
                   </div>
@@ -2552,26 +2636,46 @@ function MealPlanTab({ user, onSignIn, isPremium, onSubscribe, healthGoals, onRe
   const [section, setSection] = useState('plan');
 
   // Plan setup state — default 5 recipes, all meal types
-  const [recipeCount, setRecipeCount] = useState(() => ls('nuri_plan_count', 5));
-  const [mealTypes, setMealTypes] = useState(() => ls('nuri_plan_types', ['Breakfast','Lunch','Dinner']));
-  const [plan, setPlan] = useState(() => ls('nuri_plan_week', null));
+  const [recipeCount, setRecipeCount] = useState(5);
+  const [mealTypes, setMealTypes] = useState(['Breakfast','Lunch','Dinner']);
+  const [plan, setPlan] = useState(null);
   const [showPicker, setShowPicker] = useState(null);
   const [showSetup, setShowSetup] = useState(false);
+  const [planLoaded, setPlanLoaded] = useState(false);
 
-  // Auto-generate on first load if no plan exists and user is premium
+  // Load plan from Supabase
+  useEffect(() => {
+    if (!user || !isPremium) return;
+    window._supa.from('meal_plans').select('*').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setPlan(data.plan && Object.keys(data.plan).length ? data.plan : null);
+          setRecipeCount(data.recipe_count || 5);
+          setMealTypes(data.meal_types || ['Breakfast','Lunch','Dinner']);
+        }
+        setPlanLoaded(true);
+      });
+  }, [user?.id, isPremium]);
+
+  // Auto-generate on first load if no plan exists
   const hasAutoGenerated = React.useRef(false);
   useEffect(() => {
-    if (isPremium && user && !plan && !hasAutoGenerated.current) {
+    if (isPremium && user && planLoaded && !plan && !hasAutoGenerated.current) {
       hasAutoGenerated.current = true;
       const newPlan = buildWeekPlan(recipeCount, mealTypes, healthGoals);
-      setPlan(newPlan);
-      lsSave('nuri_plan_week', newPlan);
+      savePlan(newPlan, recipeCount, mealTypes);
     }
-  }, [isPremium, user]);
+  }, [isPremium, user, planLoaded]);
 
-  useEffect(() => { lsSave('nuri_plan_count', recipeCount); }, [recipeCount]);
-  useEffect(() => { lsSave('nuri_plan_types', mealTypes); }, [mealTypes]);
-  useEffect(() => { if (plan) lsSave('nuri_plan_week', plan); }, [plan]);
+  const savePlan = (newPlan, count, types) => {
+    setPlan(newPlan);
+    if (user) {
+      window._supa.from('meal_plans').upsert(
+        { user_id: user.id, plan: newPlan, recipe_count: count, meal_types: types, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      );
+    }
+  };
 
   const toggleMealType = t => setMealTypes(p => p.includes(t) ? (p.length > 1 ? p.filter(x => x !== t) : p) : [...p, t]);
 
@@ -2582,13 +2686,14 @@ function MealPlanTab({ user, onSignIn, isPremium, onSubscribe, healthGoals, onRe
 
   const generate = () => {
     const newPlan = buildWeekPlan(recipeCount, mealTypes, healthGoals);
-    setPlan(newPlan);
+    savePlan(newPlan, recipeCount, mealTypes);
     setShowSetup(false);
   };
 
   const swapRecipe = (recipe) => {
     if (!showPicker) return;
-    setPlan(p => ({ ...p, [showPicker.day]: { ...p[showPicker.day], [showPicker.type]: recipe } }));
+    const newPlan = { ...plan, [showPicker.day]: { ...plan[showPicker.day], [showPicker.type]: recipe } };
+    savePlan(newPlan, recipeCount, mealTypes);
     setShowPicker(null);
   };
 
@@ -2723,18 +2828,25 @@ function MealPlanTab({ user, onSignIn, isPremium, onSubscribe, healthGoals, onRe
               <div className="plan-week-grid">
                 {DAYS_OF_WEEK.map(day => {
                   const dayMeals = plan[day] || {};
-                  if (!Object.keys(dayMeals).length) return null;
                   return (
                     <div key={day} className="plan-week-card">
                       <div className="plan-week-card-day">{day}</div>
-                      {PLAN_MEAL_TYPES.map(type => {
+                      {PLAN_MEAL_TYPES.filter(t => mealTypes.includes(t) || mealTypes.length === 0 || true).map(type => {
                         const r = dayMeals[type];
-                        if (!r) return null;
                         return (
                           <div key={type} className="plan-week-meal-row">
                             <div className="plan-week-meal-type">{type}</div>
-                            <div className="plan-week-meal-name" onClick={() => onRecipeClick(r)}>{r.emoji} {r.title}</div>
-                            <button className="plan-week-swap" onClick={() => setShowPicker({ day, type })}>swap</button>
+                            {r ? (
+                              <>
+                                <div className="plan-week-meal-name" onClick={() => onRecipeClick(r)}>{r.emoji} {r.title}</div>
+                                <button className="plan-week-swap" onClick={() => setShowPicker({ day, type })}>swap</button>
+                              </>
+                            ) : (
+                              <>
+                                <div style={{ flex:1, fontSize:12, color:'var(--text-light)', fontStyle:'italic' }}>Add your own</div>
+                                <button className="plan-week-swap" onClick={() => setShowPicker({ day, type })}>+ add</button>
+                              </>
+                            )}
                           </div>
                         );
                       })}
@@ -2762,17 +2874,17 @@ function MealPlanTab({ user, onSignIn, isPremium, onSubscribe, healthGoals, onRe
             <button className="welcome-cta" style={{ fontSize:14, padding:'12px 28px' }} onClick={() => setSection('plan')}>Go to Meal Plan →</button>
           </div>
         ) : (
-          <GroceryList savedRecipes={groceryRecipes} />
+          <GroceryList savedRecipes={groceryRecipes} user={user} />
         )
       )}
 
       {/* ── FOOD LOG SECTION ── */}
-      {section === 'log' && <FoodLogSection />}
+      {section === 'log' && <FoodLogSection user={user} />}
     </div>
   );
 }
 
-function SavedTab({ saved, onRecipeClick, onDieticianClick, onToggleSave, isPremium, onSubscribe }) {
+function SavedTab({ saved, onRecipeClick, onDieticianClick, onToggleSave, isPremium, onSubscribe, user }) {
   const [view, setView] = useState('recipes');
   const savedRecipes = ALL_RECIPES.filter(r => saved.has(r.id));
 
@@ -2825,7 +2937,7 @@ function SavedTab({ saved, onRecipeClick, onDieticianClick, onToggleSave, isPrem
       </div>
 
       {view === 'grocery' ? (
-        <GroceryList savedRecipes={savedRecipes} />
+        <GroceryList savedRecipes={savedRecipes} user={user} />
       ) : (
         <>
           <div style={{
@@ -3201,7 +3313,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
 
 // ── RD APPLICATION MODAL ─────────────────────────────────────
 const SPECIALTIES = [
-  'PCOS Support', 'Fertility & Conception', 'Hormone Balance',
+  'PCOS / PMOS', 'Fertility & Conception', 'Hormone Balance',
   'Low Energy & Fatigue', 'Period Regulation', 'Gut Health',
   'Thyroid Support', 'Menopause', 'Postpartum Recovery', 'Endometriosis',
 ];
@@ -3676,6 +3788,16 @@ function App() {
     if (params.get('subscribed') === 'true') {
       setIsPremium(true);
       window.history.replaceState({}, '', window.location.pathname);
+      // Persist active status to Supabase so it survives next login
+      // (proper webhook should replace this long-term)
+      db.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          db.from('subscriptions').upsert(
+            { user_id: session.user.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'active' },
+            { onConflict: 'user_id' }
+          );
+        }
+      });
     }
   }, []);
 
@@ -3948,7 +4070,7 @@ function App() {
       {tab === 'feed'    && <FeedTab healthGoals={healthGoals} {...sharedProps} />}
       {tab === 'explore' && <ExploreTab followed={followed} onToggleFollow={toggleFollow} onDieticianClick={d => navigate('profile', d)} supaDietitians={supaDietitians} />}
       {tab === 'plan'    && <MealPlanTab user={user} onSignIn={() => setShowAuthModal('signup')} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} healthGoals={healthGoals} onRecipeClick={r => navigate('recipe', r)} />}
-      {tab === 'saved'   && <SavedTab {...sharedProps} isPremium={isPremium} onSubscribe={() => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } }} />}
+      {tab === 'saved'   && <SavedTab {...sharedProps} isPremium={isPremium} onSubscribe={() => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } }} user={user} />}
       {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} supaDietitians={supaDietitians} />}
       {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} />}
       {showApplyModal && <RDApplicationModal onClose={() => setShowApplyModal(false)} />}
