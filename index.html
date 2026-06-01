@@ -1224,12 +1224,10 @@ function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
     if (!user) { onClose(); onSignIn('signup'); return; }
     setLoading(true); setError('');
     try {
-      // Log pending subscription
       await window._supa.from('subscriptions').upsert(
         { user_id: user.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'pending' },
         { onConflict: 'user_id' }
       );
-      // Build payment link URL with prefilled email and client reference
       const base = billingPeriod === 'annual' ? STRIPE_PAYMENT_LINK_ANNUAL : STRIPE_PAYMENT_LINK_MONTHLY;
       const params = new URLSearchParams({
         prefilled_email: user.email || '',
@@ -3742,7 +3740,7 @@ function App() {
   const [triedPhotos, setTriedPhotos] = useState({});
   const [comments, setComments] = useState(() => ls('tee_comments', {}));
   const [isRD, setIsRD] = useState(false);
-  const [rdDieticianId, setRdDieticianId] = useState(3);
+  const [rdDieticianId, setRdDieticianId] = useState(null);
 
   const loadUserData = async (uid) => {
     const [{ data: profile }, { data: savesData }, { data: followsData }, { data: triedData }, { data: subData }] = await Promise.all([
@@ -3767,30 +3765,28 @@ function App() {
     return profile;
   };
 
-  // Handle return from Stripe checkout
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('subscribed') === 'true') {
-      setIsPremium(true);
-      window.history.replaceState({}, '', window.location.pathname);
-      // Persist active status to Supabase so it survives next login
-      // (proper webhook should replace this long-term)
-      db.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          db.from('subscriptions').upsert(
-            { user_id: session.user.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'active' },
-            { onConflict: 'user_id' }
-          );
-        }
-      });
-    }
-  }, []);
-
   useEffect(() => {
     const init = async () => {
+      // Handle return from Stripe — must complete BEFORE loadUserData so the active status is there
+      const params = new URLSearchParams(window.location.search);
+      const justSubscribed = params.get('subscribed') === 'true';
+      if (justSubscribed) {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+
       const { data: { session } } = await db.auth.getSession();
       if (session?.user) {
         const u = session.user;
+
+        // If returning from Stripe, write active status first, then load
+        if (justSubscribed) {
+          await db.from('subscriptions').upsert(
+            { user_id: u.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'active' },
+            { onConflict: 'user_id' }
+          );
+          setIsPremium(true);
+        }
+
         const profile = await loadUserData(u.id);
         setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
         setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
