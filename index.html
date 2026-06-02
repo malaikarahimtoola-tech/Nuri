@@ -2062,7 +2062,10 @@ function ExploreTab({ onDieticianClick, followed, onToggleFollow, supaDietitians
           return (
             <div key={d.id} className="rd-card" onClick={() => onDieticianClick(d)}>
               <div className="rd-card-top" style={{ background: `linear-gradient(135deg, ${d.avatarColor}66, ${d.avatarColor}22)` }}>
-                <div className="rd-avatar" style={{ background: d.avatarColor }}>{d.initials}</div>
+                {d.photo
+                  ? <img src={d.photo} className="rd-avatar" style={{ objectFit:'cover', padding:0 }} alt={d.name} />
+                  : <div className="rd-avatar" style={{ background: d.avatarColor }}>{d.initials}</div>
+                }
               </div>
               <div className="rd-card-body">
                 <div className="rd-name">{d.name}</div>
