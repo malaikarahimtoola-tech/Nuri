@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -516,8 +517,29 @@ const ALL_RECIPES = [
 
 // ── AUTH GATE ─────────────────────────────────────────────────
 function AuthScreen({ onAuth }) {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSignIn = async () => {
+    setLoading(true); setError('');
+    try {
+      const { data, error: e } = await db.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+      if (e) { setError('Incorrect email or password.'); setLoading(false); return; }
+      const { data: profile } = await db.from('profiles').select('name, role').eq('id', data.user.id).single();
+      if (!['admin'].includes(profile?.role)) {
+        setError('You do not have admin access to this studio.');
+        await db.auth.signOut();
+        setLoading(false); return;
+      }
+      onAuth({ ...data.user, name: profile?.name || email.split('@')[0] });
+    } catch(e) {
+      setError('Something went wrong. Please try again.');
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="auth-screen">
       <div className="auth-card">
@@ -525,18 +547,23 @@ function AuthScreen({ onAuth }) {
         <div className="auth-inner">
           <div className="auth-logo-wrap">nuri<span className="auth-logo-dot"/></div>
           <div style={{ fontSize:12, color:'var(--text-light)', marginBottom:24 }}>Recipe Studio · Admin</div>
-          <div style={{ fontFamily:'var(--font-serif)', fontSize:22, fontStyle:'italic', color:'var(--text)', marginBottom:20 }}>Enter admin password</div>
+          <div style={{ fontFamily:'var(--font-serif)', fontSize:22, fontStyle:'italic', color:'var(--text)', marginBottom:20 }}>Sign in to continue</div>
           {error && <div style={{ background:'#FFF0F0', border:'1px solid #F4C4C4', borderRadius:8, padding:'10px 14px', fontSize:13, color:'#8B2020', marginBottom:14 }}>{error}</div>}
           <div style={{ marginBottom:14 }}>
-            <label style={{ fontSize:11, fontWeight:600, letterSpacing:'0.07em', textTransform:'uppercase', color:'var(--text-light)', display:'block', marginBottom:6 }}>Password</label>
-            <input className="form-input" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && (password===ADMIN_PASSWORD ? onAuth({name:'Admin'}) : setError('Incorrect password.'))} autoFocus style={{ width:'100%' }} />
+            <label style={{ fontSize:11, fontWeight:600, letterSpacing:'0.07em', textTransform:'uppercase', color:'var(--text-light)', display:'block', marginBottom:6 }}>Email</label>
+            <input className="form-input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key==='Enter' && handleSignIn()} autoFocus style={{ width:'100%' }} />
           </div>
-          <button className="signin-btn" onClick={() => password===ADMIN_PASSWORD ? onAuth({name:'Admin'}) : setError('Incorrect password.')}>Enter Studio →</button>
+          <div style={{ marginBottom:14 }}>
+            <label style={{ fontSize:11, fontWeight:600, letterSpacing:'0.07em', textTransform:'uppercase', color:'var(--text-light)', display:'block', marginBottom:6 }}>Password</label>
+            <input className="form-input" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && handleSignIn()} style={{ width:'100%' }} />
+          </div>
+          <button className="signin-btn" onClick={handleSignIn} disabled={loading}>{loading ? 'Signing in\u2026' : 'Enter Studio \u2192'}</button>
         </div>
       </div>
     </div>
   );
 }
+
 
 // ── RECIPE STUDIO (original) ──────────────────────────────────
 function RecipeStudio({ user, onPublish }) {
@@ -1444,11 +1471,11 @@ function App() {
             <button className={`nav-tab ${tab==='profiles'?'active':''}`} onClick={()=>{setTab('profiles');setPublished(false);}}>👤 Profiles</button>
           </div>
           <div className="nav-right">
-            <button className="btn-outline" onClick={()=>setAuthed(false)}>Sign out</button>
+            <button className="btn-outline" onClick={async()=>{ await db.auth.signOut(); setAuthed(false); }}>Sign out</button>
           </div>
         </div>
       </nav>
-      {tab==='overview' && <Overview onSignOut={()=>setAuthed(false)} />}
+      {tab==='overview' && <Overview onSignOut={async()=>{ await db.auth.signOut(); setAuthed(false); }} />}
       {tab==='create' && !published && <RecipeStudio user={{name:user?.name||'Admin',email:'admin@nuri.com',creds:'Admin'}} onPublish={()=>setPublished(true)} />}
       {tab==='create' && published && <SuccessPage user={{name:user?.name||'Admin',email:'admin@nuri.com'}} onAnother={()=>setPublished(false)} />}
       {tab==='pending' && <PendingRecipes />}
