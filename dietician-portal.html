@@ -541,11 +541,15 @@ function Dashboard({ user, onSignOut }) {
   const [views, setViews] = useState({});
   const [myRecipes, setMyRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [rd, setRd] = useState(null);
 
-  const rdId = parseInt(user.dietitianId, 10) || 4;
-  const rd = ALL_DIETICIANS.find(d => d.id === rdId) || ALL_DIETICIANS[3];
+  const rdId = parseInt(user.dietitianId, 10);
 
   const loadData = async () => {
+    // Load dietitian data from Supabase
+    const { data: rdData } = await db.from('dietitians').select('id, name, credentials, specialty').eq('id', rdId).single();
+    if (rdData) setRd(rdData);
+
     // Load recipes from Supabase for this RD
     const { data: recipesData } = await db.from('recipes').select('id, title, emoji, health_labels').eq('dietitian_id', rdId);
     const recipes = recipesData || [];
@@ -569,14 +573,14 @@ function Dashboard({ user, onSignOut }) {
     setLoading(false);
   };
 
-  useEffect(() => { loadData(); }, [rd.id]);
+  useEffect(() => { loadData(); }, [rdId]);
 
   // Refresh when tab becomes visible
   useEffect(() => {
     const handleVisibility = () => { if (document.visibilityState === 'visible') loadData(); };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, [rd.id]);
+  }, [rdId]);
 
   const totalSaves = saves.length;
   const totalViews = Object.values(views).reduce((a, b) => a + b, 0);
@@ -594,7 +598,7 @@ function Dashboard({ user, onSignOut }) {
   // Sort recipes by views desc
   const sortedRecipes = [...myRecipes].sort((a, b) => (views[b.id] || 0) - (views[a.id] || 0));
 
-  if (loading) return <div className="loading"><div style={{ fontFamily:'var(--font-logo)', fontSize:40, fontStyle:'italic', color:'var(--green-dark)' }}>nuri.</div><div style={{ fontSize:13, color:'var(--text-light)' }}>Loading dashboard…</div></div>;
+  if (loading || !rd) return <div className="loading"><div style={{ fontFamily:'var(--font-logo)', fontSize:40, fontStyle:'italic', color:'var(--green-dark)' }}>nuri.</div><div style={{ fontSize:13, color:'var(--text-light)' }}>Loading dashboard…</div></div>;
 
   return (
       <div className="portal-body">
@@ -1200,6 +1204,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('create');
   const [published, setPublished] = useState(false);
+  const [rdData, setRdData] = useState(null);
 
   useEffect(() => {
     const init = async () => {
@@ -1208,7 +1213,12 @@ function App() {
         const u = session.user;
         const { data: profile } = await db.from('profiles').select('name, role, rd_dietitian_id').eq('id', u.id).single();
         if (['dietitian','admin'].includes(profile?.role)) {
-          setUser({ ...u, name: profile.name, role: profile.role, dietitianId: profile.rd_dietitian_id || 3 });
+          const dietitianId = profile.rd_dietitian_id;
+          const { data: rd } = dietitianId
+            ? await db.from('dietitians').select('id, name, credentials, specialty').eq('id', dietitianId).single()
+            : { data: null };
+          if (rd) setRdData(rd);
+          setUser({ ...u, name: profile.name, role: profile.role, dietitianId });
         }
       }
       setLoading(false);
@@ -1223,9 +1233,13 @@ function App() {
   const handleSignOut = async () => { await db.auth.signOut(); setUser(null); };
 
   if (loading) return <div className="loading"><div style={{ fontFamily:'var(--font-logo)', fontSize:48, fontStyle:'italic', color:'var(--green-dark)' }}>nuri.</div></div>;
-  if (!user) return <AuthScreen onAuth={u => setUser(u)} />;
-
-  const rd = ALL_DIETICIANS.find(d => d.id === user.dietitianId) || ALL_DIETICIANS[2];
+  if (!user) return <AuthScreen onAuth={async (u) => {
+    const { data: rd } = u.dietitianId
+      ? await db.from('dietitians').select('id, name, credentials, specialty').eq('id', u.dietitianId).single()
+      : { data: null };
+    if (rd) setRdData(rd);
+    setUser(u);
+  }} />;
 
   return (
     <>
@@ -1247,7 +1261,7 @@ function App() {
       {tab === 'dashboard' && <Dashboard user={user} onSignOut={handleSignOut} />}
       {tab === 'edit' && <EditMyRecipes user={user} />}
       {tab === 'profile' && <ProfileSettings user={user} />}
-      {tab === 'create' && !published && <RecipeStudio user={{ name: user.name || rd.name, email: user.email, creds: rd.credentials || 'RD', dietitianId: user.dietitianId }} onPublish={() => setPublished(true)} hideHeader={true} />}
+      {tab === 'create' && !published && <RecipeStudio user={{ name: user.name || rdData?.name, email: user.email, creds: rdData?.credentials || 'RD', dietitianId: user.dietitianId }} onPublish={() => setPublished(true)} hideHeader={true} />}
       {tab === 'create' && published && <SuccessPage user={{ name: user.name, email: user.email }} onAnother={() => setPublished(false)} />}
     </>
   );
