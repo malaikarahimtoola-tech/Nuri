@@ -3897,13 +3897,19 @@ function App() {
       }
 
       // Handle OAuth hash callback (Google auth returns #access_token=...)
-      // Supabase JS v2 processes the hash automatically, but we need to wait for it
       const hash = window.location.hash;
       if (hash && hash.includes('access_token')) {
-        // Clear the hash from URL immediately for security
+        try {
+          // Parse tokens from hash and explicitly set the session
+          const hashParams = new URLSearchParams(hash.replace(/^#/, ''));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          if (accessToken && refreshToken) {
+            await db.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          }
+        } catch(e) { console.error('Hash parse error:', e); }
         window.history.replaceState({}, '', window.location.pathname);
-        // Small delay to let Supabase process the hash
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 200));
       }
 
       const { data: { session } } = await db.auth.getSession();
