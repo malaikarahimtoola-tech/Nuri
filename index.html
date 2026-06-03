@@ -1126,7 +1126,7 @@ const filteredAdmin = adminDieticians.filter(d => !hardcodedIds.has(d.id));
 const ALL_DIETICIANS = [...DIETICIANS, ...filteredCommunity, ...filteredAdmin];
 const ALL_RECIPES    = [...RECIPES,    ...communityRecipes,    ...adminRecipes];
 
-const getD = (id) => ALL_DIETICIANS.find(d => d.id === id);
+const getD = (id) => ALL_DIETICIANS.find(d => d.id === parseInt(id, 10));
 const getRecipesByD = (id) => ALL_RECIPES.filter(r => r.dieticianId === id);
 
 // Returns the gingham style for a recipe — community recipes carry their own bg/s
@@ -1371,8 +1371,9 @@ function UnlockModal({ recipe, onClose, onSignIn }) {
 }
 
 function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggleSave, isLocked, onSignIn, isPremiumLocked, onSubscribe, supaDietitians, supaAllDietitians }) {
-  const baseD = getD(recipe.dieticianId) || (supaAllDietitians || []).find(d => d.id === recipe.dieticianId) || { id: recipe.dieticianId, name:'Unknown', credentials:'RD', initials:'?', avatarColor:'#C4A882', photo:null };
-  const d = { ...baseD, ...(supaDietitians?.[recipe.dieticianId] || {}) };
+  const _dId = parseInt(recipe.dieticianId, 10);
+  const baseD = getD(_dId) || (supaAllDietitians || []).find(d => d.id === _dId) || { id: _dId, name:'Unknown', credentials:'RD', initials:'?', avatarColor:'#C4A882', photo:null };
+  const d = { ...baseD, ...(supaDietitians?.[_dId] || {}) };
   const [imgFailed, setImgFailed] = useState(false);
   const [showUnlock, setShowUnlock] = useState(false);
 
@@ -1626,7 +1627,7 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
   const [active, setActive] = useState(healthGoals?.length > 0 ? healthGoals[0] : 'all');
   const [showDietaryDropdown, setShowDietaryDropdown] = useState(false);
   const activeDietary = dietaryPreferences || [];
-  const getLocalD = (id) => ALL_DIETICIANS.find(d => d.id === id) || (supaAllDietitians || []).find(d => d.id === id) || { id, name:'Unknown', credentials:'RD', initials:'?', avatarColor:'#C4A882', photo:null };
+  const getLocalD = (id) => { const nid = parseInt(id, 10); return ALL_DIETICIANS.find(d => d.id === nid) || (supaAllDietitians || []).find(d => d.id === nid) || { id: nid, name:'Unknown', credentials:'RD', initials:'?', avatarColor:'#C4A882', photo:null }; };
 
   const DIETARY_FILTERS = [
     { id: 'vegetarian', label: 'Vegetarian' },
@@ -1865,7 +1866,7 @@ function NutritionNote({ note }) {
 }
 
 function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFollow, isSaved, onToggleSave, tried, onToggleTried, triedPhotos, comments, onAddComment, user, supaAllDietitians }) {
-  const d = getD(recipe.dieticianId) || (supaAllDietitians || []).find(x => x.id === recipe.dieticianId) || { id: recipe.dieticianId, name:'Unknown', credentials:'RD', initials:'?', avatarColor:'#C4A882', photo:null, bio:'' };
+  const d = getD(parseInt(recipe.dieticianId,10)) || (supaAllDietitians || []).find(x => x.id === parseInt(recipe.dieticianId,10)) || { id: recipe.dieticianId, name:'Unknown', credentials:'RD', initials:'?', avatarColor:'#C4A882', photo:null, bio:'' };
   const isTried = tried.has(recipe.id);
   const [showMadeIt, setShowMadeIt] = useState(false);
   const [communityPhotos, setCommunityPhotos] = useState([]);
