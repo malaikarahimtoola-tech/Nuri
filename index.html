@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1269,6 +1270,10 @@ function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
         { user_id: user.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'pending', updated_at: new Date().toISOString() },
         { onConflict: 'user_id' }
       );
+      // Store where to redirect after payment
+      if (window._postPayRedirect) {
+        sessionStorage.setItem('nuri_post_pay', JSON.stringify(window._postPayRedirect));
+      }
       const base = billingPeriod === 'annual' ? STRIPE_PAYMENT_LINK_ANNUAL : STRIPE_PAYMENT_LINK_MONTHLY;
       const params = new URLSearchParams({
         prefilled_email: user.email || '',
@@ -1377,7 +1382,7 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
   const [imgFailed, setImgFailed] = useState(false);
   const [showUnlock, setShowUnlock] = useState(false);
 
-  const handleClick = () => { if (isPremiumLocked) { onSubscribe(); } else if (isLocked) { setShowUnlock(true); } else { onRecipeClick(recipe); } };
+  const handleClick = () => { if (isPremiumLocked) { window._postPayRedirect = { recipe }; onSubscribe(); } else if (isLocked) { setShowUnlock(true); } else { onRecipeClick(recipe); } };
   const photoSrc = recipePhotoUrl(recipe);
   const hasPhoto = photoSrc && !imgFailed;
   const avatarSrc = dietitianAvatarUrl(d);
@@ -3799,6 +3804,16 @@ function App() {
             { onConflict: 'user_id' }
           );
           setIsPremium(true);
+          // Redirect back to recipe/tab if user was mid-flow
+          try {
+            const postPay = sessionStorage.getItem('nuri_post_pay');
+            if (postPay) {
+              sessionStorage.removeItem('nuri_post_pay');
+              const dest = JSON.parse(postPay);
+              if (dest.recipe) setTimeout(() => navigate('recipe', dest.recipe), 800);
+              else if (dest.tab) setTimeout(() => setTab(dest.tab), 800);
+            }
+          } catch(e) {}
         }
 
         const profile = await loadUserData(u.id);
@@ -4070,7 +4085,7 @@ function App() {
       <TopNav current={tab} onChange={setTab} {...navProps} />
       {tab === 'feed'    && <FeedTab healthGoals={healthGoals} {...sharedProps} dietaryPreferences={dietaryPreferences} onDietaryChange={setDietaryPreferences} />}
       {tab === 'explore' && <ExploreTab followed={followed} onToggleFollow={toggleFollow} onDieticianClick={d => navigate('profile', d)} supaDietitians={supaDietitians} />}
-      {tab === 'plan'    && <MealPlanTab user={user} onSignIn={() => setShowAuthModal('signup')} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} healthGoals={healthGoals} onRecipeClick={r => navigate('recipe', r)} />}
+      {tab === 'plan'    && <MealPlanTab user={user} onSignIn={() => setShowAuthModal('signup')} isPremium={isPremium} onSubscribe={() => { window._postPayRedirect = { tab: 'plan' }; setShowSubModal(true); }} healthGoals={healthGoals} onRecipeClick={r => navigate('recipe', r)} />}
       {tab === 'saved'   && <SavedTab {...sharedProps} isPremium={isPremium} onSubscribe={() => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } }} user={user} />}
       {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} supaDietitians={supaDietitians} />}
       {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} />}
