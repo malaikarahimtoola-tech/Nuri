@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,7 +32,7 @@
 </script>
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-  window._stripe = Stripe('pk_test_51TVzul1strcTxBlbcS3YVDzVUF2zBYzASMlJfFqzfqMHUnioClyD9hUAzI5pPAJQYcMm6zPQWpHAwVmZB9lnXIJ900MMd29rHs');
+  window._stripe = Stripe('pk_live_51TVzua1L75noll9TUIewhk4HPEpg41ebI34F2d2i5JZetin7d8h1nlzPGSZ2Jbh0rz08xdgzl1adXICA6EZSqGim00VCzmDUPQ');
 </script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
@@ -1622,8 +1621,8 @@ const FREE_PREVIEW_COUNT = 3;
 
 // ── STRIPE CONFIG ─────────────────────────────────────────────
 const NURI_PREMIUM_PRICE_ID = 'price_1TWUKf1strcTxBlboRSq9F53';
-const STRIPE_PAYMENT_LINK_MONTHLY = 'https://buy.stripe.com/test_00w00b0YT3Mh2SRcvMeIw00';
-const STRIPE_PAYMENT_LINK_ANNUAL  = 'https://buy.stripe.com/test_aFadR1aztdmR1ONgM2eIw01';
+const STRIPE_PAYMENT_LINK_MONTHLY = 'https://buy.stripe.com/cNibIT6mWbB58Xbecl7wA02';
+const STRIPE_PAYMENT_LINK_ANNUAL  = 'https://buy.stripe.com/9B6bITaDcfRlc9nd8h7wA03';
 // Premium settings loaded from Supabase (is_premium, free_recipe_count per dietitian)
 const FALLBACK_FREE_DIETITIANS = [1, 2, 3];
 const FALLBACK_FREE_RECIPE_COUNT = 3;
@@ -1843,8 +1842,24 @@ function CommentsSection({ recipeId, dieticianId, comments, onAddComment }) {
 
 function NutritionNote({ note }) {
   if (!note) return null;
-  // Split on sentence boundaries or em-dashes to create cards
-  const sentences = note.split(/(?<=\.)\s+|(?:\s+—\s+)/).map(s => s.trim()).filter(s => s.length > 10);
+  // Robust splitter: handles all formats RDs might use:
+  // 1. Dash-prefixed inline: "-peanut butter provides... -cinnamon is..."
+  // 2. Dash-prefixed with newlines: "\n-peanut butter..."
+  // 3. Sentence split: "Chia seeds are rich... Low glycaemic berries..."
+  // 4. Em-dash separated: "note — note"
+  let sentences = [];
+  const hasDashes = /(?:^|[\n\r])\s*-/.test(note) || /\s+-[A-Z]/.test(note) || note.trimStart().startsWith('-');
+  if (hasDashes) {
+    // Split on dash that starts a new point (preceded by space, newline, or start)
+    sentences = note.split(/(?:^|\n|\r)\s*-+\s*|(?<=\w[^-])\s+-(?=[A-Za-z])/).map(s => s.trim()).filter(s => s.length > 10);
+  } else {
+    sentences = note.split(/(?<=[.!?])\s+(?=[A-Z])|(?:\s+—\s+)/).map(s => s.trim()).filter(s => s.length > 10);
+  }
+  if (sentences.length <= 1) {
+    // Last resort: try splitting on capital letter after lowercase + period
+    const fallback = note.split(/\.\s+/).map(s => s.trim()).filter(s => s.length > 10);
+    if (fallback.length > 1) sentences = fallback;
+  }
   if (sentences.length <= 1) {
     return <div className="nutrition-note-plain">💡 {note}</div>;
   }
