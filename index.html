@@ -2104,7 +2104,7 @@ function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFo
               const isPremiumRecipe = !isFreeDietitian && rdIndex >= freeCount;
               const locked = !user && i >= FREE_PREVIEW_COUNT;
               const premiumLocked = isPremiumRecipe && !isPremium;
-              return <RecipeCard key={r.id} recipe={r} onRecipeClick={onRecipeClick} onDieticianClick={() => {}} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} isLocked={locked} onSignIn={onSignIn} isPremiumLocked={premiumLocked && !locked} onSubscribe={onSubscribe} supaDietitians={supaDietitians} />;
+              return <RecipeCard key={r.id} recipe={r} onRecipeClick={onRecipeClick} onDieticianClick={() => {}} isSaved={saved.has(r.id)} onToggleSave={onToggleSave} isLocked={locked} onSignIn={onSignIn} isPremiumLocked={premiumLocked && !locked} onSubscribe={onSubscribe} supaDietitians={supaDietitians} supaAllDietitians={supaAllDietitians} />;
             })}
           </div>
         </div>
