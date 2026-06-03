@@ -189,10 +189,11 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .feed-page-header { margin-bottom: 28px; }
 .feed-page-title { font-family: var(--font-serif); font-size: 36px; font-style: italic; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .feed-page-sub { font-family: var(--font-serif); font-style: italic; font-size: 16px; color: var(--text-light); }
-.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; align-items: center; }
 .filter-chip { padding: 8px 18px; border-radius: 50px; border: 1.5px solid var(--border); background: var(--white); font-size: 13px; font-weight: 500; color: var(--text-mid); cursor: pointer; transition: all 0.18s; font-family: var(--font-body); white-space: nowrap; }
 .filter-chip:hover { border-color: var(--tan); }
 .filter-chip.active { background: var(--brown); border-color: var(--brown); color: white; }
+.filter-chip.dietary-active { border-color: var(--sage); color: var(--green-dark); }
 
 /* ── RECIPE GRID ─────────────────────────────────────────── */
 .recipe-grid {
@@ -976,12 +977,12 @@ const HEALTH_GOALS = [
   { id: 'fertility', label: 'Fertility & Conception', icon: '🌱', description: 'Nourish your body for conception', color: '#C8E6C4' },
   { id: 'hormones', label: 'Hormone Balance', icon: '⚖️', description: 'Regulate mood, energy & cycle', color: '#F5E6A3' },
   { id: 'energy', label: 'Low Energy & Fatigue', icon: '✨', description: 'Fuel your body from the inside out', color: '#FFD9B3' },
-  { id: 'period', label: 'Period Regulation', icon: '🔴', description: 'Support a healthy, regular cycle', color: '#F4C4C4' },
   { id: 'gut', label: 'Gut Health', icon: '🌿', description: 'Heal your gut, heal your health', color: '#C4DEB8' },
   { id: 'thyroid', label: 'Thyroid Support', icon: '🦋', description: 'Recipes to support thyroid health', color: '#B8D4E8' },
   { id: 'menopause', label: 'Menopause', icon: '🌙', description: 'Ease the transition with nutrition', color: '#D4B8E8' },
-  { id: 'postpartum', label: 'Postpartum Recovery', icon: '💛', description: 'Replenish & restore after birth', color: '#F5E6A3' },
   { id: 'endometriosis', label: 'Endometriosis', icon: '🩷', description: 'Anti-inflammatory, pain-reducing foods', color: '#F2C4CE' },
+  { id: 'insulin-resistance', label: 'Insulin Resistance', icon: '🩸', description: 'Stabilise blood sugar & improve insulin sensitivity', color: '#FFD9B3' },
+  { id: 'immune', label: 'Immune Health', icon: '🛡️', description: 'Strengthen your immune system through nutrition', color: '#C4DEB8' },
 ];
 
 const LABEL_MAP = {
@@ -989,12 +990,14 @@ const LABEL_MAP = {
   fertility: { label: 'Fertility', color: '#C8E6C4', text: '#2E6B3E' },
   hormones: { label: 'Hormones', color: '#F5E6A3', text: '#7A6000' },
   energy: { label: 'Energy', color: '#FFD9B3', text: '#8B4A00' },
-  period: { label: 'Period Health', color: '#F4C4C4', text: '#8B2020' },
   gut: { label: 'Gut Health', color: '#C4DEB8', text: '#2E5E1E' },
   thyroid: { label: 'Thyroid', color: '#B8D4E8', text: '#1E4E6E' },
   menopause: { label: 'Menopause', color: '#D4B8E8', text: '#4A2E6E' },
-  postpartum: { label: 'Postpartum', color: '#F5E6A3', text: '#6E5000' },
   endometriosis: { label: 'Endo', color: '#F2C4CE', text: '#6E1E3A' },
+  'insulin-resistance': { label: 'Insulin Resistance', color: '#FFD9B3', text: '#7A4000' },
+  immune: { label: 'Immune Health', color: '#C4DEB8', text: '#2E5E1E' },
+  vegetarian: { label: 'Vegetarian', color: '#D4EAC8', text: '#2E6B2E' },
+  vegan: { label: 'Vegan', color: '#C8E6C4', text: '#1E5E1E' },
   'high-protein': { label: 'High Protein', color: '#D4C4B0', text: '#4A3020' },
   'anti-inflammatory': { label: 'Anti-Inflam.', color: '#C4DEB8', text: '#2E5E1E' },
   'gut-friendly': { label: 'Gut-Friendly', color: '#C8E6C4', text: '#2E6B3E' },
@@ -1215,6 +1218,43 @@ function Avatar({ initials, color, cls = 'avatar-sm', photo }) {
   return <div className={cls} style={{ background: color }}>{initials}</div>;
 }
 
+// ── RESTORE PURCHASE BUTTON ─────────────────────────────────
+function RestorePurchaseButton({ user, onSuccess }) {
+  const [loading, setLoading] = React.useState(false);
+  const [msg, setMsg] = React.useState('');
+  const db = window._supa;
+  const handleRestore = async () => {
+    setLoading(true); setMsg('');
+    try {
+      const { data } = await db.from('subscriptions').select('status, updated_at').eq('user_id', user.id).maybeSingle();
+      if (data?.status === 'active') {
+        onSuccess();
+        setMsg('✅ Premium access restored!');
+      } else if (data?.status === 'pending') {
+        await db.from('subscriptions').upsert(
+          { user_id: user.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'active', updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' }
+        );
+        onSuccess();
+        setMsg('✅ Purchase restored successfully!');
+      } else {
+        setMsg('No purchase found. Contact support if you believe this is an error.');
+      }
+    } catch(e) {
+      setMsg('Something went wrong. Please try again.');
+    }
+    setLoading(false);
+  };
+  return (
+    <div style={{ textAlign: 'center', marginTop: 8 }}>
+      <button onClick={handleRestore} disabled={loading} style={{ background: 'none', border: 'none', color: 'var(--text-light)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'var(--font-body)' }}>
+        {loading ? 'Checking…' : 'Already paid? Restore purchase'}
+      </button>
+      {msg && <div style={{ fontSize: 12, marginTop: 4, color: msg.startsWith('✅') ? '#2E7D32' : '#8B2020' }}>{msg}</div>}
+    </div>
+  );
+}
+
 // ── SUBSCRIPTION MODAL ───────────────────────────────────────
 function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
   const [loading, setLoading] = useState(false);
@@ -1226,7 +1266,7 @@ function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
     setLoading(true); setError('');
     try {
       await window._supa.from('subscriptions').upsert(
-        { user_id: user.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'pending' },
+        { user_id: user.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'pending', updated_at: new Date().toISOString() },
         { onConflict: 'user_id' }
       );
       const base = billingPeriod === 'annual' ? STRIPE_PAYMENT_LINK_ANNUAL : STRIPE_PAYMENT_LINK_MONTHLY;
@@ -1284,6 +1324,7 @@ function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
             {loading ? 'Redirecting to checkout…' : user ? `Subscribe for ${billingPeriod === 'annual' ? '$99.99/year' : '$9.99/month'} →` : 'Sign up to subscribe →'}
           </button>
           <div className="sub-modal-note">Secure payment via Stripe · Cancel anytime</div>
+          {user && <RestorePurchaseButton user={user} onSuccess={onSuccess} />}
         </div>
       </div>
     </div>
@@ -1581,9 +1622,23 @@ const STRIPE_PAYMENT_LINK_ANNUAL  = 'https://buy.stripe.com/test_aFadR1aztdmR1ON
 const FALLBACK_FREE_DIETITIANS = [1, 2, 3];
 const FALLBACK_FREE_RECIPE_COUNT = 3;
 
-function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings, newSupaRecipes, supaAllDietitians }) {
+function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings, newSupaRecipes, supaAllDietitians, dietaryPreferences, onDietaryChange }) {
   const [active, setActive] = useState(healthGoals?.length > 0 ? healthGoals[0] : 'all');
+  const [showDietaryDropdown, setShowDietaryDropdown] = useState(false);
+  const activeDietary = dietaryPreferences || [];
   const getLocalD = (id) => ALL_DIETICIANS.find(d => d.id === id) || (supaAllDietitians || []).find(d => d.id === id) || { id, name:'Unknown', credentials:'RD', initials:'?', avatarColor:'#C4A882', photo:null };
+
+  const DIETARY_FILTERS = [
+    { id: 'vegetarian', label: 'Vegetarian' },
+    { id: 'vegan', label: 'Vegan' },
+    { id: 'gluten-free', label: 'Gluten-free' },
+    { id: 'dairy-free', label: 'Dairy-free' },
+  ];
+
+  const toggleDietary = (id) => {
+    const next = activeDietary.includes(id) ? activeDietary.filter(x => x !== id) : [...activeDietary, id];
+    onDietaryChange(next);
+  };
 
   const mergedRecipes = useMemo(() => {
     const hardcoded = ALL_RECIPES.map(r => ({ ...r, ...(supaRecipes?.[r.id] || {}) }));
@@ -1594,9 +1649,12 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
     ...d, ...(supaDietitians?.[d.id] || {}),
   })), [supaDietitians]);
   const filtered = useMemo(() => {
-    const base = active === 'all' ? mergedRecipes : mergedRecipes.filter(r => r.healthLabels.includes(active));
+    let base = active === 'all' ? mergedRecipes : mergedRecipes.filter(r => r.healthLabels.includes(active));
+    if (activeDietary.length > 0) {
+      base = base.filter(r => activeDietary.every(tag => (r.healthLabels || []).includes(tag)));
+    }
     return interleaveByAuthor(base);
-  }, [active, mergedRecipes]);
+  }, [active, activeDietary, mergedRecipes]);
   const goalLabel = HEALTH_GOALS.find(g => g.id === active);
   const ALL = [{ id:'all', label:'All Recipes' }, ...HEALTH_GOALS.map(g => ({ id:g.id, label:g.label }))];
   return (
@@ -1618,10 +1676,43 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
           <button className="signin-gate-btn" onClick={onSignIn}>Sign in / Sign up →</button>
         </div>
       )}
-      <div className="filter-row">
+      <div className="filter-row" style={{alignItems:'center'}}>
         {ALL.map(f => (
           <button key={f.id} className={`filter-chip ${active === f.id ? 'active' : ''}`} onClick={() => setActive(f.id)}>{f.label}</button>
         ))}
+        <div style={{width:'1px',height:'22px',background:'var(--border)',flexShrink:0,margin:'0 4px'}} />
+        <div style={{position:'relative',flexShrink:0}}>
+          <button
+            className={`filter-chip ${activeDietary.length > 0 ? 'dietary-active' : ''}`}
+            onClick={() => setShowDietaryDropdown(p => !p)}
+            style={{display:'flex',alignItems:'center',gap:6}}
+          >
+            <span>Dietary</span>
+            {activeDietary.length > 0 && (
+              <span style={{background:'var(--sage)',color:'white',borderRadius:'50%',width:16,height:16,fontSize:10,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>{activeDietary.length}</span>
+            )}
+            <span style={{fontSize:10,opacity:0.5,marginLeft:2}}>{showDietaryDropdown ? '▲' : '▾'}</span>
+          </button>
+          {showDietaryDropdown && (
+            <div style={{position:'absolute',top:'calc(100% + 6px)',right:0,background:'var(--white)',border:'1.5px solid var(--border)',borderRadius:12,padding:6,minWidth:160,boxShadow:'0 4px 20px rgba(44,24,16,0.10)',zIndex:50}}>
+              {DIETARY_FILTERS.map(f => {
+                const on = activeDietary.includes(f.id);
+                return (
+                  <button key={f.id} onClick={() => toggleDietary(f.id)}
+                    style={{display:'flex',alignItems:'center',gap:10,width:'100%',padding:'8px 10px',borderRadius:8,border:'none',background: on ? 'var(--warm-beige)' : 'transparent',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:13,color: on ? 'var(--brown)' : 'var(--text-mid)',fontWeight: on ? 600 : 400,textAlign:'left'}}>
+                    <span style={{width:16,height:16,borderRadius:4,border:`1.5px solid ${on ? 'var(--sage)' : 'var(--border)'}`,background: on ? 'var(--sage)' : 'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:10,color:'white'}}>{on ? '✓' : ''}</span>
+                    {f.label}
+                  </button>
+                );
+              })}
+              {activeDietary.length > 0 && (
+                <button onClick={() => onDietaryChange([])} style={{width:'100%',padding:'6px 10px',border:'none',background:'none',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:11,color:'var(--text-light)',textAlign:'left',marginTop:2}}>
+                  Clear all
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       {filtered.length === 0 ? (
         <div className="empty-state"><div className="empty-icon">🌱</div><div className="empty-title">No recipes yet</div><div className="empty-text">Our dietitians are working on recipes for this condition. Check back soon!</div></div>
@@ -2005,7 +2096,7 @@ function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFo
           )}
           <div className="recipe-grid">
             {dRecipes.map((r, i) => {
-              const rdSettings = premiumSettings?.[d.id] || {};
+              const rdSettings = premiumSettings?.[parseInt(d.id, 10)] || {};
               const isFreeDietitian = !rdSettings.is_premium;
               const freeCount = rdSettings.free_recipe_count ?? FALLBACK_FREE_RECIPE_COUNT;
               const rdIndex = dRecipes.indexOf(r);
@@ -2032,13 +2123,15 @@ function ExploreTab({ onDieticianClick, followed, onToggleFollow, supaDietitians
   // Merge hardcoded + Supabase RDs (Supabase wins for new ones, hardcoded provides fallback data)
   const exploreDieticians = supaRDs.length > 0
     ? supaRDs
-        .filter(d => d.id !== 1 && d.id !== 2)
+        .filter(d => parseInt(d.id, 10) !== 1 && parseInt(d.id, 10) !== 2)
         .map(d => {
-          const hardcoded = ALL_DIETICIANS.find(x => x.id === d.id) || {};
-          const supaOverride = supaDietitians?.[d.id] || {};
+          const numId = parseInt(d.id, 10);
+          const hardcoded = ALL_DIETICIANS.find(x => x.id === numId) || {};
+          const supaOverride = supaDietitians?.[numId] || {};
           return {
             ...hardcoded,
             ...d,
+            id: numId,
             photo: supaOverride.supaAvatar || d.photo || hardcoded.photo || null,
             bio: supaOverride.supaBio || d.bio || hardcoded.bio,
             supaFollowers: supaOverride.supaFollowers || 0,
@@ -3021,7 +3114,7 @@ const CHALLENGE_GOALS = [
   { id:'gut',           target:4, badges:[{at:1,icon:'🌿',label:'Gut Curious'},{at:3,icon:'🦠',label:'Gut Guardian'},{at:4,icon:'💚',label:'Gut Healed'}] },
   { id:'thyroid',       target:3, badges:[{at:1,icon:'🦋',label:'Thyroid Aware'},{at:3,icon:'💙',label:'Thyroid Warrior'}] },
   { id:'endometriosis', target:3, badges:[{at:1,icon:'🩷',label:'Endo Fighter'},{at:3,icon:'💜',label:'Endo Strong'}] },
-  { id:'postpartum',    target:2, badges:[{at:1,icon:'💛',label:'Recovery Begins'},{at:2,icon:'🌼',label:'Thriving Mama'}] },
+
   { id:'menopause',     target:3, badges:[{at:1,icon:'🌙',label:'Transition Guide'},{at:3,icon:'🌕',label:'Menopause Maven'}] },
 ];
 
@@ -3199,8 +3292,9 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
 // ── RD APPLICATION MODAL ─────────────────────────────────────
 const SPECIALTIES = [
   'PCOS / PMOS', 'Fertility & Conception', 'Hormone Balance',
-  'Low Energy & Fatigue', 'Period Regulation', 'Gut Health',
-  'Thyroid Support', 'Menopause', 'Postpartum Recovery', 'Endometriosis',
+  'Low Energy & Fatigue', 'Gut Health',
+  'Thyroid Support', 'Menopause', 'Endometriosis',
+  'Insulin Resistance', 'Immune Health',
 ];
 
 function RDApplicationModal({ onClose }) {
@@ -3491,7 +3585,7 @@ function AboutTab({ onApply, supaDietitians }) {
           <div className="about-pillars">
             {[
               { icon:'🩺', title:'Clinically grounded', text:'Every recipe comes from a verified registered dietitian. No influencers, no wellness gurus — just qualified clinicians.' },
-              { icon:'🌸', title:'Condition-specific', text:'From PCOS to endometriosis, perimenopause to postpartum — recipes designed around your actual diagnosis, not a vague wellness goal.' },
+              { icon:'🌸', title:'Condition-specific', text:'From PCOS to endometriosis, insulin resistance to immune health — recipes designed around your actual diagnosis, not a vague wellness goal.' },
               { icon:'🍽', title:'Actually delicious', text:'Therapeutic nutrition doesn\'t mean bland. Our RDs create recipes that are as good to eat as they are good for you.' },
             ].map(p => (
               <div key={p.title} className="about-pillar">
@@ -3643,17 +3737,34 @@ function App() {
   const [comments, setComments] = useState(() => ls('tee_comments', {}));
   const [isRD, setIsRD] = useState(false);
   const [rdDieticianId, setRdDieticianId] = useState(null);
+  const [dietaryPreferences, setDietaryPreferences] = useState([]);
 
   const loadUserData = async (uid) => {
     const [{ data: profile }, { data: savesData }, { data: followsData }, { data: triedData }, { data: subData }] = await Promise.all([
-      db.from('profiles').select('name, health_goals, rd_mode, rd_dietitian_id').eq('id', uid).single(),
+      db.from('profiles').select('name, health_goals, rd_mode, rd_dietitian_id, dietary_preferences').eq('id', uid).single(),
       db.from('saves').select('recipe_id').eq('user_id', uid),
       db.from('follows').select('dietitian_id').eq('user_id', uid),
       db.from('tried').select('recipe_id, photo_url').eq('user_id', uid),
-      db.from('subscriptions').select('status').eq('user_id', uid).eq('status', 'active').maybeSingle(),
+      db.from('subscriptions').select('status, updated_at').eq('user_id', uid).in('status', ['active', 'pending']).maybeSingle(),
     ]);
-    if (subData?.status === 'active') setIsPremium(true);
+    if (subData?.status === 'active') {
+      setIsPremium(true);
+    } else if (subData?.status === 'pending') {
+      // Pending means they started checkout but we haven't confirmed yet.
+      // Check if it was updated recently (within last 2 hours) — if so, upgrade to active.
+      // This handles the case where Stripe redirected back but ?subscribed=true was lost.
+      const updatedAt = subData.updated_at ? new Date(subData.updated_at) : null;
+      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+      if (updatedAt && updatedAt > twoHoursAgo) {
+        await db.from('subscriptions').upsert(
+          { user_id: uid, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'active' },
+          { onConflict: 'user_id' }
+        );
+        setIsPremium(true);
+      }
+    }
     if (profile?.health_goals?.length) setHealthGoals(profile.health_goals);
+    if (profile?.dietary_preferences?.length) setDietaryPreferences(profile.dietary_preferences);
     if (profile?.rd_mode != null) setIsRD(profile.rd_mode);
     if (profile?.rd_dietitian_id) setRdDieticianId(profile.rd_dietitian_id);
     if (savesData) setSaved(new Set(savesData.map(r => r.recipe_id)));
@@ -3683,7 +3794,7 @@ function App() {
         // If returning from Stripe, write active status first, then load
         if (justSubscribed) {
           await db.from('subscriptions').upsert(
-            { user_id: u.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'active' },
+            { user_id: u.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'active', updated_at: new Date().toISOString() },
             { onConflict: 'user_id' }
           );
           setIsPremium(true);
@@ -3797,6 +3908,7 @@ function App() {
   }, []);
 
   useEffect(() => { if (user) db.from('profiles').update({ rd_mode: isRD }).eq('id', user.id); }, [isRD]);
+  useEffect(() => { if (user) db.from('profiles').update({ dietary_preferences: dietaryPreferences }).eq('id', user.id); }, [dietaryPreferences]);
   useEffect(() => { if (user) db.from('profiles').update({ rd_dietitian_id: rdDieticianId }).eq('id', user.id); }, [rdDieticianId]);
   useEffect(() => { lsSave('tee_comments', comments); }, [comments]);
 
@@ -3950,7 +4062,7 @@ function App() {
   return (
     <>
       <TopNav current={tab} onChange={setTab} {...navProps} />
-      {tab === 'feed'    && <FeedTab healthGoals={healthGoals} {...sharedProps} />}
+      {tab === 'feed'    && <FeedTab healthGoals={healthGoals} {...sharedProps} dietaryPreferences={dietaryPreferences} onDietaryChange={setDietaryPreferences} />}
       {tab === 'explore' && <ExploreTab followed={followed} onToggleFollow={toggleFollow} onDieticianClick={d => navigate('profile', d)} supaDietitians={supaDietitians} />}
       {tab === 'plan'    && <MealPlanTab user={user} onSignIn={() => setShowAuthModal('signup')} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} healthGoals={healthGoals} onRecipeClick={r => navigate('recipe', r)} />}
       {tab === 'saved'   && <SavedTab {...sharedProps} isPremium={isPremium} onSubscribe={() => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } }} user={user} />}
