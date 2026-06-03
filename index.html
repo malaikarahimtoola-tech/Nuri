@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3818,7 +3819,7 @@ function App() {
         db.from('follows').select('dietitian_id'),
         db.from('saves').select('recipe_id'),
         db.from('recipes').select('*').eq('is_published', true).not('id', 'in', `(${ALL_RECIPES.map(r=>r.id).join(',')})`),
-        db.from('dietitians').select('*'),
+        db.from('dietitians').select('id, name, credentials, specialty, bio, photo, tags, is_premium, free_recipe_count').eq('is_active', true),
       ]);
       if (rData) {
         const rm = {};
