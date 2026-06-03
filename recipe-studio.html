@@ -1036,10 +1036,13 @@ function EditRecipes() {
 
   const HEALTH_GOALS = [
     {id:'pcos',label:'PCOS'},{id:'fertility',label:'Fertility'},{id:'hormones',label:'Hormones'},
-    {id:'energy',label:'Energy'},{id:'period',label:'Period'},{id:'gut',label:'Gut'},
+    {id:'energy',label:'Energy'},{id:'gut',label:'Gut'},
     {id:'thyroid',label:'Thyroid'},{id:'menopause',label:'Menopause'},
-    {id:'postpartum',label:'Postpartum'},{id:'endometriosis',label:'Endometriosis'},
+    {id:'endometriosis',label:'Endometriosis'},
+    {id:'insulin-resistance',label:'Insulin Resistance'},{id:'immune',label:'Immune Health'},
     {id:'anti-inflammatory',label:'Anti-inflammatory'},{id:'high-protein',label:'High Protein'},
+    {id:'vegetarian',label:'Vegetarian'},{id:'vegan',label:'Vegan'},
+    {id:'gluten-free',label:'Gluten-free'},{id:'dairy-free',label:'Dairy-free'},
   ];
 
   return (
@@ -1309,6 +1312,286 @@ function EditDietitians() {
 }
 
 
+
+// ── ADMIN PANEL ───────────────────────────────────────────────
+const ALL_CONDITION_TAGS = [
+  {id:'pcos',label:'PCOS / PMOS',color:'#F2C4CE'},
+  {id:'fertility',label:'Fertility',color:'#C8E6C4'},
+  {id:'hormones',label:'Hormones',color:'#F5E6A3'},
+  {id:'energy',label:'Low Energy',color:'#FFD9B3'},
+  {id:'gut',label:'Gut Health',color:'#C4DEB8'},
+  {id:'thyroid',label:'Thyroid',color:'#B8D4E8'},
+  {id:'menopause',label:'Menopause',color:'#D4B8E8'},
+  {id:'endometriosis',label:'Endometriosis',color:'#F2C4CE'},
+  {id:'insulin-resistance',label:'Insulin Resistance',color:'#FFD9B3'},
+  {id:'immune',label:'Immune Health',color:'#C4DEB8'},
+  {id:'anti-inflammatory',label:'Anti-inflammatory',color:'#C4DEB8'},
+  {id:'high-protein',label:'High Protein',color:'#D4C4B0'},
+];
+
+const ALL_DIETARY_TAGS = [
+  {id:'vegetarian',label:'Vegetarian',color:'#D4EAC8'},
+  {id:'vegan',label:'Vegan',color:'#C8E6C4'},
+  {id:'gluten-free',label:'Gluten-free',color:'#F5E6A3'},
+  {id:'dairy-free',label:'Dairy-free',color:'#E8E0F5'},
+];
+
+function TagChip({ tag, active, onToggle }) {
+  return (
+    <button onClick={onToggle} style={{
+      padding:'4px 11px', borderRadius:50, border:`1.5px solid ${active ? '#5C3D2E' : '#E4D9CC'}`,
+      background: active ? '#5C3D2E' : 'transparent',
+      color: active ? 'white' : '#6B4D3C',
+      fontFamily:'var(--font-body)', fontSize:12, cursor:'pointer', transition:'all 0.15s',
+    }}>{tag.label}</button>
+  );
+}
+
+function AdminPanel() {
+  const [adminTab, setAdminTab] = React.useState('tagger');
+
+  return (
+    <div className="overview-body">
+      <div style={{marginBottom:28}}>
+        <div className="section-eyebrow">Admin</div>
+        <h1 style={{fontFamily:'var(--font-serif)',fontSize:32,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>Admin Panel</h1>
+      </div>
+      <div style={{display:'flex',gap:8,marginBottom:28,background:'var(--warm-beige)',padding:4,borderRadius:50,width:'fit-content'}}>
+        {[
+          {id:'tagger',label:'🏷 Recipe Tagger'},
+          {id:'filters',label:'🔧 Filter Manager'},
+        ].map(t => (
+          <button key={t.id} onClick={() => setAdminTab(t.id)} style={{
+            padding:'8px 20px', borderRadius:50, border:'none',
+            background: adminTab === t.id ? 'var(--brown)' : 'transparent',
+            color: adminTab === t.id ? 'white' : 'var(--text-mid)',
+            fontFamily:'var(--font-body)', fontSize:13, fontWeight:600, cursor:'pointer', transition:'all 0.18s',
+          }}>{t.label}</button>
+        ))}
+      </div>
+      {adminTab === 'tagger' && <RecipeTagger />}
+      {adminTab === 'filters' && <FilterManager />}
+    </div>
+  );
+}
+
+function RecipeTagger() {
+  const [recipes, setRecipes] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [saving, setSaving] = React.useState(null);
+  const [msgs, setMsgs] = React.useState({});
+  const [search, setSearch] = React.useState('');
+  const [filterTag, setFilterTag] = React.useState('all');
+
+  React.useEffect(() => {
+    db.from('recipes').select('id,title,emoji,health_labels,dietitian_id,is_published')
+      .order('id').then(({ data }) => { if (data) setRecipes(data); setLoading(false); });
+  }, []);
+
+  const toggleTag = (recipeId, tagId) => {
+    setRecipes(rs => rs.map(r => {
+      if (r.id !== recipeId) return r;
+      const labels = r.health_labels || [];
+      return { ...r, health_labels: labels.includes(tagId) ? labels.filter(x => x !== tagId) : [...labels, tagId] };
+    }));
+  };
+
+  const saveRecipe = async (recipe) => {
+    setSaving(recipe.id);
+    try {
+      const { error } = await db.from('recipes').update({ health_labels: recipe.health_labels }).eq('id', recipe.id);
+      if (error) throw error;
+      setMsgs(m => ({ ...m, [recipe.id]: '✓ Saved' }));
+      setTimeout(() => setMsgs(m => { const n = {...m}; delete n[recipe.id]; return n; }), 2000);
+    } catch(e) { setMsgs(m => ({ ...m, [recipe.id]: '✗ Error' })); }
+    setSaving(null);
+  };
+
+  const filtered = recipes.filter(r => {
+    const matchSearch = !search || r.title?.toLowerCase().includes(search.toLowerCase());
+    const matchTag = filterTag === 'all' || (r.health_labels || []).includes(filterTag);
+    return matchSearch && matchTag;
+  });
+
+  const allTags = [...ALL_CONDITION_TAGS, ...ALL_DIETARY_TAGS];
+
+  return (
+    <div>
+      <div style={{marginBottom:20}}>
+        <p style={{fontSize:14,color:'var(--text-mid)',lineHeight:1.6,marginBottom:16}}>
+          Click tags to toggle them on each recipe, then hit Save. Changes go live immediately.
+        </p>
+        <div style={{display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}}>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search recipes…"
+            style={{padding:'9px 14px',border:'1.5px solid var(--border)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,color:'var(--text)',background:'var(--white)',outline:'none',width:220}} />
+          <select value={filterTag} onChange={e => setFilterTag(e.target.value)}
+            style={{padding:'9px 14px',border:'1.5px solid var(--border)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,color:'var(--text)',background:'var(--white)',outline:'none',cursor:'pointer'}}>
+            <option value="all">All recipes</option>
+            {allTags.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+          </select>
+          <span style={{fontSize:12,color:'var(--text-light)'}}>{filtered.length} recipe{filtered.length !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{padding:40,textAlign:'center',color:'var(--text-light)'}}>Loading recipes…</div>
+      ) : (
+        <div style={{display:'flex',flexDirection:'column',gap:12}}>
+          {filtered.map(recipe => (
+            <div key={recipe.id} style={{background:'var(--white)',borderRadius:'var(--radius)',padding:'16px 20px',boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',gap:12}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+                <div style={{display:'flex',alignItems:'center',gap:10}}>
+                  <span style={{fontSize:22}}>{recipe.emoji || '🍽'}</span>
+                  <div>
+                    <div style={{fontFamily:'var(--font-serif)',fontSize:15,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>{recipe.title}</div>
+                    <div style={{fontSize:11,color:'var(--text-light)'}}>ID {recipe.id} · {recipe.is_published ? '✅ Live' : '⏳ Draft'}</div>
+                  </div>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  {msgs[recipe.id] && <span style={{fontSize:12,color:msgs[recipe.id].includes('✓')?'var(--green-dark)':'#8B2020'}}>{msgs[recipe.id]}</span>}
+                  <button onClick={() => saveRecipe(recipe)} disabled={saving === recipe.id}
+                    style={{padding:'7px 18px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:12,fontWeight:600,cursor:'pointer',opacity:saving===recipe.id?0.6:1}}>
+                    {saving === recipe.id ? 'Saving…' : 'Save'}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <div style={{fontSize:11,fontWeight:600,letterSpacing:'0.06em',textTransform:'uppercase',color:'var(--text-light)',marginBottom:6}}>Condition Tags</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+                  {ALL_CONDITION_TAGS.map(tag => (
+                    <TagChip key={tag.id} tag={tag} active={(recipe.health_labels||[]).includes(tag.id)} onToggle={() => toggleTag(recipe.id, tag.id)} />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div style={{fontSize:11,fontWeight:600,letterSpacing:'0.06em',textTransform:'uppercase',color:'var(--text-light)',marginBottom:6}}>Dietary Tags</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+                  {ALL_DIETARY_TAGS.map(tag => (
+                    <TagChip key={tag.id} tag={tag} active={(recipe.health_labels||[]).includes(tag.id)} onToggle={() => toggleTag(recipe.id, tag.id)} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+          {filtered.length === 0 && (
+            <div style={{padding:40,textAlign:'center',color:'var(--text-light)'}}>No recipes match your search.</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FilterManager() {
+  const BUILT_IN_CONDITIONS = [
+    {id:'pcos',label:'PCOS / PMOS',icon:'🌸',removable:false},
+    {id:'fertility',label:'Fertility & Conception',icon:'🌱',removable:true},
+    {id:'hormones',label:'Hormone Balance',icon:'⚖️',removable:true},
+    {id:'energy',label:'Low Energy & Fatigue',icon:'✨',removable:true},
+    {id:'gut',label:'Gut Health',icon:'🌿',removable:true},
+    {id:'thyroid',label:'Thyroid Support',icon:'🦋',removable:true},
+    {id:'menopause',label:'Menopause',icon:'🌙',removable:true},
+    {id:'endometriosis',label:'Endometriosis',icon:'🩷',removable:true},
+    {id:'insulin-resistance',label:'Insulin Resistance',icon:'🩸',removable:true},
+    {id:'immune',label:'Immune Health',icon:'🛡️',removable:true},
+  ];
+
+  const BUILT_IN_DIETARY = [
+    {id:'vegetarian',label:'Vegetarian',icon:'🥦'},
+    {id:'vegan',label:'Vegan',icon:'🌱'},
+    {id:'gluten-free',label:'Gluten-free',icon:'🌾'},
+    {id:'dairy-free',label:'Dairy-free',icon:'🥛'},
+  ];
+
+  const [activeConditions, setActiveConditions] = React.useState(
+    BUILT_IN_CONDITIONS.map(c => c.id)
+  );
+  const [activeDietary, setActiveDietary] = React.useState(
+    BUILT_IN_DIETARY.map(d => d.id)
+  );
+  const [saved, setSaved] = React.useState(false);
+
+  const toggleCondition = (id) => {
+    setActiveConditions(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+    setSaved(false);
+  };
+  const toggleDietary = (id) => {
+    setActiveDietary(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+    setSaved(false);
+  };
+
+  return (
+    <div style={{maxWidth:700}}>
+      <p style={{fontSize:14,color:'var(--text-mid)',lineHeight:1.6,marginBottom:24}}>
+        Control which filters appear on the main feed. Toggling a filter off hides it from users — recipes keep their tags, they just won't be filterable by that category.
+      </p>
+
+      <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:24,boxShadow:'var(--shadow)',marginBottom:16}}>
+        <div style={{fontFamily:'var(--font-serif)',fontSize:17,fontStyle:'italic',fontWeight:600,marginBottom:4}}>Condition Filters</div>
+        <div style={{fontSize:12,color:'var(--text-light)',marginBottom:16}}>These appear as the main filter chips on the feed</div>
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {BUILT_IN_CONDITIONS.map(c => (
+            <div key={c.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',borderRadius:10,background:activeConditions.includes(c.id)?'var(--warm-beige)':'var(--cream)',border:'1.5px solid var(--border)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <span>{c.icon}</span>
+                <span style={{fontSize:14,fontWeight:500,color:'var(--text)'}}>{c.label}</span>
+                {!c.removable && <span style={{fontSize:10,background:'var(--warm-beige)',color:'var(--text-light)',padding:'2px 7px',borderRadius:50,fontWeight:600}}>Always on</span>}
+              </div>
+              <button onClick={() => c.removable && toggleCondition(c.id)} style={{
+                width:40, height:22, borderRadius:50, border:'none', cursor: c.removable ? 'pointer' : 'default',
+                background: activeConditions.includes(c.id) ? 'var(--green-dark)' : '#D4C4B0',
+                position:'relative', transition:'background 0.2s', opacity: c.removable ? 1 : 0.5,
+              }}>
+                <div style={{
+                  width:16, height:16, borderRadius:50, background:'white',
+                  position:'absolute', top:3,
+                  left: activeConditions.includes(c.id) ? 21 : 3,
+                  transition:'left 0.2s', boxShadow:'0 1px 4px rgba(0,0,0,0.15)',
+                }} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:24,boxShadow:'var(--shadow)',marginBottom:20}}>
+        <div style={{fontFamily:'var(--font-serif)',fontSize:17,fontStyle:'italic',fontWeight:600,marginBottom:4}}>Dietary Filters</div>
+        <div style={{fontSize:12,color:'var(--text-light)',marginBottom:16}}>These appear as secondary filter chips on the feed</div>
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {BUILT_IN_DIETARY.map(d => (
+            <div key={d.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',borderRadius:10,background:activeDietary.includes(d.id)?'var(--warm-beige)':'var(--cream)',border:'1.5px solid var(--border)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <span>{d.icon}</span>
+                <span style={{fontSize:14,fontWeight:500,color:'var(--text)'}}>{d.label}</span>
+              </div>
+              <button onClick={() => toggleDietary(d.id)} style={{
+                width:40, height:22, borderRadius:50, border:'none', cursor:'pointer',
+                background: activeDietary.includes(d.id) ? 'var(--green-dark)' : '#D4C4B0',
+                position:'relative', transition:'background 0.2s',
+              }}>
+                <div style={{
+                  width:16, height:16, borderRadius:50, background:'white',
+                  position:'absolute', top:3,
+                  left: activeDietary.includes(d.id) ? 21 : 3,
+                  transition:'left 0.2s', boxShadow:'0 1px 4px rgba(0,0,0,0.15)',
+                }} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{background:'var(--warm-beige)',borderRadius:10,padding:'12px 16px',fontSize:13,color:'var(--text-mid)',marginBottom:20}}>
+        ℹ️ Filter visibility changes will apply next time you deploy the main app. For now this is a reference view — note down which filters you want active.
+      </div>
+
+      <button onClick={() => setSaved(true)} style={{padding:'10px 28px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:14,fontWeight:600,cursor:'pointer'}}>
+        {saved ? '✓ Saved' : 'Save filter settings'}
+      </button>
+    </div>
+  );
+}
+
 // ── PENDING RECIPES ───────────────────────────────────────────
 function PendingRecipes() {
   const [pending, setPending] = useState([]);
@@ -1469,6 +1752,7 @@ function App() {
             <button className={`nav-tab ${tab==='create'?'active':''}`} onClick={()=>{setTab('create');setPublished(false);}}>✦ Create Recipe</button>
             <button className={`nav-tab ${tab==='edit'?'active':''}`} onClick={()=>{setTab('edit');setPublished(false);}}>✏️ Edit Recipes</button>
             <button className={`nav-tab ${tab==='profiles'?'active':''}`} onClick={()=>{setTab('profiles');setPublished(false);}}>👤 Profiles</button>
+            <button className={`nav-tab ${tab==='admin'?'active':''}`} onClick={()=>{setTab('admin');setPublished(false);}}>⚙️ Admin</button>
           </div>
           <div className="nav-right">
             <button className="btn-outline" onClick={async()=>{ await db.auth.signOut(); setAuthed(false); }}>Sign out</button>
@@ -1481,6 +1765,7 @@ function App() {
       {tab==='pending' && <PendingRecipes />}
       {tab==='edit' && <EditRecipes />}
       {tab==='profiles' && <EditDietitians />}
+      {tab==='admin' && <AdminPanel />}
     </>
   );
 }
