@@ -3152,8 +3152,7 @@ function MySubscription({ user, isPremium, onSubscribe }) {
 
   React.useEffect(() => {
     if (!user) { setLoading(false); return; }
-    db.from('subscriptions').select('status, stripe_price_id, current_period_end, updated_at')
-      .eq('user_id', user.id).maybeSingle()
+    db.rpc('get_my_subscription').maybeSingle()
       .then(({ data }) => { setSubData(data); setLoading(false); });
   }, [user]);
 
@@ -3854,7 +3853,7 @@ function App() {
       db.from('saves').select('recipe_id').eq('user_id', uid),
       db.from('follows').select('dietitian_id').eq('user_id', uid),
       db.from('tried').select('recipe_id, photo_url').eq('user_id', uid),
-      db.from('subscriptions').select('status, updated_at').eq('user_id', uid).in('status', ['active', 'pending']).maybeSingle(),
+      db.rpc('get_my_subscription').maybeSingle(),
     ]);
     if (subData?.status === 'active') {
       setIsPremium(true);
