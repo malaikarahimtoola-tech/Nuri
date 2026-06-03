@@ -3643,7 +3643,7 @@ function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
             setLoading(true);
             const { error } = await db.auth.signInWithOAuth({
               provider: 'google',
-              options: { redirectTo: window.location.href }
+              options: { redirectTo: window.location.origin }
             });
             if (error) { setError(error.message); setLoading(false); }
           }} disabled={loading}>
@@ -3896,6 +3896,16 @@ function App() {
         window.history.replaceState({}, '', window.location.pathname);
       }
 
+      // Handle OAuth hash callback (Google auth returns #access_token=...)
+      // Supabase JS v2 processes the hash automatically, but we need to wait for it
+      const hash = window.location.hash;
+      if (hash && hash.includes('access_token')) {
+        // Clear the hash from URL immediately for security
+        window.history.replaceState({}, '', window.location.pathname);
+        // Small delay to let Supabase process the hash
+        await new Promise(r => setTimeout(r, 300));
+      }
+
       const { data: { session } } = await db.auth.getSession();
       if (session?.user) {
         const u = session.user;
@@ -4027,8 +4037,15 @@ function App() {
       window.removeEventListener('focus', handleFocus);
     };
 
-    const { data: { subscription } } = db.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') { setUser(null); setSaved(new Set()); setFollowed(new Set()); setTried(new Set()); setScreen('welcome'); }
+    const { data: { subscription } } = db.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') { 
+        setUser(null); setSaved(new Set()); setFollowed(new Set()); setTried(new Set()); setScreen('welcome'); 
+      } else if (event === 'SIGNED_IN' && session?.user) {
+        const u = session.user;
+        const profile = await loadUserData(u.id);
+        setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
+        setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
