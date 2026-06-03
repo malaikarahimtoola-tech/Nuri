@@ -3139,7 +3139,93 @@ const CHALLENGE_GOALS = [
   { id:'menopause',     target:3, badges:[{at:1,icon:'🌙',label:'Transition Guide'},{at:3,icon:'🌕',label:'Menopause Maven'}] },
 ];
 
-function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician, supaDietitians }) {
+
+// ── MY SUBSCRIPTION ──────────────────────────────────────────
+const MONTHLY_PRICE_ID = 'price_1TeJRT1L75noll9TSVxVWbPt';
+const ANNUAL_PRICE_ID  = 'price_1TeJRW1L75noll9Toqnw83Ob';
+const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/7sYcMXcLkax1c9n7NX7wA00';
+
+function MySubscription({ user, isPremium, onSubscribe }) {
+  const [subData, setSubData] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const db = window._supa;
+
+  React.useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    db.from('subscriptions').select('status, stripe_price_id, current_period_end, updated_at')
+      .eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => { setSubData(data); setLoading(false); });
+  }, [user]);
+
+  const isMonthly = subData?.stripe_price_id === MONTHLY_PRICE_ID;
+  const isAnnual  = subData?.stripe_price_id === ANNUAL_PRICE_ID;
+  const planLabel = isAnnual ? 'Annual Plan' : isMonthly ? 'Monthly Plan' : 'Nuri Premium';
+  const planPrice = isAnnual ? '$99.99 / year' : '$9.99 / month';
+  const nextBilling = subData?.current_period_end
+    ? new Date(subData.current_period_end).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })
+    : null;
+
+  const openPortal = () => {
+    const url = user?.email
+      ? `${STRIPE_PORTAL_URL}?prefilled_email=${encodeURIComponent(user.email)}`
+      : STRIPE_PORTAL_URL;
+    window.open(url, '_blank');
+  };
+
+  if (loading) return null;
+
+  if (!isPremium || !subData) {
+    return (
+      <div className="card-block">
+        <div className="card-block-title"><span>✨ My Subscription</span></div>
+        <p style={{fontSize:13,color:'var(--text-light)',fontStyle:'italic',fontFamily:'var(--font-serif)',marginBottom:16}}>
+          You're on the free plan. Upgrade to unlock all recipes, the meal planner and more.
+        </p>
+        <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+          <button onClick={() => { window._postPayRedirect = { tab: 'you' }; onSubscribe(); }}
+            style={{padding:'10px 22px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+            Monthly · $9.99/mo
+          </button>
+          <button onClick={() => { window._postPayRedirect = { tab: 'you' }; onSubscribe(); }}
+            style={{padding:'10px 22px',background:'var(--warm-beige)',color:'var(--brown)',border:'1.5px solid var(--brown)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+            Annual · $99.99/yr · Save 17%
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card-block">
+      <div className="card-block-title"><span>✨ My Subscription</span></div>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+        <div style={{background:'var(--sage)',color:'white',borderRadius:50,padding:'3px 12px',fontSize:11,fontWeight:700,letterSpacing:'0.04em'}}>ACTIVE</div>
+        <div style={{fontFamily:'var(--font-serif)',fontSize:16,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>{planLabel}</div>
+        <div style={{fontSize:13,color:'var(--text-light)',marginLeft:'auto'}}>{planPrice}</div>
+      </div>
+      {nextBilling && (
+        <p style={{fontSize:13,color:'var(--text-mid)',marginBottom:12}}>
+          Next billing date: <strong>{nextBilling}</strong>
+        </p>
+      )}
+      {isMonthly && (
+        <div style={{background:'var(--warm-beige)',borderRadius:10,padding:'10px 14px',marginBottom:14,fontSize:13,color:'var(--text-mid)'}}>
+          💡 Switch to annual and save 17% — just <strong>$99.99/year</strong> instead of $119.88
+          <button onClick={() => { window._postPayRedirect = { tab: 'you' }; onSubscribe(); }}
+            style={{display:'block',marginTop:8,padding:'7px 16px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+            Switch to Annual
+          </button>
+        </div>
+      )}
+      <button onClick={openPortal}
+        style={{padding:'9px 20px',background:'transparent',color:'var(--text-light)',border:'1.5px solid var(--border)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:12,fontWeight:500,cursor:'pointer'}}>
+        Manage or cancel subscription ↗
+      </button>
+    </div>
+  );
+}
+
+function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician, supaDietitians, user, isPremium, onSubscribe }) {
   const goals = HEALTH_GOALS.filter(g => healthGoals.includes(g.id));
   const followedDs = ALL_DIETICIANS.filter(d => followed.has(d.id));
   const triedPhotosArr = Object.entries(triedPhotos).filter(([,v]) => v);
@@ -3161,6 +3247,8 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
               </div>
             ))}
           </div>
+
+          <MySubscription user={user} isPremium={isPremium} onSubscribe={onSubscribe} />
 
           <div className="card-block">
             <div className="card-block-title">
@@ -3814,8 +3902,10 @@ function App() {
 
         // If returning from Stripe, write active status first, then load
         if (justSubscribed) {
+          const periodEnd = new Date();
+          periodEnd.setMonth(periodEnd.getMonth() + 1); // default monthly; webhook will correct for annual
           await db.from('subscriptions').upsert(
-            { user_id: u.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'active', updated_at: new Date().toISOString() },
+            { user_id: u.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'active', updated_at: new Date().toISOString(), current_period_end: periodEnd.toISOString() },
             { onConflict: 'user_id' }
           );
           setIsPremium(true);
@@ -4103,7 +4193,7 @@ function App() {
       {tab === 'plan'    && <MealPlanTab user={user} onSignIn={() => setShowAuthModal('signup')} isPremium={isPremium} onSubscribe={() => { window._postPayRedirect = { tab: 'plan' }; setShowSubModal(true); }} healthGoals={healthGoals} onRecipeClick={r => navigate('recipe', r)} />}
       {tab === 'saved'   && <SavedTab {...sharedProps} isPremium={isPremium} onSubscribe={() => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } }} user={user} />}
       {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} supaDietitians={supaDietitians} />}
-      {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} />}
+      {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} user={user} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} />}
       {showApplyModal && <RDApplicationModal onClose={() => setShowApplyModal(false)} />}
       <button className="feedback-btn" onClick={() => setShowFeedback(true)}>✉️ Feedback</button>
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} user={user} />}
