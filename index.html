@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1490,7 +1491,7 @@ function TopNav({ current, onChange, user, onSignIn, onSignOut }) {
 
 
 // ── PAGES ─────────────────────────────────────────────────────
-function Welcome({ onStart, onSignIn }) {
+function Welcome({ onSignIn }) {
   const previewRecipes = RECIPES.slice(0, 3);
   return (
     <div className="welcome-page">
@@ -1503,8 +1504,8 @@ function Welcome({ onStart, onSignIn }) {
           Recipes built by registered dietitians — for PCOS / PMOS, IBS, endometriosis, and more. Not generic wellness. Real clinical expertise, in your kitchen.
         </p>
         <button className="welcome-cta" onClick={onSignIn}>Create an account 🌿</button>
-        <button onClick={onStart} style={{background:'none',border:'none',color:'var(--text-light)',fontSize:13,cursor:'pointer',fontFamily:'var(--font-body)',marginTop:10,textDecoration:'underline'}}>
-          Browse without signing in
+        <button onClick={onSignIn} style={{background:'none',border:'none',color:'var(--text-light)',fontSize:13,cursor:'pointer',fontFamily:'var(--font-body)',marginTop:10,textDecoration:'underline'}}>
+          Already have an account? Sign in
         </button>
         <p className="welcome-note">🩺 Recipes by verified registered dietitians</p>
       </div>
@@ -4202,7 +4203,7 @@ function App() {
     </div>
   );
 
-  if (screen === 'welcome') return <Welcome onStart={() => setScreen('app')} onSignIn={() => setShowAuthModal('signin')} />;
+  if (screen === 'welcome') return <Welcome onSignIn={() => setShowAuthModal('signin')} />;
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} userName={user?.name || user?.email} />;
   if (screen === 'welcome_new') return <WelcomeSlide userName={user?.name || user?.email} healthGoals={healthGoals} onContinue={() => setScreen('app')} />;
   if (screen === 'welcome_back') return <WelcomeBack userName={user?.name || user?.email} onContinue={() => setScreen('app')} />;
