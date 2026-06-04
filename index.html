@@ -1490,7 +1490,7 @@ function TopNav({ current, onChange, user, onSignIn, onSignOut }) {
 
 
 // ── PAGES ─────────────────────────────────────────────────────
-function Welcome({ onStart }) {
+function Welcome({ onStart, onSignIn }) {
   const previewRecipes = RECIPES.slice(0, 3);
   return (
     <div className="welcome-page">
@@ -1502,7 +1502,10 @@ function Welcome({ onStart }) {
         <p className="welcome-sub">
           Recipes built by registered dietitians — for PCOS / PMOS, IBS, endometriosis, and more. Not generic wellness. Real clinical expertise, in your kitchen.
         </p>
-        <button className="welcome-cta" onClick={onStart}>Find your recipes 🌿</button>
+        <button className="welcome-cta" onClick={onSignIn}>Create an account 🌿</button>
+        <button onClick={onStart} style={{background:'none',border:'none',color:'var(--text-light)',fontSize:13,cursor:'pointer',fontFamily:'var(--font-body)',marginTop:10,textDecoration:'underline'}}>
+          Browse without signing in
+        </button>
         <p className="welcome-note">🩺 Recipes by verified registered dietitians</p>
       </div>
       <div className="welcome-right">
@@ -1518,6 +1521,26 @@ function Welcome({ onStart }) {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function WelcomeBack({ userName, onContinue }) {
+  const firstName = userName ? userName.split(/[@\s]/)[0] : null;
+  return (
+    <div className="onboarding-wrap" style={{ textAlign:'center', maxWidth:500 }}>
+      <div style={{ fontFamily:'var(--font-logo)', fontSize:48, fontStyle:'italic', fontWeight:600, color:'var(--green-dark)', display:'inline-flex', alignItems:'flex-end', marginBottom:24 }}>
+        nuri<span style={{ display:'inline-block', width:10, height:10, borderRadius:'50%', background:'var(--rose)', marginLeft:2, marginBottom:3 }} />
+      </div>
+      <h1 style={{ fontFamily:'var(--font-serif)', fontSize:36, fontStyle:'italic', fontWeight:600, color:'var(--text)', lineHeight:1.2, marginBottom:16 }}>
+        {firstName ? `Welcome back, ${firstName}.` : 'Welcome back.'}
+      </h1>
+      <p style={{ fontSize:15, color:'var(--text-mid)', lineHeight:1.7, marginBottom:36, maxWidth:400, margin:'0 auto 36px' }}>
+        Your recipes are ready for you.
+      </p>
+      <button className="onboarding-btn" onClick={onContinue}>
+        Take me in →
+      </button>
     </div>
   );
 }
@@ -3942,7 +3965,7 @@ function App() {
 
         const profile = await loadUserData(u.id);
         setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
-        setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
+        setScreen(profile?.health_goals?.length ? 'welcome_back' : 'onboarding');
       } else {
         setScreen('welcome');
       }
@@ -4179,9 +4202,10 @@ function App() {
     </div>
   );
 
-  if (screen === 'welcome') return <Welcome onStart={() => setScreen('onboarding')} />;
+  if (screen === 'welcome') return <Welcome onStart={() => setScreen('app')} onSignIn={() => setShowAuthModal('signin')} />;
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} userName={user?.name || user?.email} />;
   if (screen === 'welcome_new') return <WelcomeSlide userName={user?.name || user?.email} healthGoals={healthGoals} onContinue={() => setScreen('app')} />;
+  if (screen === 'welcome_back') return <WelcomeBack userName={user?.name || user?.email} onContinue={() => setScreen('app')} />;
 
   const navProps = { user, onSignIn: () => setShowAuthModal('signin'), onSignOut: handleSignOut };
   const sharedProps = {
