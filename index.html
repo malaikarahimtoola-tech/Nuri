@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3966,7 +3965,7 @@ function App() {
 
         const profile = await loadUserData(u.id);
         setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
-        setScreen(profile?.health_goals?.length ? 'welcome_back' : 'onboarding');
+        setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
       } else {
         setScreen('welcome');
       }
@@ -4211,7 +4210,7 @@ function App() {
   );
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} userName={user?.name || user?.email} />;
   if (screen === 'welcome_new') return <WelcomeSlide userName={user?.name || user?.email} healthGoals={healthGoals} onContinue={() => setScreen('app')} />;
-  if (screen === 'welcome_back') return <WelcomeBack userName={user?.name || user?.email} onContinue={() => setScreen('app')} />;
+
 
   const navProps = { user, onSignIn: () => setShowAuthModal('signin'), onSignOut: handleSignOut };
   const sharedProps = {
