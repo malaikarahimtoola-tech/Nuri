@@ -3224,9 +3224,13 @@ function MySubscription({ user, isPremium, onSubscribe }) {
   );
 }
 
-function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician, supaDietitians, user, isPremium, onSubscribe }) {
+function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician, supaDietitians, user, isPremium, onSubscribe, supaAllDietitians }) {
   const goals = HEALTH_GOALS.filter(g => healthGoals.includes(g.id));
-  const followedDs = ALL_DIETICIANS.filter(d => followed.has(d.id));
+  const allKnownDs = [
+    ...ALL_DIETICIANS,
+    ...(supaAllDietitians || []).filter(d => !ALL_DIETICIANS.find(x => x.id === parseInt(d.id, 10)))
+  ];
+  const followedDs = allKnownDs.filter(d => followed.has(parseInt(d.id, 10)));
   const triedPhotosArr = Object.entries(triedPhotos).filter(([,v]) => v);
   const triedArr = [...tried];
 
@@ -4215,7 +4219,7 @@ function App() {
       {tab === 'plan'    && <MealPlanTab user={user} onSignIn={() => setShowAuthModal('signup')} isPremium={isPremium} onSubscribe={() => { window._postPayRedirect = { tab: 'plan' }; setShowSubModal(true); }} healthGoals={healthGoals} onRecipeClick={r => navigate('recipe', r)} />}
       {tab === 'saved'   && <SavedTab {...sharedProps} isPremium={isPremium} onSubscribe={() => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } }} user={user} />}
       {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} supaDietitians={supaDietitians} />}
-      {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} user={user} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} />}
+      {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} user={user} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaAllDietitians={supaAllDietitians} />}
       {showApplyModal && <RDApplicationModal onClose={() => setShowApplyModal(false)} />}
       <button className="feedback-btn" onClick={() => setShowFeedback(true)}>✉️ Feedback</button>
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} user={user} />}
