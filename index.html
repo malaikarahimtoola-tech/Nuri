@@ -4203,7 +4203,12 @@ function App() {
     </div>
   );
 
-  if (screen === 'welcome') return <Welcome onSignIn={() => setShowAuthModal('signin')} />;
+  if (screen === 'welcome') return (
+    <>
+      <Welcome onSignIn={() => setShowAuthModal('signin')} />
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
+    </>
+  );
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} userName={user?.name || user?.email} />;
   if (screen === 'welcome_new') return <WelcomeSlide userName={user?.name || user?.email} healthGoals={healthGoals} onContinue={() => setScreen('app')} />;
   if (screen === 'welcome_back') return <WelcomeBack userName={user?.name || user?.email} onContinue={() => setScreen('app')} />;
