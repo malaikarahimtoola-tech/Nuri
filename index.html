@@ -1490,7 +1490,7 @@ function TopNav({ current, onChange, user, onSignIn, onSignOut }) {
 
 
 // ── PAGES ─────────────────────────────────────────────────────
-function Welcome({ onSignIn }) {
+function Welcome({ onSignIn, onSignUp }) {
   const previewRecipes = RECIPES.slice(0, 3);
   return (
     <div className="welcome-page">
@@ -1502,7 +1502,7 @@ function Welcome({ onSignIn }) {
         <p className="welcome-sub">
           Recipes built by registered dietitians — for PCOS / PMOS, IBS, endometriosis, and more. Not generic wellness. Real clinical expertise, in your kitchen.
         </p>
-        <button className="welcome-cta" onClick={onSignIn}>Create an account 🌿</button>
+        <button className="welcome-cta" onClick={onSignUp}>Create an account 🌿</button>
         <button onClick={onSignIn} style={{background:'none',border:'none',color:'var(--text-light)',fontSize:13,cursor:'pointer',fontFamily:'var(--font-body)',marginTop:10,textDecoration:'underline'}}>
           Already have an account? Sign in
         </button>
@@ -4073,19 +4073,10 @@ function App() {
       if (event === 'SIGNED_OUT') { 
         setUser(null); setSaved(new Set()); setFollowed(new Set()); setTried(new Set()); setScreen('welcome'); 
       } else if (event === 'SIGNED_IN' && session?.user) {
-        // Only handle if this is a fresh OAuth login (not already handled by init)
-        // We check if screen is still 'welcome' or 'loading' to avoid double-firing
-        setScreen(prev => {
-          if (prev !== 'welcome' && prev !== 'loading') return prev; // init already handled it
-          return prev; // will be set properly below
-        });
         const u = session.user;
         const profile = await loadUserData(u.id);
         setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
-        setScreen(prev => {
-          if (prev !== 'welcome' && prev !== 'loading') return prev; // init already handled it
-          return profile?.health_goals?.length ? 'app' : 'onboarding';
-        });
+        setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
       }
     });
     return () => subscription.unsubscribe();
@@ -4213,7 +4204,7 @@ function App() {
 
   if (screen === 'welcome') return (
     <>
-      <Welcome onSignIn={() => setShowAuthModal('signin')} />
+      <Welcome onSignUp={() => setShowAuthModal('signup')} onSignIn={() => setShowAuthModal('signin')} />
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
     </>
   );
