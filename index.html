@@ -542,7 +542,7 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 
 /* ── AUTH MODAL ──────────────────────────────────────────── */
 .auth-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(44,24,16,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 24px; }
-.auth-modal { background: var(--cream); border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 24px 80px rgba(44,24,16,0.24); animation: slideIn 0.28s ease; overflow: hidden; }
+.auth-modal { background: var(--cream); border-radius: 20px; width: 100%; max-width: 420px; max-height: 90vh; box-shadow: 0 24px 80px rgba(44,24,16,0.24); animation: slideIn 0.28s ease; overflow-y: auto; }
 .auth-modal-inner { padding: 40px; }
 .auth-logo { font-family: var(--font-logo); font-size: 32px; font-style: italic; font-weight: 600; color: var(--green-dark); display: inline-flex; align-items: flex-end; margin-bottom: 6px; }
 .auth-logo-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--rose); margin-left: 2px; margin-bottom: 3px; }
@@ -3777,6 +3777,14 @@ function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
                   <>Already have an account? <button className="auth-switch-btn" onClick={() => { setMode('signin'); setError(''); }}>Sign in</button></>
                 )}
               </div>
+              {mode === 'signup' && (
+                <p style={{fontSize:12,color:'var(--text-mid)',textAlign:'center',marginTop:8,lineHeight:1.5}}>
+                  By creating an account you agree to our{' '}
+                  <button onClick={() => window._showLegal('terms')} style={{background:'none',border:'none',color:'var(--brown)',fontSize:12,cursor:'pointer',textDecoration:'underline',padding:0,fontWeight:500}}>Terms of Service</button>
+                  {' '}and{' '}
+                  <button onClick={() => window._showLegal('privacy')} style={{background:'none',border:'none',color:'var(--brown)',fontSize:12,cursor:'pointer',textDecoration:'underline',padding:0,fontWeight:500}}>Privacy Policy</button>
+                </p>
+              )}
             </>
           )}
         </div>
