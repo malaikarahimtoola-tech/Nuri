@@ -3965,7 +3965,7 @@ function App() {
 
         const profile = await loadUserData(u.id);
         setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
-        setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
+        setScreen(profile?.health_goals?.length ? 'welcome_back' : 'onboarding');
       } else {
         setScreen('welcome');
       }
@@ -4073,10 +4073,19 @@ function App() {
       if (event === 'SIGNED_OUT') { 
         setUser(null); setSaved(new Set()); setFollowed(new Set()); setTried(new Set()); setScreen('welcome'); 
       } else if (event === 'SIGNED_IN' && session?.user) {
+        // Only handle if this is a fresh OAuth login (not already handled by init)
+        // We check if screen is still 'welcome' or 'loading' to avoid double-firing
+        setScreen(prev => {
+          if (prev !== 'welcome' && prev !== 'loading') return prev; // init already handled it
+          return prev; // will be set properly below
+        });
         const u = session.user;
         const profile = await loadUserData(u.id);
         setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
-        setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
+        setScreen(prev => {
+          if (prev !== 'welcome' && prev !== 'loading') return prev; // init already handled it
+          return profile?.health_goals?.length ? 'app' : 'onboarding';
+        });
       }
     });
     return () => subscription.unsubscribe();
@@ -4210,7 +4219,7 @@ function App() {
   );
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} userName={user?.name || user?.email} />;
   if (screen === 'welcome_new') return <WelcomeSlide userName={user?.name || user?.email} healthGoals={healthGoals} onContinue={() => setScreen('app')} />;
-
+  if (screen === 'welcome_back') return <WelcomeBack userName={user?.name || user?.email} onContinue={() => setScreen('app')} />;
 
   const navProps = { user, onSignIn: () => setShowAuthModal('signin'), onSignOut: handleSignOut };
   const sharedProps = {
