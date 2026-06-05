@@ -1711,6 +1711,7 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
     { id: 'vegan', label: 'Vegan' },
     { id: 'gluten-free', label: 'Gluten-free' },
     { id: 'dairy-free', label: 'Dairy-free' },
+    { id: 'high-protein', label: 'High Protein' },
   ];
 
   const toggleDietary = (id) => {
@@ -4351,6 +4352,7 @@ function App() {
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} user={user} />}
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
       {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
+      {showLegalModal && <LegalModal type={showLegalModal} onClose={() => setShowLegalModal(false)} />}
     </>
   );
 }
