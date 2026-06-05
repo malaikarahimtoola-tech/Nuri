@@ -3957,6 +3957,8 @@ function App() {
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  useEffect(() => { window._showLegal = (type) => setShowLegalModal(type); }, []);
   const [isPremium, setIsPremium] = useState(false);
   const [showSubModal, setShowSubModal] = useState(false);
   const [user, setUser] = useState(null);
@@ -4312,6 +4314,7 @@ function App() {
     <>
       <Welcome onSignUp={() => setShowAuthModal('signup')} onSignIn={() => setShowAuthModal('signin')} />
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
+      {showLegalModal && <LegalModal type={showLegalModal} onClose={() => setShowLegalModal(false)} />}
     </>
   );
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} userName={user?.name || user?.email} />;
