@@ -3643,6 +3643,74 @@ function RDApplicationModal({ onClose }) {
 }
 
 // ── AUTH MODAL (Supabase Auth) ────────────────────────────────
+function LegalModal({ type, onClose }) {
+  return (
+    <div className="auth-modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }} style={{zIndex:2000}}>
+      <div style={{background:'var(--white)',borderRadius:'var(--radius)',width:'min(680px,95vw)',maxHeight:'85vh',overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 20px 60px rgba(44,24,16,0.18)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'20px 28px',borderBottom:'1px solid var(--border)',flexShrink:0}}>
+          <div style={{fontFamily:'var(--font-serif)',fontSize:18,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>
+            {type === 'terms' ? 'Terms of Service' : 'Privacy Policy'}
+          </div>
+          <button onClick={onClose} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'var(--text-light)',lineHeight:1}}>×</button>
+        </div>
+        <div style={{overflowY:'auto',padding:'24px 28px',fontSize:13,color:'var(--text-mid)',lineHeight:1.8}}>
+          {type === 'privacy' ? <PrivacyPolicyContent /> : <TermsOfServiceContent />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PrivacyPolicyContent() {
+  return (
+    <div>
+      <p style={{fontSize:11,color:'var(--text-light)',marginBottom:16}}>Last updated: June 2026 · Draft pending legal review. Company registration TBC.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,marginBottom:8,color:'var(--text)'}}>Overview</h3>
+      <p>This Privacy Policy explains how Nuri ("we," "us") collects, uses, shares, and protects personal data when you use our platform at nurirecipes.com. Because Nuri serves women managing health conditions, you may share information about your health. This is treated as special category data under UK GDPR and GDPR and processed with additional safeguards, only with your explicit consent.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Data We Collect</h3>
+      <p><strong>Account data:</strong> name, email address, password (hashed).</p>
+      <p style={{marginTop:6}}><strong>Health & dietary data:</strong> health conditions, dietary preferences, food restrictions. Only collected with your explicit consent.</p>
+      <p style={{marginTop:6}}><strong>Usage data:</strong> pages viewed, recipes saved, device type, browser, IP address.</p>
+      <p style={{marginTop:6}}><strong>Payment data:</strong> billing name and last four digits of card. Full payment details are processed by Stripe and not stored by us.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>How We Use Your Data</h3>
+      <p>To provide and personalise the service, improve the platform, send marketing communications (with your consent), and comply with legal obligations. We do not sell your personal data.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Your Rights</h3>
+      <p>You have the right to access, correct, delete, or export your data. To exercise any right, email <strong>join@nurirecipes.com</strong>. You may also lodge a complaint with the ICO (UK) or your national Data Protection Authority.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Security & Retention</h3>
+      <p>We use encryption in transit (TLS) and at rest, and role-based access controls. Account data is retained while your account is active and for 12 months after closure. Health data is deleted within 30 days of account closure or withdrawal of consent.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Children</h3>
+      <p>The platform is not intended for individuals under 18. Contact join@nurirecipes.com if you believe a minor has provided us with personal data.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Contact</h3>
+      <p>Questions? Email <strong>join@nurirecipes.com</strong></p>
+    </div>
+  );
+}
+
+function TermsOfServiceContent() {
+  return (
+    <div>
+      <p style={{fontSize:11,color:'var(--text-light)',marginBottom:16}}>Last updated: June 2026 · Draft pending legal review. Company registration TBC.</p>
+      <p style={{background:'var(--warm-beige)',padding:'10px 14px',borderRadius:8,fontSize:12,marginBottom:16}}><strong>Not medical advice.</strong> Recipes and content on Nuri are for general informational purposes only and are not a substitute for professional medical or nutritional advice. Always consult your healthcare provider before making dietary changes.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,marginBottom:8,color:'var(--text)'}}>Who Can Use Nuri</h3>
+      <p>You must be at least 18 years old to create an account. The platform is designed for women managing or interested in nutrition for various health conditions.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Your Account</h3>
+      <p>You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. Notify us immediately at join@nurirecipes.com if you suspect unauthorised access.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Subscriptions & Payments</h3>
+      <p>Some features require a subscription. Subscriptions auto-renew unless cancelled before the renewal date. You may cancel anytime through your account settings. Payments are processed by Stripe.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Acceptable Use</h3>
+      <p>You agree not to use the platform for unlawful purposes, copy or redistribute content without permission, reverse-engineer the platform, or provide false information about your health status.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Health Disclaimer</h3>
+      <p>Dietary tags (e.g. "gluten-free") are estimates and may contain errors. You must independently verify all ingredients against your personal medical needs. Nuri is not liable for any allergic reaction or adverse health event.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Intellectual Property</h3>
+      <p>All platform content is owned by or licensed to Nuri. You may save or share recipes for personal household use. Any commercial use requires our prior written consent.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Governing Law</h3>
+      <p>These Terms are governed by the laws of England and Wales.</p>
+      <h3 style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:15,margin:'16px 0 8px',color:'var(--text)'}}>Contact</h3>
+      <p>Questions? Email <strong>join@nurirecipes.com</strong></p>
+    </div>
+  );
+}
+
 function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
   const [mode, setMode] = useState(defaultMode === 'signup' ? 'signup' : 'signin');
   const [name, setName] = useState('');
