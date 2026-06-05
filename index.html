@@ -1490,6 +1490,56 @@ function TopNav({ current, onChange, user, onSignIn, onSignOut }) {
 
 
 // ── PAGES ─────────────────────────────────────────────────────
+function ResetPasswordScreen({ onDone }) {
+  const [password, setPassword] = React.useState('');
+  const [confirm, setConfirm] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [done, setDone] = React.useState(false);
+  const db = window._supa;
+
+  const handleReset = async () => {
+    setError('');
+    if (!password || password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    if (password !== confirm) { setError('Passwords don't match.'); return; }
+    setLoading(true);
+    const { error: e } = await db.auth.updateUser({ password });
+    setLoading(false);
+    if (e) { setError(e.message); return; }
+    setDone(true);
+    setTimeout(onDone, 2000);
+  };
+
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--cream)'}}>
+      <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:'40px 36px',maxWidth:400,width:'100%',boxShadow:'var(--shadow)'}}>
+        <div style={{fontFamily:'var(--font-logo)',fontSize:28,fontStyle:'italic',fontWeight:600,color:'var(--green-dark)',marginBottom:24}}>
+          nuri<span style={{display:'inline-block',width:7,height:7,borderRadius:'50%',background:'var(--rose)',marginLeft:2,marginBottom:2}} />
+        </div>
+        <h2 style={{fontFamily:'var(--font-serif)',fontSize:24,fontStyle:'italic',fontWeight:600,marginBottom:8,color:'var(--text)'}}>Set new password</h2>
+        {done ? (
+          <p style={{color:'var(--green-dark)',fontSize:14}}>✅ Password updated! Signing you in…</p>
+        ) : (
+          <>
+            {error && <div className="auth-error">{error}</div>}
+            <div className="auth-field" style={{marginTop:16}}>
+              <label className="auth-label">New password</label>
+              <input className="auth-input" type="password" placeholder="At least 6 characters" value={password} onChange={e => setPassword(e.target.value)} />
+            </div>
+            <div className="auth-field">
+              <label className="auth-label">Confirm password</label>
+              <input className="auth-input" type="password" placeholder="Repeat your password" value={confirm} onChange={e => setConfirm(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleReset()} />
+            </div>
+            <button className="auth-btn" onClick={handleReset} disabled={loading} style={{marginTop:8}}>
+              {loading ? 'Saving…' : 'Set new password'}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Welcome({ onSignIn, onSignUp }) {
   const previewRecipes = RECIPES.slice(0, 3);
   return (
@@ -3599,10 +3649,22 @@ function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const db = window._supa;
 
   const handleSubmit = async () => {
     setError('');
+    if (mode === 'forgot') {
+      if (!email.trim()) { setError('Please enter your email.'); return; }
+      setLoading(true);
+      const { error: e } = await db.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        redirectTo: window.location.origin + '?reset=true',
+      });
+      setLoading(false);
+      if (e) { setError(e.message); return; }
+      setResetSent(true);
+      return;
+    }
     if (!email.trim() || !password.trim()) { setError('Please fill in all fields.'); return; }
     if (mode === 'signup' && !name.trim()) { setError('Please enter your name.'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
@@ -3615,7 +3677,6 @@ function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
           options: { data: { name: name.trim() } }
         });
         if (e) { setError(e.message); return; }
-        // Fetch or wait for profile
         const user = data.user;
         onAuth({ id: user.id, email: user.email, name: name.trim() });
       } else {
@@ -3625,7 +3686,6 @@ function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
         });
         if (e) { setError('Incorrect email or password.'); return; }
         const user = data.user;
-        // Fetch name from profiles
         const { data: profile } = await db.from('profiles').select('name').eq('id', user.id).single();
         onAuth({ id: user.id, email: user.email, name: profile?.name || email.split('@')[0] });
       }
@@ -3645,49 +3705,79 @@ function AuthModal({ onClose, onAuth, defaultMode = 'signin' }) {
         <div className="auth-modal-inner">
           <div className="auth-logo">nuri<span className="auth-logo-dot" /></div>
           <div className="auth-tagline">food that works for your body</div>
-          <div className="auth-title">{mode === 'signup' ? 'Create your account' : 'Welcome back'}</div>
+          <div className="auth-title">
+            {mode === 'signup' ? 'Create your account' : mode === 'forgot' ? 'Reset your password' : 'Sign in'}
+          </div>
           {error && <div className="auth-error">{error}</div>}
-          {mode === 'signup' && (
-            <div className="auth-field">
-              <label className="auth-label">Name</label>
-              <input className="auth-input" type="text" placeholder="Your first name" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKey} autoFocus />
-            </div>
-          )}
-          <div className="auth-field">
-            <label className="auth-label">Email</label>
-            <input className="auth-input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={handleKey} autoFocus={mode === 'signin'} />
-          </div>
-          <div className="auth-field">
-            <label className="auth-label">Password</label>
-            <input className="auth-input" type="password" placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'} value={password} onChange={e => setPassword(e.target.value)} onKeyDown={handleKey} />
-          </div>
-          <button className="auth-btn" onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Please wait…' : mode === 'signup' ? 'Create account' : 'Sign in'}
-          </button>
-          <div className="auth-divider"><div className="auth-divider-line"/><span className="auth-divider-text">or</span><div className="auth-divider-line"/></div>
-          <button className="auth-google-btn" onClick={async () => {
-            setLoading(true);
-            const { error } = await db.auth.signInWithOAuth({
-              provider: 'google',
-              options: { redirectTo: window.location.origin }
-            });
-            if (error) { setError(error.message); setLoading(false); }
-          }} disabled={loading}>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
-              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-              <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
-              <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.548 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/>
-              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-            </svg>
-            Continue with Google
-          </button>
-          <div className="auth-switch">
-            {mode === 'signin' ? (
-              <>Don't have an account? <button className="auth-switch-btn" onClick={() => { setMode('signup'); setError(''); }}>Sign up</button></>
+          {mode === 'forgot' ? (
+            resetSent ? (
+              <div style={{textAlign:'center',padding:'16px 0'}}>
+                <div style={{fontSize:32,marginBottom:12}}>📬</div>
+                <p style={{fontSize:14,color:'var(--text-mid)',lineHeight:1.6}}>Check your inbox — we've sent a password reset link to <strong>{email}</strong>.</p>
+                <button className="auth-switch-btn" style={{marginTop:16}} onClick={() => { setMode('signin'); setResetSent(false); }}>Back to sign in</button>
+              </div>
             ) : (
-              <>Already have an account? <button className="auth-switch-btn" onClick={() => { setMode('signin'); setError(''); }}>Sign in</button></>
-            )}
-          </div>
+              <>
+                <div className="auth-field">
+                  <label className="auth-label">Email</label>
+                  <input className="auth-input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={handleKey} autoFocus />
+                </div>
+                <button className="auth-btn" onClick={handleSubmit} disabled={loading}>
+                  {loading ? 'Sending…' : 'Send reset link'}
+                </button>
+                <div className="auth-switch">
+                  <button className="auth-switch-btn" onClick={() => { setMode('signin'); setError(''); }}>← Back to sign in</button>
+                </div>
+              </>
+            )
+          ) : (
+            <>
+              {mode === 'signup' && (
+                <div className="auth-field">
+                  <label className="auth-label">Name</label>
+                  <input className="auth-input" type="text" placeholder="Your first name" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKey} autoFocus />
+                </div>
+              )}
+              <div className="auth-field">
+                <label className="auth-label">Email</label>
+                <input className="auth-input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={handleKey} autoFocus={mode === 'signin'} />
+              </div>
+              <div className="auth-field">
+                <label className="auth-label" style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  Password
+                  {mode === 'signin' && <button className="auth-switch-btn" style={{fontSize:11}} onClick={() => { setMode('forgot'); setError(''); }}>Forgot password?</button>}
+                </label>
+                <input className="auth-input" type="password" placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'} value={password} onChange={e => setPassword(e.target.value)} onKeyDown={handleKey} />
+              </div>
+              <button className="auth-btn" onClick={handleSubmit} disabled={loading}>
+                {loading ? 'Please wait…' : mode === 'signup' ? 'Create account' : 'Sign in'}
+              </button>
+              <div className="auth-divider"><div className="auth-divider-line"/><span className="auth-divider-text">or</span><div className="auth-divider-line"/></div>
+              <button className="auth-google-btn" onClick={async () => {
+                setLoading(true);
+                const { error } = await db.auth.signInWithOAuth({
+                  provider: 'google',
+                  options: { redirectTo: window.location.origin }
+                });
+                if (error) { setError(error.message); setLoading(false); }
+              }} disabled={loading}>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
+                  <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                  <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
+                  <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.548 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+                  <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
+              </button>
+              <div className="auth-switch">
+                {mode === 'signin' ? (
+                  <>Don't have an account? <button className="auth-switch-btn" onClick={() => { setMode('signup'); setError(''); }}>Sign up</button></>
+                ) : (
+                  <>Already have an account? <button className="auth-switch-btn" onClick={() => { setMode('signin'); setError(''); }}>Sign in</button></>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -3926,12 +4016,18 @@ function App() {
       const hash = window.location.hash;
       if (hash && hash.includes('access_token')) {
         try {
-          // Parse tokens from hash and explicitly set the session
           const hashParams = new URLSearchParams(hash.replace(/^#/, ''));
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
+          const type = hashParams.get('type');
           if (accessToken && refreshToken) {
             await db.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+            // If this is a password recovery link, show reset password UI
+            if (type === 'recovery') {
+              window.history.replaceState({}, '', window.location.pathname);
+              setScreen('reset_password');
+              return;
+            }
           }
         } catch(e) { console.error('Hash parse error:', e); }
         window.history.replaceState({}, '', window.location.pathname);
@@ -4202,6 +4298,7 @@ function App() {
     </div>
   );
 
+  if (screen === 'reset_password') return <ResetPasswordScreen onDone={() => setScreen('app')} />;
   if (screen === 'welcome') return (
     <>
       <Welcome onSignUp={() => setShowAuthModal('signup')} onSignIn={() => setShowAuthModal('signin')} />
