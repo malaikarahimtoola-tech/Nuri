@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2910,134 +2911,58 @@ function MealPlanTab({ user, onSignIn, isPremium, onSubscribe, healthGoals, onRe
   // Gate: not premium
   if (!isPremium) return (
     <div className="page-wrap">
-      <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:28,flexWrap:'wrap',gap:12}}>
+      <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:32,flexWrap:'wrap',gap:12}}>
         <div>
           <div style={{fontFamily:'var(--font-body)',fontSize:11,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--tan)',marginBottom:4}}>plan ahead</div>
           <h1 style={{fontFamily:'var(--font-serif)',fontSize:36,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>My Plan</h1>
+          <p style={{fontSize:14,color:'var(--text-mid)',marginTop:6,maxWidth:480,lineHeight:1.6}}>Everything you need to eat well for your body — in one place.</p>
         </div>
         <button className="welcome-cta" onClick={onSubscribe} style={{fontSize:13,padding:'10px 24px'}}>Upgrade to Premium ✨</button>
       </div>
 
-      {/* ── MEAL PLANNER PREVIEW ── */}
-      <div style={{marginBottom:32}}>
-        <div style={{fontFamily:'var(--font-serif)',fontSize:18,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:12}}>📅 Weekly Meal Planner</div>
-        <div style={{position:'relative',borderRadius:'var(--radius)',overflow:'hidden'}}>
-          <div style={{filter:'blur(3px)',pointerEvents:'none',userSelect:'none',background:'var(--white)',border:'1px solid var(--border)',borderRadius:'var(--radius)',padding:16}}>
-            {['Mon','Tue','Wed','Thu'].map(day => (
-              <div key={day} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 0',borderBottom:'1px solid var(--border)'}}>
-                <div style={{width:36,fontSize:12,fontWeight:600,color:'var(--text-light)',flexShrink:0}}>{day}</div>
-                <div style={{display:'flex',gap:8,flex:1,flexWrap:'wrap'}}>
-                  {['Breakfast','Lunch','Dinner'].map(meal => (
-                    <div key={meal} style={{background:'var(--warm-beige)',borderRadius:8,padding:'6px 12px',fontSize:12,color:'var(--text-mid)',flex:1,minWidth:80}}>
-                      <div style={{fontSize:10,color:'var(--text-light)',marginBottom:2}}>{meal}</div>
-                      <div style={{fontFamily:'var(--font-serif)',fontStyle:'italic',fontSize:12,color:'var(--text)'}}>
-                        {day==='Mon'&&meal==='Breakfast'?'Berry Chia Pudding':
-                         day==='Mon'&&meal==='Lunch'?'Mediterranean Quinoa Bowl':
-                         day==='Mon'&&meal==='Dinner'?'Citrus Roasted Salmon':
-                         day==='Tue'&&meal==='Breakfast'?'Egg Muffins':
-                         day==='Tue'&&meal==='Lunch'?'Salmon Avocado Boats':
-                         day==='Tue'&&meal==='Dinner'?'Chickpea Aubergine Stew':
-                         day==='Wed'&&meal==='Breakfast'?'Protein Pancakes':
-                         day==='Wed'&&meal==='Lunch'?'Sweet Potato Egg Hash':
-                         day==='Wed'&&meal==='Dinner'?'Spicy Peanut Tofu':
-                         day==='Thu'&&meal==='Breakfast'?'Cinnamon Yogurt Bowl':
-                         day==='Thu'&&meal==='Lunch'?'Cauliflower Fried Rice':
-                         'Turmeric Chickpea Curry'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:16,marginBottom:40}}>
+
+        <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:28,boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',gap:12}}>
+          <div style={{fontSize:36}}>📅</div>
+          <div style={{fontFamily:'var(--font-serif)',fontSize:19,fontStyle:'italic',fontWeight:600,color:'var(--text)',lineHeight:1.3}}>Your personal weekly plan</div>
+          <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.7,flex:1}}>Built around your specific condition — PCOS, endo, thyroid and more. Every week tailored to what your body needs. Swap any recipe with one tap.</p>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {['📌 3, 5 or 7 recipes per week','🔄 Swap any recipe instantly','🎯 Tailored to your health goals'].map(f => (
+              <div key={f} style={{fontSize:12,color:'var(--text-mid)'}}>{f}</div>
             ))}
           </div>
-          <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'rgba(250,246,240,0.7)',backdropFilter:'blur(2px)'}}>
-            <div style={{background:'var(--white)',borderRadius:14,padding:'20px 28px',textAlign:'center',boxShadow:'0 4px 24px rgba(44,24,16,0.12)',maxWidth:300}}>
-              <div style={{fontSize:28,marginBottom:8}}>📅</div>
-              <div style={{fontFamily:'var(--font-serif)',fontSize:16,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:6}}>Your weekly meal plan</div>
-              <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.6,margin:'0 0 14px'}}>Auto-generated based on your health goals. Swap any recipe with one tap.</p>
-              <button onClick={onSubscribe} style={{background:'var(--brown)',color:'white',border:'none',borderRadius:50,padding:'9px 20px',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)'}}>Unlock →</button>
-            </div>
-          </div>
+          <button onClick={onSubscribe} style={{marginTop:8,background:'var(--brown)',color:'white',border:'none',borderRadius:50,padding:'10px 0',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',width:'100%'}}>Unlock →</button>
         </div>
-      </div>
 
-      {/* ── GROCERY LIST PREVIEW ── */}
-      <div style={{marginBottom:32}}>
-        <div style={{fontFamily:'var(--font-serif)',fontSize:18,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:12}}>🛒 Grocery List</div>
-        <div style={{position:'relative',borderRadius:'var(--radius)',overflow:'hidden'}}>
-          <div style={{filter:'blur(3px)',pointerEvents:'none',userSelect:'none',background:'var(--white)',border:'1px solid var(--border)',borderRadius:'var(--radius)',padding:20}}>
-            {[['Produce','🥦 Broccoli · 🥒 Cucumber · 🫑 Bell peppers · 🍠 Sweet potato · 🍋 Lemon'],['Protein','🐟 Salmon · 🥚 Eggs (x12) · 🍗 Chicken breast'],['Pantry','🥫 Chickpeas · 🌾 Quinoa · 🥜 Peanut butter · 🫙 Tahini'],['Dairy','🧀 Feta cheese · 🥛 Greek yogurt']].map(([cat, items]) => (
-              <div key={cat} style={{marginBottom:12}}>
-                <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--text-light)',marginBottom:4}}>{cat}</div>
-                <div style={{fontSize:13,color:'var(--text-mid)'}}>{items}</div>
-              </div>
+        <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:28,boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',gap:12}}>
+          <div style={{fontSize:36}}>🛒</div>
+          <div style={{fontFamily:'var(--font-serif)',fontSize:19,fontStyle:'italic',fontWeight:600,color:'var(--text)',lineHeight:1.3}}>Your grocery list, done</div>
+          <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.7,flex:1}}>Your weekly plan becomes a smart grocery list — sorted by category so your shop is fast and nothing gets forgotten.</p>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {['🥦 Sorted by produce, protein, pantry','✅ Tick off as you shop','📱 Always in your pocket'].map(f => (
+              <div key={f} style={{fontSize:12,color:'var(--text-mid)'}}>{f}</div>
             ))}
           </div>
-          <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'rgba(250,246,240,0.7)',backdropFilter:'blur(2px)'}}>
-            <div style={{background:'var(--white)',borderRadius:14,padding:'20px 28px',textAlign:'center',boxShadow:'0 4px 24px rgba(44,24,16,0.12)',maxWidth:300}}>
-              <div style={{fontSize:28,marginBottom:8}}>🛒</div>
-              <div style={{fontFamily:'var(--font-serif)',fontSize:16,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:6}}>Auto grocery list</div>
-              <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.6,margin:'0 0 14px'}}>Generated from your weekly plan. Tick off as you shop.</p>
-              <button onClick={onSubscribe} style={{background:'var(--brown)',color:'white',border:'none',borderRadius:50,padding:'9px 20px',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)'}}>Unlock →</button>
-            </div>
-          </div>
+          <button onClick={onSubscribe} style={{marginTop:8,background:'var(--brown)',color:'white',border:'none',borderRadius:50,padding:'10px 0',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',width:'100%'}}>Unlock →</button>
         </div>
-      </div>
 
-      {/* ── SYMPTOM LOG PREVIEW ── */}
-      <div style={{marginBottom:32}}>
-        <div style={{fontFamily:'var(--font-serif)',fontSize:18,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:12}}>📓 Symptom Log</div>
-        <div style={{position:'relative',borderRadius:'var(--radius)',overflow:'hidden'}}>
-          <div style={{filter:'blur(3px)',pointerEvents:'none',userSelect:'none',background:'var(--white)',border:'1px solid var(--border)',borderRadius:'var(--radius)',padding:20}}>
-            {[{date:'Today',mood:'😊',energy:'High',bloating:'None',notes:'Felt great after the salmon bowl'},
-              {date:'Yesterday',mood:'😐',energy:'Medium',bloating:'Mild',notes:'A bit tired in the afternoon'},
-              {date:'2 days ago',mood:'😴',energy:'Low',bloating:'Moderate',notes:'Period day 2, cramps'},
-            ].map(entry => (
-              <div key={entry.date} style={{display:'flex',gap:12,padding:'10px 0',borderBottom:'1px solid var(--border)',alignItems:'flex-start'}}>
-                <div style={{width:72,fontSize:12,color:'var(--text-light)',flexShrink:0}}>{entry.date}</div>
-                <div style={{display:'flex',gap:16,flex:1,flexWrap:'wrap'}}>
-                  <span style={{fontSize:18}}>{entry.mood}</span>
-                  <div style={{fontSize:12,color:'var(--text-mid)'}}>⚡ {entry.energy} · 🫧 Bloating: {entry.bloating}</div>
-                  <div style={{fontSize:12,color:'var(--text-light)',fontStyle:'italic',width:'100%'}}>{entry.notes}</div>
-                </div>
-              </div>
+        <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:28,boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',gap:12}}>
+          <div style={{fontSize:36}}>📓</div>
+          <div style={{fontFamily:'var(--font-serif)',fontSize:19,fontStyle:'italic',fontWeight:600,color:'var(--text)',lineHeight:1.3}}>Track how food makes you feel</div>
+          <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.7,flex:1}}>Log your energy, mood, bloating and symptoms after meals. Spot patterns over time and understand what truly works for your body.</p>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {['😊 Daily mood & energy log','🫧 Symptom tracking','📈 Spot patterns over time'].map(f => (
+              <div key={f} style={{fontSize:12,color:'var(--text-mid)'}}>{f}</div>
             ))}
           </div>
-          <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'rgba(250,246,240,0.7)',backdropFilter:'blur(2px)'}}>
-            <div style={{background:'var(--white)',borderRadius:14,padding:'20px 28px',textAlign:'center',boxShadow:'0 4px 24px rgba(44,24,16,0.12)',maxWidth:300}}>
-              <div style={{fontSize:28,marginBottom:8}}>📓</div>
-              <div style={{fontFamily:'var(--font-serif)',fontSize:16,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:6}}>Symptom Log</div>
-              <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.6,margin:'0 0 14px'}}>Track how food makes you feel. Spot patterns over time.</p>
-              <button onClick={onSubscribe} style={{background:'var(--brown)',color:'white',border:'none',borderRadius:50,padding:'9px 20px',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)'}}>Unlock →</button>
-            </div>
-          </div>
+          <button onClick={onSubscribe} style={{marginTop:8,background:'var(--brown)',color:'white',border:'none',borderRadius:50,padding:'10px 0',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',width:'100%'}}>Unlock →</button>
         </div>
-      </div>
 
-      {/* ── RECIPE BOOK PREVIEW ── */}
-      <div style={{marginBottom:32}}>
-        <div style={{fontFamily:'var(--font-serif)',fontSize:18,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:12}}>📖 Recipe Book</div>
-        <div style={{position:'relative',borderRadius:'var(--radius)',overflow:'hidden'}}>
-          <div style={{filter:'blur(3px)',pointerEvents:'none',userSelect:'none',background:'var(--white)',border:'1px solid var(--border)',borderRadius:'var(--radius)',padding:20,display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
-            {['Berry Chia Pudding 🫐','Egg Muffins 🥚','Citrus Roasted Salmon 🐟','Mediterranean Quinoa Bowl 🥗','Protein Pancakes 🥞','Sweet Potato Egg Hash 🍠'].map(r => (
-              <div key={r} style={{background:'var(--warm-beige)',borderRadius:10,padding:'12px',fontSize:12,fontFamily:'var(--font-serif)',fontStyle:'italic',color:'var(--text)',lineHeight:1.4}}>{r}</div>
-            ))}
-          </div>
-          <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'rgba(250,246,240,0.7)',backdropFilter:'blur(2px)'}}>
-            <div style={{background:'var(--white)',borderRadius:14,padding:'20px 28px',textAlign:'center',boxShadow:'0 4px 24px rgba(44,24,16,0.12)',maxWidth:300}}>
-              <div style={{fontSize:28,marginBottom:8}}>📖</div>
-              <div style={{fontFamily:'var(--font-serif)',fontSize:16,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:6}}>Your Recipe Book</div>
-              <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.6,margin:'0 0 14px'}}>Save your favourites and download a printable recipe book to keep forever.</p>
-              <button onClick={onSubscribe} style={{background:'var(--brown)',color:'white',border:'none',borderRadius:50,padding:'9px 20px',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)'}}>Unlock →</button>
-            </div>
-          </div>
-        </div>
       </div>
-
     </div>
   );
 
-  const weekStart = (() => {
+    const weekStart = (() => {
     const d = new Date();
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
