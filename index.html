@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -223,6 +222,8 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .fallback-emoji { font-size: 36px; margin-bottom: 6px; }
 .fallback-title { font-family: var(--font-serif); font-size: 14px; font-style: italic; font-weight: 600; color: var(--text); line-height: 1.2; }
 .card-save-btn { position: absolute; top: 10px; right: 10px; z-index: 3; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.92); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); transition: transform 0.15s; }
+.card-share-btn { position: absolute; top: 10px; right: 48px; z-index: 3; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.92); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); transition: transform 0.15s; color: var(--brown); font-weight: 600; }
+.card-share-btn:hover { transform: scale(1.15); }
 .card-save-btn:hover { transform: scale(1.15); }
 .recipe-card-body { padding: 14px 16px 16px; }
 .card-dietician { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer; }
@@ -1411,6 +1412,12 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
             </div>
           )}
           {!isLocked && (
+            <button className="card-share-btn" onClick={e => {
+              e.stopPropagation();
+              const text = recipe.title + ' — a recipe by a registered dietitian on Nuri 🌿 nurirecipes.com';
+              if (navigator.share) { navigator.share({ title: recipe.title, text, url: 'https://www.nurirecipes.com' }); }
+              else { navigator.clipboard?.writeText('https://www.nurirecipes.com').then(() => {}); window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); }
+            }}>↗</button>
             <button className="card-save-btn" onClick={e => { e.stopPropagation(); onToggleSave(recipe.id); }}>
               {isSaved ? '❤️' : '🤍'}
             </button>
@@ -1596,6 +1603,42 @@ function WelcomeBack({ userName, onContinue }) {
   );
 }
 
+function ShareNuriScreen({ userName, onContinue }) {
+  const firstName = userName ? userName.split(/[@\s]/)[0] : 'there';
+  const shareText = "I just found Nuri — a recipe app built by registered dietitians for women with PCOS, endo and hormonal conditions. You need to try it 🌿 nurirecipes.com";
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: 'Nuri — Recipes for your body', text: shareText, url: 'https://www.nurirecipes.com' });
+    } else {
+      window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
+    }
+  };
+
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--cream)',padding:'24px'}}>
+      <div style={{maxWidth:480,width:'100%',textAlign:'center'}}>
+        <div style={{fontFamily:'var(--font-logo)',fontSize:40,fontStyle:'italic',fontWeight:600,color:'var(--green-dark)',display:'inline-flex',alignItems:'flex-end',marginBottom:32}}>
+          nuri<span style={{display:'inline-block',width:9,height:9,borderRadius:'50%',background:'var(--rose)',marginLeft:2,marginBottom:3}} />
+        </div>
+        <h1 style={{fontFamily:'var(--font-serif)',fontSize:34,fontStyle:'italic',fontWeight:600,color:'var(--text)',lineHeight:1.2,marginBottom:12}}>
+          Welcome, {firstName} 🌿
+        </h1>
+        <p style={{fontSize:15,color:'var(--text-mid)',lineHeight:1.7,marginBottom:32,maxWidth:380,margin:'0 auto 32px'}}>
+          Your recipes are ready. Know someone else who'd love food built for their hormones?
+        </p>
+        <button onClick={handleShare} style={{width:'100%',maxWidth:340,padding:'14px 0',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:15,fontWeight:600,cursor:'pointer',marginBottom:12}}>
+          Share Nuri with a friend 🌿
+        </button>
+        <br/>
+        <button onClick={onContinue} style={{background:'none',border:'none',color:'var(--text-light)',fontSize:13,cursor:'pointer',fontFamily:'var(--font-body)',textDecoration:'underline',marginTop:4}}>
+          Skip for now
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function WelcomeSlide({ userName, healthGoals, onContinue }) {
   const firstName = userName ? userName.split(/[@\s]/)[0] : null;
   const matchedGoals = HEALTH_GOALS.filter(g => healthGoals?.includes(g.id));
@@ -1701,7 +1744,7 @@ const STRIPE_PAYMENT_LINK_ANNUAL  = 'https://buy.stripe.com/9B6bITaDcfRlc9nd8h7w
 const FALLBACK_FREE_DIETITIANS = [1, 2, 3];
 const FALLBACK_FREE_RECIPE_COUNT = 3;
 
-function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings, newSupaRecipes, supaAllDietitians, dietaryPreferences, onDietaryChange }) {
+function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings, newSupaRecipes, supaAllDietitians, dietaryPreferences, onDietaryChange, showShareBanner, setShowShareBanner }) {
   const [active, setActive] = useState(healthGoals?.length > 0 ? healthGoals[0] : 'all');
   const [showDietaryDropdown, setShowDietaryDropdown] = useState(false);
   const activeDietary = dietaryPreferences || [];
@@ -1754,6 +1797,19 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
             <div className="signin-gate-sub">Previewing {FREE_PREVIEW_COUNT} of {filtered.length} recipes — create a free account or subscribe for full access.</div>
           </div>
           <button className="signin-gate-btn" onClick={onSignIn}>Sign in / Sign up →</button>
+        </div>
+      )}
+      {showShareBanner && (
+        <div style={{background:'var(--warm-beige)',borderRadius:12,padding:'12px 16px',marginBottom:16,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+          <span style={{fontSize:13,color:'var(--text-mid)'}}>Loving Nuri? Share it with a friend 🌿</span>
+          <div style={{display:'flex',gap:8,flexShrink:0}}>
+            <button onClick={() => {
+              const text = "I found this app with recipes built for PCOS, endo and hormonal conditions by registered dietitians — you need to try it 🌿 nurirecipes.com";
+              if (navigator.share) { navigator.share({ title:'Nuri', text, url:'https://www.nurirecipes.com' }); }
+              else { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); }
+            }} style={{padding:'7px 16px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:12,fontWeight:600,cursor:'pointer'}}>Share</button>
+            <button onClick={() => setShowShareBanner(false)} style={{padding:'7px 12px',background:'none',border:'1.5px solid var(--border)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:12,color:'var(--text-light)',cursor:'pointer'}}>✕</button>
+          </div>
         </div>
       )}
       <div className="filter-row" style={{alignItems:'center'}}>
@@ -4137,7 +4193,19 @@ function App() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
+  const [showShareBanner, setShowShareBanner] = useState(false);
   useEffect(() => { window._showLegal = (type) => setShowLegalModal(type); }, []);
+
+  useEffect(() => {
+    if (user) {
+      try {
+        const key = 'nuri_visit_count_' + user.id;
+        const count = parseInt(sessionStorage.getItem(key) || '0', 10) + 1;
+        sessionStorage.setItem(key, String(count));
+        if (count % 2 === 0) setShowShareBanner(true);
+      } catch(e) {}
+    }
+  }, [user]);
   const [isPremium, setIsPremium] = useState(false);
   const [showSubModal, setShowSubModal] = useState(false);
   const [user, setUser] = useState(null);
@@ -4497,7 +4565,7 @@ function App() {
     </>
   );
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} userName={user?.name || user?.email} />;
-  if (screen === 'welcome_new') return <WelcomeSlide userName={user?.name || user?.email} healthGoals={healthGoals} onContinue={() => setScreen('app')} />;
+  if (screen === 'welcome_new') return <ShareNuriScreen userName={user?.name || user?.email} onContinue={() => setScreen('app')} />;
 
 
   const navProps = { user, onSignIn: () => setShowAuthModal('signin'), onSignOut: handleSignOut };
@@ -4531,7 +4599,7 @@ function App() {
   return (
     <>
       <TopNav current={tab} onChange={setTab} {...navProps} />
-      {tab === 'feed'    && <FeedTab healthGoals={healthGoals} {...sharedProps} dietaryPreferences={dietaryPreferences} onDietaryChange={setDietaryPreferences} />}
+      {tab === 'feed'    && <FeedTab healthGoals={healthGoals} {...sharedProps} dietaryPreferences={dietaryPreferences} onDietaryChange={setDietaryPreferences} showShareBanner={showShareBanner} setShowShareBanner={setShowShareBanner} />}
       {tab === 'explore' && <ExploreTab followed={followed} onToggleFollow={toggleFollow} onDieticianClick={d => navigate('profile', d)} supaDietitians={supaDietitians} />}
       {tab === 'plan'    && <MealPlanTab user={user} onSignIn={() => setShowAuthModal('signup')} isPremium={isPremium} onSubscribe={() => { window._postPayRedirect = { tab: 'plan' }; setShowSubModal(true); }} healthGoals={healthGoals} onRecipeClick={r => navigate('recipe', r)} />}
       {tab === 'saved'   && <SavedTab {...sharedProps} isPremium={isPremium} onSubscribe={() => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } }} user={user} />}
