@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1412,15 +1413,17 @@ function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggle
             </div>
           )}
           {!isLocked && (
+            <>
             <button className="card-share-btn" onClick={e => {
               e.stopPropagation();
-              const text = recipe.title + ' — a recipe by a registered dietitian on Nuri 🌿 nurirecipes.com';
-              if (navigator.share) { navigator.share({ title: recipe.title, text, url: 'https://www.nurirecipes.com' }); }
-              else { navigator.clipboard?.writeText('https://www.nurirecipes.com').then(() => {}); window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); }
+              const msg = recipe.title + ' on Nuri - recipes by registered dietitians: https://www.nurirecipes.com';
+              if (navigator.share) { navigator.share({ title: recipe.title, text: msg, url: 'https://www.nurirecipes.com' }); }
+              else { window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank'); }
             }}>↗</button>
             <button className="card-save-btn" onClick={e => { e.stopPropagation(); onToggleSave(recipe.id); }}>
               {isSaved ? '❤️' : '🤍'}
             </button>
+            </>
           )}
         </div>
         <div className="recipe-card-body">
@@ -1604,14 +1607,15 @@ function WelcomeBack({ userName, onContinue }) {
 }
 
 function ShareNuriScreen({ userName, onContinue }) {
-  const firstName = userName ? userName.split(/[@\s]/)[0] : 'there';
-  const shareText = "I just found Nuri — a recipe app built by registered dietitians for women with PCOS, endo and hormonal conditions. You need to try it 🌿 nurirecipes.com";
+  const firstName = userName ? userName.split('@')[0].split(' ')[0] : 'there';
+  const shareUrl = 'https://www.nurirecipes.com';
+  const shareMsg = 'I found Nuri — recipes built by registered dietitians for PCOS, endo and hormonal conditions. You need to try it: ' + shareUrl;
 
-  const handleShare = () => {
+  const doShare = () => {
     if (navigator.share) {
-      navigator.share({ title: 'Nuri — Recipes for your body', text: shareText, url: 'https://www.nurirecipes.com' });
+      navigator.share({ title: 'Nuri', text: shareMsg, url: shareUrl });
     } else {
-      window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
+      window.open('https://wa.me/?text=' + encodeURIComponent(shareMsg), '_blank');
     }
   };
 
@@ -1621,17 +1625,16 @@ function ShareNuriScreen({ userName, onContinue }) {
         <div style={{fontFamily:'var(--font-logo)',fontSize:40,fontStyle:'italic',fontWeight:600,color:'var(--green-dark)',display:'inline-flex',alignItems:'flex-end',marginBottom:32}}>
           nuri<span style={{display:'inline-block',width:9,height:9,borderRadius:'50%',background:'var(--rose)',marginLeft:2,marginBottom:3}} />
         </div>
-        <h1 style={{fontFamily:'var(--font-serif)',fontSize:34,fontStyle:'italic',fontWeight:600,color:'var(--text)',lineHeight:1.2,marginBottom:12}}>
+        <h1 style={{fontFamily:'var(--font-serif)',fontSize:32,fontStyle:'italic',fontWeight:600,color:'var(--text)',lineHeight:1.2,marginBottom:12}}>
           Welcome, {firstName} 🌿
         </h1>
         <p style={{fontSize:15,color:'var(--text-mid)',lineHeight:1.7,marginBottom:32,maxWidth:380,margin:'0 auto 32px'}}>
-          Your recipes are ready. Know someone else who'd love food built for their hormones?
+          Your recipes are ready. Know someone who would love food built for their hormones?
         </p>
-        <button onClick={handleShare} style={{width:'100%',maxWidth:340,padding:'14px 0',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:15,fontWeight:600,cursor:'pointer',marginBottom:12}}>
+        <button onClick={doShare} style={{display:'block',width:'100%',maxWidth:340,margin:'0 auto 12px',padding:'14px 0',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:15,fontWeight:600,cursor:'pointer'}}>
           Share Nuri with a friend 🌿
         </button>
-        <br/>
-        <button onClick={onContinue} style={{background:'none',border:'none',color:'var(--text-light)',fontSize:13,cursor:'pointer',fontFamily:'var(--font-body)',textDecoration:'underline',marginTop:4}}>
+        <button onClick={onContinue} style={{background:'none',border:'none',color:'var(--text-light)',fontSize:13,cursor:'pointer',fontFamily:'var(--font-body)',textDecoration:'underline'}}>
           Skip for now
         </button>
       </div>
@@ -1804,11 +1807,11 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
           <span style={{fontSize:13,color:'var(--text-mid)'}}>Loving Nuri? Share it with a friend 🌿</span>
           <div style={{display:'flex',gap:8,flexShrink:0}}>
             <button onClick={() => {
-              const text = "I found this app with recipes built for PCOS, endo and hormonal conditions by registered dietitians — you need to try it 🌿 nurirecipes.com";
-              if (navigator.share) { navigator.share({ title:'Nuri', text, url:'https://www.nurirecipes.com' }); }
-              else { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); }
+              const msg = 'Recipes built by registered dietitians for PCOS, endo and hormonal conditions: https://www.nurirecipes.com';
+              if (navigator.share) { navigator.share({ title:'Nuri', text: msg, url:'https://www.nurirecipes.com' }); }
+              else { window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank'); }
             }} style={{padding:'7px 16px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:12,fontWeight:600,cursor:'pointer'}}>Share</button>
-            <button onClick={() => setShowShareBanner(false)} style={{padding:'7px 12px',background:'none',border:'1.5px solid var(--border)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:12,color:'var(--text-light)',cursor:'pointer'}}>✕</button>
+            <button onClick={() => setShowShareBanner(false)} style={{padding:'7px 12px',background:'none',border:'1.5px solid var(--border)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:12,color:'var(--text-light)',cursor:'pointer'}}>x</button>
           </div>
         </div>
       )}
@@ -2967,58 +2970,27 @@ function MealPlanTab({ user, onSignIn, isPremium, onSubscribe, healthGoals, onRe
   // Gate: not premium
   if (!isPremium) return (
     <div className="page-wrap">
-      <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:32,flexWrap:'wrap',gap:12}}>
-        <div>
-          <div style={{fontFamily:'var(--font-body)',fontSize:11,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--tan)',marginBottom:4}}>plan ahead</div>
-          <h1 style={{fontFamily:'var(--font-serif)',fontSize:36,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>My Plan</h1>
-          <p style={{fontSize:14,color:'var(--text-mid)',marginTop:6,maxWidth:480,lineHeight:1.6}}>Everything you need to eat well for your body — in one place.</p>
-        </div>
-        <button className="welcome-cta" onClick={onSubscribe} style={{fontSize:13,padding:'10px 24px'}}>Upgrade to Premium ✨</button>
+      <div className="page-hero">
+        <div className="page-hero-script">plan ahead</div>
+        <h1 className="page-hero-title">My Plan</h1>
       </div>
-
-      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:16,marginBottom:40}}>
-
-        <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:28,boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',gap:12}}>
-          <div style={{fontSize:36}}>📅</div>
-          <div style={{fontFamily:'var(--font-serif)',fontSize:19,fontStyle:'italic',fontWeight:600,color:'var(--text)',lineHeight:1.3}}>Your personal weekly plan</div>
-          <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.7,flex:1}}>Built around your specific condition — PCOS, endo, thyroid and more. Every week tailored to what your body needs. Swap any recipe with one tap.</p>
-          <div style={{display:'flex',flexDirection:'column',gap:6}}>
-            {['📌 3, 5 or 7 recipes per week','🔄 Swap any recipe instantly','🎯 Tailored to your health goals'].map(f => (
-              <div key={f} style={{fontSize:12,color:'var(--text-mid)'}}>{f}</div>
-            ))}
-          </div>
-          <button onClick={onSubscribe} style={{marginTop:8,background:'var(--brown)',color:'white',border:'none',borderRadius:50,padding:'10px 0',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',width:'100%'}}>Unlock →</button>
+      <div className="plan-premium-gate">
+        <div style={{ fontSize:40, marginBottom:16 }}>✨</div>
+        <div style={{ fontFamily:'var(--font-serif)', fontSize:24, fontStyle:'italic', color:'var(--text)', marginBottom:8 }}>Premium feature</div>
+        <p style={{ fontSize:15, color:'var(--text-mid)', maxWidth:400, margin:'0 auto 24px', lineHeight:1.6 }}>
+          My Plan includes your weekly meal planner, auto-generated grocery list, and food & wellness log. Upgrade to unlock.
+        </p>
+        <div style={{ display:'flex', flexDirection:'column', gap:10, maxWidth:320, margin:'0 auto 28px', textAlign:'left' }}>
+          {['📅 Weekly meal plan — 3, 5 or 7 recipes','🛒 Auto grocery list from your plan','📓 Food & wellness log with mood tags','📖 Downloadable recipe book'].map(f => (
+            <div key={f} style={{ fontSize:14, color:'var(--text-mid)', display:'flex', gap:8 }}>{f}</div>
+          ))}
         </div>
-
-        <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:28,boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',gap:12}}>
-          <div style={{fontSize:36}}>🛒</div>
-          <div style={{fontFamily:'var(--font-serif)',fontSize:19,fontStyle:'italic',fontWeight:600,color:'var(--text)',lineHeight:1.3}}>Your grocery list, done</div>
-          <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.7,flex:1}}>Your weekly plan becomes a smart grocery list — sorted by category so your shop is fast and nothing gets forgotten.</p>
-          <div style={{display:'flex',flexDirection:'column',gap:6}}>
-            {['🥦 Sorted by produce, protein, pantry','✅ Tick off as you shop','📱 Always in your pocket'].map(f => (
-              <div key={f} style={{fontSize:12,color:'var(--text-mid)'}}>{f}</div>
-            ))}
-          </div>
-          <button onClick={onSubscribe} style={{marginTop:8,background:'var(--brown)',color:'white',border:'none',borderRadius:50,padding:'10px 0',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',width:'100%'}}>Unlock →</button>
-        </div>
-
-        <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:28,boxShadow:'var(--shadow)',display:'flex',flexDirection:'column',gap:12}}>
-          <div style={{fontSize:36}}>📓</div>
-          <div style={{fontFamily:'var(--font-serif)',fontSize:19,fontStyle:'italic',fontWeight:600,color:'var(--text)',lineHeight:1.3}}>Track how food makes you feel</div>
-          <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.7,flex:1}}>Log your energy, mood, bloating and symptoms after meals. Spot patterns over time and understand what truly works for your body.</p>
-          <div style={{display:'flex',flexDirection:'column',gap:6}}>
-            {['😊 Daily mood & energy log','🫧 Symptom tracking','📈 Spot patterns over time'].map(f => (
-              <div key={f} style={{fontSize:12,color:'var(--text-mid)'}}>{f}</div>
-            ))}
-          </div>
-          <button onClick={onSubscribe} style={{marginTop:8,background:'var(--brown)',color:'white',border:'none',borderRadius:50,padding:'10px 0',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',width:'100%'}}>Unlock →</button>
-        </div>
-
+        <button className="welcome-cta" onClick={onSubscribe}>Upgrade to Premium →</button>
       </div>
     </div>
   );
 
-    const weekStart = (() => {
+  const weekStart = (() => {
     const d = new Date();
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
@@ -3172,40 +3144,7 @@ function SavedTab({ saved, onRecipeClick, onDieticianClick, onToggleSave, isPrem
           <div className="page-hero-script">your collection</div>
           <h1 className="page-hero-title">Saved Recipes</h1>
         </div>
-        <div style={{maxWidth:720,margin:'0 auto'}}>
-          <div style={{position:'relative',marginBottom:32}}>
-            <div style={{borderRadius:20,overflow:'hidden',boxShadow:'0 8px 40px rgba(44,24,16,0.18)',display:'flex',maxWidth:680,margin:'0 auto',opacity:0.7,filter:'blur(1.5px)',pointerEvents:'none',userSelect:'none'}}>
-              <div style={{width:28,flexShrink:0,background:'var(--brown)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <span style={{fontFamily:'var(--font-serif)',fontSize:10,fontStyle:'italic',color:'rgba(255,255,255,0.7)',writingMode:'vertical-rl',letterSpacing:'0.12em'}}>nuri.</span>
-              </div>
-              <div style={{flex:1,padding:'32px 40px',background:'var(--cream)'}}>
-                <div style={{display:'flex',gap:24,alignItems:'flex-start'}}>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:11,fontWeight:600,letterSpacing:'0.1em',textTransform:'uppercase',color:'var(--tan)',marginBottom:6}}>Claire Pettitt · PhD, RD</div>
-                    <h2 style={{fontFamily:'var(--font-serif)',fontSize:26,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:6,lineHeight:1.2}}>Citrus Roasted Salmon</h2>
-                    <p style={{fontSize:13,color:'var(--text-mid)',fontStyle:'italic',marginBottom:12}}>Omega-3 rich with Middle Eastern spices</p>
-                    <div style={{display:'flex',gap:16,fontSize:12,color:'var(--text-light)',marginBottom:16}}>
-                      <span>⏱ 15 min prep</span><span>🔥 40 min cook</span><span>🍽 2 servings</span>
-                    </div>
-                    <div style={{fontSize:12,fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--text-light)',marginBottom:6}}>Ingredients</div>
-                    <div style={{fontSize:12,color:'var(--text-mid)',lineHeight:1.8}}>2 salmon fillets · 1 orange · 1 lemon · sumac · zaatar · fresh parsley · pomegranate molasses · olive oil</div>
-                  </div>
-                  <div style={{width:160,flexShrink:0,borderRadius:12,overflow:'hidden',height:140}}>
-                    <img src="https://images.squarespace-cdn.com/content/v1/66bdab540360b04c1e129d61/1723795250313/Feature+image.jpeg?format=800w" alt="Citrus Roasted Salmon" style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
-              <div style={{background:'var(--white)',borderRadius:16,padding:'24px 32px',textAlign:'center',boxShadow:'0 4px 32px rgba(44,24,16,0.14)',maxWidth:340}}>
-                <div style={{fontFamily:'var(--font-serif)',fontSize:22,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:8,lineHeight:1.3}}>Your recipe book,<br/>yours to keep forever 📖</div>
-                <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.7,margin:'0 0 16px'}}>Press ❤️ on any recipe to save it. Premium members can download a beautiful printable recipe book — all your favourites in one place.</p>
-                {!isPremium && <button onClick={onSubscribe} style={{background:'var(--brown)',color:'white',border:'none',borderRadius:50,padding:'10px 24px',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',marginBottom:10,width:'100%'}}>Upgrade to Premium ✨</button>}
-                <div style={{fontSize:12,color:'var(--text-light)'}}>Start saving recipes with ❤️ — it is free</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div className="empty-state"><div className="empty-icon">🤍</div><div className="empty-title">Nothing saved yet</div><div className="empty-text">Tap 🤍 on any recipe to save it here.</div></div>
       </div>
     );
   }
@@ -4192,17 +4131,17 @@ function App() {
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showLegalModal, setShowLegalModal] = useState(false);
   const [showShareBanner, setShowShareBanner] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
   useEffect(() => { window._showLegal = (type) => setShowLegalModal(type); }, []);
 
   useEffect(() => {
     if (user) {
       try {
-        const key = 'nuri_visit_count_' + user.id;
+        const key = 'nuri_vc_' + user.id;
         const count = parseInt(sessionStorage.getItem(key) || '0', 10) + 1;
         sessionStorage.setItem(key, String(count));
-        if (count % 2 === 0) setShowShareBanner(true);
+        if (count >= 2 && count % 2 === 0) setShowShareBanner(true);
       } catch(e) {}
     }
   }, [user]);
