@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -4140,7 +4141,7 @@ function App() {
         const key = 'nuri_vc_' + user.id;
         const count = parseInt(localStorage.getItem(key) || '0', 10) + 1;
         localStorage.setItem(key, String(count));
-        if (count >= 2 && count % 2 === 0) setShowShareBanner(true);
+        setShowShareBanner(true);
       } catch(e) {}
     }
   }, [user]);
