@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -706,14 +707,6 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-
-.macro-item { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--text-mid); }
-.macro-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-.macro-val { font-weight:600; color:var(--text); }
-.macro-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:12px 0; }
-.macro-cell { background:var(--warm-beige); border-radius:var(--radius-sm); padding:10px 8px; text-align:center; }
-.macro-cell-val { font-family:var(--font-serif); font-size:20px; font-weight:600; color:var(--text); display:block; }
-.macro-cell-label { font-size:10px; color:var(--text-light); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-top:2px; }
 .macro-card-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
 .macro-pill-sm { font-size:10px; padding:2px 7px; border-radius:50px; font-weight:600; }
 
@@ -1023,7 +1016,301 @@ const CP = 'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a101
 // ── AI MACRO ESTIMATION ───────────────────────────────────────
 // Cache lives in localStorage under 'nuri_macros_v1'
 
+const RECIPES = [
+  { id:1,  dieticianId:3, title:'Pumpkin, Orange & Zaatar Soup', subtitle:'Middle Eastern twist on a winter warmer', emoji:'🎃', photo:`${CP}6955a58e920e3020578746fb/1770821699612/soup+2.jpg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'75 min', servings:4, ingredients:['1 pumpkin, cut into large chunks','2 tbsp zaatar','1 white onion, peeled and diced','1 tsp sumac','Juice of 2 oranges','500 ml vegetable stock','2 tbsp cream or crème fraîche','Olive oil, salt & pepper'], instructions:['Preheat oven to 185°C.','Cut pumpkin into roughly 8 large pieces. Lay on a baking tray, drizzle with olive oil, zaatar, salt and pepper.','Roast for 45–60 minutes until flesh is soft.','Remove seeds and peel from the pumpkin.','Heat oil in a pan and fry the onion until soft. Add sumac and a pinch of salt.','Add pumpkin and 500 ml stock. Pour in orange juice and mix.','Bring to the boil, then simmer for 10 minutes.','Blend with a hand blender. Stir in cream or crème fraîche.'], note:'Keeps in the fridge for 2 days or freeze for up to 2 months. Reheat well before serving.' },
+  { id:2,  dieticianId:3, title:'Soft & Chewy Oatmeal Chocolate Chip Cookies', subtitle:'Blood sugar-friendly bake with beta-glucan oats', emoji:'🍪', photo:`${CP}682624cad29e5148a3cdf047/1750963301821/13cc14cf-97c3-44ee-9645-6dd73ca26231.jpg?format=800w`, healthLabels:['pcos'], prepTime:'10 min', cookTime:'25 min', servings:12, ingredients:['¼ cup vanilla protein powder (plant-based)','2 eggs','1 ripe banana, mashed','1 tsp baking powder','1 tsp ground cinnamon','1 tbsp vanilla extract','1 cup rolled oats','½ cup brown sugar','½ cup softened butter','½ cup chocolate chips','Pinch of salt'], instructions:['Preheat oven to 175°C. Line a baking tray with parchment.','Beat softened butter and brown sugar until light and fluffy.','Mix in vanilla extract and eggs until well combined.','In a separate bowl, whisk together oats, protein powder, baking powder, cinnamon and salt.','Gradually add dry ingredients to wet mixture and stir.','Fold in chocolate chips.','Add mashed banana and mix until just combined.','Scoop 1.5 tablespoons of dough per cookie onto the tray, spacing 5 cm apart.','Bake 12–15 minutes until edges are golden. Cool before serving.'], note:'Oats are rich in beta-glucan fibre which helps stabilise blood sugar — ideal for PCOS management.' },
+  { id:3,  dieticianId:3, title:'Citrus Roasted Salmon', subtitle:'Omega-3 rich with Middle Eastern spices', emoji:'🐟', photo:`${CP}66bdab540360b04c1e129d61/1723795250313/Feature+image.jpeg?format=800w`, healthLabels:['pcos','endometriosis'], prepTime:'15 min', cookTime:'40 min', servings:2, ingredients:['2 salmon fillets (or 1 large fillet)','1 orange, zested & juiced, then sliced into rounds','1 lemon, zested & juiced, then sliced into rounds','1 tsp sumac','1 tsp zaatar','Small bunch fresh parsley, chopped','1 red chilli, finely chopped','1 tbsp pomegranate molasses','2 tbsp olive oil','Salt & black pepper'], instructions:['Preheat oven to 180°C.','Zest and juice the orange and lemon. Slice remaining fruit into 2–3 cm rounds.','Mix citrus juice and zest, sumac, zaatar, parsley, chilli, pomegranate molasses and olive oil in a bowl. Season.','Line a baking sheet with parchment. Arrange citrus slices to form a bed.','Place salmon over the citrus. Pour marinade over the top.','Bake for 20–40 minutes depending on fillet size, checking every 10 minutes after the 20-minute mark.','Serve with rice, quinoa, or grains alongside vegetables.'], note:'Salmon is rich in omega-3 fatty acids, particularly beneficial for PCOS and endometriosis.' },
+  { id:4,  dieticianId:3, title:'Moroccan Inspired Traybake', subtitle:'Cinnamon-spiced veg with tahini drizzle', emoji:'🥕', photo:`${CP}654fb1f084fd254ec1e6c616/1706264040640/Blog+Feature+Image.jpeg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'40 min', servings:4, ingredients:['1 sweet potato, cubed','2 carrots, chopped','1 beetroot, chopped','1 courgette, chopped','1 red pepper, chopped','2 tsp cinnamon','1 tsp cumin','1 tsp paprika','Olive oil, salt & pepper','For tahini drizzle: 3 tbsp tahini, juice of ½ lemon, 1–2 tbsp water, pinch of salt'], instructions:['Preheat oven to 200°C.','Place sweet potato, carrots and beetroot in one bowl; courgette and peppers in another.','Drizzle both with olive oil and toss to coat.','Sprinkle cinnamon, cumin and paprika over all vegetables. Season with salt and pepper.','Spread on a large baking tray and roast for 35–40 minutes until golden and tender.','While roasting, whisk tahini, lemon juice, water and salt until smooth.','Allow vegetables to cool slightly before drizzling with tahini sauce.'], note:'Cinnamon has shown benefits in improving insulin sensitivity in PCOS. Great for meal prep — leftovers work well in salads and wraps.' },
+  { id:5,  dieticianId:3, title:'Protein Pancakes', subtitle:'High-protein breakfast — 3 simple ingredients', emoji:'🥞', photo:`${CP}64d5fb2c2d8da932d1d8ca75/1695730700022/Blog+feature+image+Protein+pancakes.jpeg?format=800w`, healthLabels:['pcos'], prepTime:'5 min', cookTime:'15 min', servings:2, ingredients:['¼ cup vanilla protein powder (plant-based pea protein)','2 eggs','1 ripe banana, mashed','1 tsp baking powder','1 tsp ground cinnamon','1 tbsp vanilla extract'], instructions:['In a medium bowl, whisk together eggs and protein powder until smooth and creamy.','Add mashed banana, baking powder, cinnamon and vanilla extract. Whisk until combined.','Leave batter for 5–10 minutes until bubbles form on the surface.','Heat a non-stick pan over medium-low heat with a little oil.','Use a ¼ cup measure to pour pancakes onto the pan.','Cook 3–5 minutes until bubbles form on the surface, then flip.','Cook the other side for 2–3 minutes until golden.'], note:'Can be made with any protein powder. If batter is too thick, loosen with 2–4 tbsp milk. Best eaten fresh but keeps 3 days in the fridge.' },
+  { id:6,  dieticianId:3, title:'Chickpea & Aubergine Stew', subtitle:'Lebanese-inspired maghmour — fibre-packed & versatile', emoji:'🍆', photo:null, healthLabels:['pcos'], prepTime:'15 min', cookTime:'30 min', servings:4, ingredients:['2 aubergines, chopped into medium pieces','1 x 400g tin chickpeas, drained','2 bell peppers, chopped','1 red chilli (optional)','2 tbsp red pepper paste','2 tbsp tomato paste','1 x 400g tin chopped tomatoes','2 cups water','Olive oil, salt & pepper'], instructions:['Preheat oven to 180°C. Toss aubergine with olive oil and roast for 7–10 minutes until golden.','In a large saucepan, sauté the peppers (and optional chilli) in olive oil for 5 minutes. Season.','Add red pepper paste and tomato paste. Cook for 2–3 minutes.','Pour in chopped tomatoes and 2 cups of water. Stir to combine.','Add chickpeas. Cover and simmer for 10 minutes.','Add roasted aubergine and simmer a final 10 minutes until sauce thickens.','Garnish with parsley and pomegranate seeds.'], note:'Serve warm with rice or cold with bread as a dip. Perfect for meal prep.' },
+  { id:7,  dieticianId:3, title:'Veggie & Cheese Frittata', subtitle:'High-protein bites — great for breakfast or lunchbox', emoji:'🥚', photo:`${CP}60ec43136e267257945cbf62/1695730794461/IMG_6587-2.jpg?format=800w`, healthLabels:['pcos','fertility'], prepTime:'10 min', cookTime:'20 min', servings:6, ingredients:['6 eggs','Handful of mixed vegetables (courgette, pepper, spinach, tomatoes)','50g feta or goat\'s cheese, crumbled','30g cheddar, grated','Small chunk pecorino (optional)','Salt & pepper','Oil spray'], instructions:['Preheat oven to 180°C. Spray a 12-hole muffin tray with oil.','Whisk together eggs, salt and pepper until combined.','Stir through chopped vegetables and cheeses.','Pour evenly into the muffin tray.','Bake for 18–20 minutes until set and golden on top.','Cool slightly before removing from tray.'], note:'Claire says eggs are a nutritional powerhouse especially for those trying to conceive. Store in the fridge for up to 3 days.' },
+  { id:8,  dieticianId:3, title:'Roasted Beetroot', subtitle:'Anti-inflammatory polyphenols, simple & versatile', emoji:'🔴', photo:`${CP}68dfb6d77be4bb063728f4d6/1765443955429/main.jpg?format=800w`, healthLabels:['pcos'], prepTime:'10 min', cookTime:'45 min', servings:4, ingredients:['4–6 beetroots (mixed colours if possible)','2 tbsp olive oil','Salt to taste'], instructions:['Preheat oven to 200°C.','Scrub beetroots well with a brush. Slice off both ends.','Cut each beetroot into wedges (halves, then quarters, then eighths).','Lay on a parchment-lined roasting tin. Drizzle with olive oil and salt.','Toss to coat, then lay flat.','Roast for about 45 minutes, turning a couple of times throughout, until tender and caramelised.'], note:'Roasting with the skin on maximises fibre content. Serve as a side or add to salads with feta, rocket and tomatoes.' },
+  { id:9,  dieticianId:3, title:'Squash Soup', subtitle:'Warming & creamy with minimal ingredients', emoji:'🍵', photo:null, healthLabels:['pcos'], prepTime:'10 min', cookTime:'35 min', servings:4, ingredients:['1 large butternut squash, peeled & cubed','1 onion, roughly chopped','2 garlic cloves','500 ml vegetable stock','1 tbsp olive oil','½ tsp smoked paprika','Salt & pepper','Optional: splash of coconut milk or cream'], instructions:['Heat olive oil in a large pot. Sauté onion for 5 minutes until softened.','Add garlic and paprika, cook for 1 minute.','Add squash and stock. Bring to a boil, then reduce heat and simmer for 20–25 minutes until squash is very tender.','Blend until smooth using a hand blender or in batches.','Stir in coconut milk if using. Season well.','Serve with crusty bread or a swirl of cream.'], note:'Freezes well for up to 3 months — a great batch cook option.' },
+  { id:10, dieticianId:3, title:'Coconut & Butternut Squash Curry', subtitle:'Mild, creamy & family-friendly with turmeric', emoji:'🍛', photo:`${CP}5f90f84f585dd565cc3432fb/1710293434680/2024-02-19%2B09.55.17.jpg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'35 min', servings:4, ingredients:['1 butternut squash, peeled & cubed','1 onion, diced','2 garlic cloves, minced','1 cm fresh ginger, grated','1 x 400ml tin coconut milk','300 ml vegetable stock','2 tsp turmeric','1 tsp cumin','1 tsp coriander','1 tbsp olive oil','Salt to taste'], instructions:['Heat oil in a large pan. Add onion with a pinch of salt and cook for 8–10 minutes until softened.','Add garlic and ginger, cook for 2 minutes.','Add turmeric, cumin and coriander, stir and cook for 1 minute.','Add squash and coat in the spices.','Pour in coconut milk and stock. Bring to a boil.','Reduce heat, cover and simmer for 20–25 minutes until squash is tender.','Taste and adjust seasoning. Serve with rice or naan.'], note:'Claire notes turmeric is associated with many health benefits especially for those with PCOS.' },
+  { id:11, dieticianId:3, title:'Homemade Oreo Cookies', subtitle:'A nourishing take on the classic treat', emoji:'🖤', photo:null, healthLabels:['pcos'], prepTime:'20 min', cookTime:'15 min', servings:20, ingredients:['For the cookies: 1 cup plain flour, ½ cup raw cacao powder, ½ cup butter (softened), ½ cup icing sugar, 1 egg, 1 tsp vanilla extract, pinch of salt','For the filling: 100g cream cheese, 3 tbsp icing sugar, ½ tsp vanilla extract'], instructions:['Preheat oven to 180°C. Line a baking tray with parchment.','Beat butter and icing sugar until creamy. Mix in egg and vanilla.','Sift in flour, cacao and salt. Mix to form a dough.','Roll out dough to 3mm thick. Cut into circles using a small cookie cutter.','Bake for 12–15 minutes. Cool completely.','Beat cream cheese, icing sugar and vanilla until smooth.','Sandwich pairs of cookies with the cream cheese filling.'], note:'Cacao is rich in magnesium, which can support hormonal balance and reduce inflammation.' },
+  { id:12, dieticianId:3, title:'Aubergine with Green Beans & Freekeh', subtitle:'Fibre-rich grain salad with Middle Eastern flavours', emoji:'🥗', photo:null, healthLabels:['pcos'], prepTime:'15 min', cookTime:'30 min', servings:4, ingredients:['200g freekeh','2 aubergines, sliced','200g fine green beans, trimmed','3 tbsp olive oil','Juice of 1 lemon','2 tbsp tahini','1 garlic clove, minced','Fresh parsley or mint, chopped','Salt, pepper & chilli flakes'], instructions:['Cook freekeh in salted water for 20–25 minutes until tender but with a little bite. Drain and cool.','Roast or grill aubergine slices with olive oil and seasoning until golden.','Blanch green beans in boiling salted water for 3–4 minutes. Drain and refresh in cold water.','Whisk together tahini, lemon juice, garlic, olive oil and a pinch of salt to make the dressing.','Combine freekeh, aubergine and green beans in a bowl.','Drizzle with tahini dressing and toss gently.','Scatter with fresh herbs and chilli flakes.'], note:'Freekeh is a high-fibre whole grain that supports slow blood sugar release — ideal for PCOS.' },
+  { id:13, dieticianId:3, title:'Cauliflower, Pomegranate & Pistachio Salad', subtitle:'Fibre-packed with anti-inflammatory pomegranate', emoji:'🥦', photo:`${CP}60b5a7ced093263ad54f68d6/1695730872701/IMG_5471.jpg?format=800w`, healthLabels:['pcos'], prepTime:'10 min', cookTime:'25 min', servings:4, ingredients:['1 large cauliflower, broken into florets (⅓ grated raw)','1 small onion, sliced','3 tbsp olive oil','Seeds of ½ pomegranate','40g shelled pistachios','Fresh parsley and mint, chopped','1 tsp ground cumin','1½ tbsp lemon juice','Salt & pepper'], instructions:['Preheat oven to 220°C.','Toss cauliflower florets and onion with 2 tbsp olive oil and ½ tsp salt. Spread on a baking sheet.','Roast for 20–25 minutes until golden at the edges. Cool.','Grate the remaining ⅓ of raw cauliflower into a large bowl.','Add roasted cauliflower and onion to the bowl.','Add pomegranate seeds, pistachios, herbs, cumin, lemon juice and remaining olive oil.','Toss gently. Season to taste and serve.'], note:'Pomegranate seeds are rich in antioxidants and have shown benefits in reducing androgen levels relevant to PCOS.' },
+  { id:14, dieticianId:3, title:'Chocolate Date Cake', subtitle:'Naturally sweetened with dates — rich & fudgy', emoji:'🍰', photo:`${CP}611912332d65e7269d934c8d/1695730777376/IMG_7259.jpg?format=800w`, healthLabels:['pcos'], prepTime:'20 min', cookTime:'35 min', servings:10, ingredients:['200g medjool dates, pitted','150 ml boiling water','2 eggs','100g butter, melted','4 tbsp raw cacao powder','1 tsp baking powder','½ tsp bicarbonate of soda','150g plain or spelt flour','1 tsp vanilla extract','Pinch of salt'], instructions:['Preheat oven to 180°C. Grease and line a 20 cm round tin.','Pour boiling water over dates and leave to soak for 10 minutes, then blend to a smooth paste.','Whisk eggs, melted butter and vanilla together.','Add the date paste to the egg mixture and stir to combine.','Sift in cacao, flour, baking powder, bicarb and salt. Fold gently until just combined.','Pour into the prepared tin.','Bake for 30–35 minutes until a skewer comes out clean.','Cool before slicing.'], note:'Dates are a natural source of fibre, magnesium and iron — a more nutrient-dense treat option.' },
+  { id:15, dieticianId:3, title:'Squash with Chilli Yoghurt & Coriander Sauce', subtitle:'Low GI — serve as a side or main', emoji:'🌶️', photo:`${CP}608bac351625d50fe195eb57/1619766340907/IMG_4988_2.jpg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'40 min', servings:4, ingredients:['1 butternut squash, cut into thick wedges','2 tbsp olive oil','1 tsp cumin, 1 tsp coriander, ½ tsp smoked paprika','For chilli yoghurt: 200g natural yoghurt, 1–2 tsp harissa or chilli sauce, juice of ½ lemon','For coriander sauce: large bunch fresh coriander, 1 garlic clove, juice of ½ lemon, 3 tbsp olive oil, pinch of salt'], instructions:['Preheat oven to 200°C.','Toss squash wedges in olive oil, cumin, coriander, paprika and seasoning.','Roast for 35–40 minutes until tender and caramelised.','Mix yoghurt, harissa and lemon juice together for the chilli yoghurt.','Blend coriander, garlic, lemon juice, olive oil and salt to make the coriander sauce.','Spread chilli yoghurt on a serving plate.','Arrange squash on top and drizzle with coriander sauce.'], note:'A low GI dish — butternut squash helps stabilise blood sugar, important for PCOS management.' },
+  { id:16, dieticianId:3, title:'Wintery Parsnip Soup', subtitle:'Naturally sweet & creamy, perfect for cold days', emoji:'🍂', photo:null, healthLabels:['pcos'], prepTime:'10 min', cookTime:'35 min', servings:4, ingredients:['4 parsnips, peeled & roughly chopped','1 onion, diced','2 garlic cloves','1 tsp ground ginger','1 tsp cumin','1 litre vegetable stock','2 tbsp olive oil','100 ml cream or coconut milk','Salt & pepper','Fresh parsley to serve'], instructions:['Heat olive oil in a large pot. Sauté onion for 5 minutes until softened.','Add garlic, ginger and cumin. Cook for 1 minute.','Add parsnips and stock. Bring to a boil.','Reduce heat and simmer for 25–30 minutes until parsnips are very tender.','Blend until smooth. Stir in cream or coconut milk.','Season well. Serve with a swirl of cream and fresh parsley.'], note:'Parsnips are a great source of prebiotic fibre — a nourishing option for PCOS.' },
+  { id:17, dieticianId:3, title:'Spinach & Sweet Potato Dahl', subtitle:'Iron-rich & warming with coconut and red lentils', emoji:'🌿', photo:null, healthLabels:['pcos'], prepTime:'10 min', cookTime:'30 min', servings:4, ingredients:['2 sweet potatoes, peeled & cubed','1 cup red lentils, rinsed','1 onion, diced','2 garlic cloves, minced','1 cm ginger, grated','1 x 400ml tin coconut milk','400 ml vegetable stock','2 tbsp tomato paste','2 tsp curry powder','1 tsp turmeric','2 large handfuls spinach','Juice of ½ lemon','Olive oil, salt & pepper'], instructions:['Heat oil in a large pan. Sauté onion for 5 minutes.','Add garlic, ginger, curry powder and turmeric. Cook for 1 minute.','Add tomato paste and stir. Add sweet potato and coat in spices.','Pour in lentils, coconut milk and stock. Stir and bring to a boil.','Reduce heat and simmer for 20–25 minutes until lentils and sweet potato are tender.','Stir in spinach until wilted. Add lemon juice and season.','Serve with rice, naan or flatbread.'], note:'Red lentils and spinach provide iron and folate — key nutrients for women managing PCOS.' },
+  { id:18, dieticianId:3, title:'Chickpea, Mango & Cauliflower Salad', subtitle:'Bright, tropical & packed with plant-based protein', emoji:'🥭', photo:null, healthLabels:['pcos'], prepTime:'15 min', cookTime:'25 min', servings:4, ingredients:['1 head cauliflower, broken into florets','1 x 400g tin chickpeas, drained','1 ripe mango, diced','Fresh coriander, chopped','Juice of 1 lime','2 tbsp olive oil','1 tsp cumin','½ tsp chilli flakes','Salt & pepper'], instructions:['Preheat oven to 200°C.','Toss cauliflower and chickpeas with olive oil, cumin, chilli flakes and seasoning.','Spread on a baking tray and roast for 20–25 minutes until golden.','Cool slightly, then transfer to a large bowl.','Add diced mango and coriander.','Squeeze over lime juice, toss gently and serve.'], note:'Chickpeas are a PCOS-friendly source of plant-based protein and low-GI carbohydrates.' },
+  { id:19, dieticianId:3, title:'Peanut Butter Balls', subtitle:'No-bake protein snack for blood sugar balance', emoji:'🥜', photo:null, healthLabels:['pcos'], prepTime:'15 min', cookTime:'0 min', servings:12, ingredients:['1 cup natural peanut butter','½ cup oats','3 tbsp honey or maple syrup','2 tbsp chia seeds','1 tsp vanilla extract','Pinch of salt','Optional: dark chocolate chips or cacao powder to roll'], instructions:['Mix peanut butter, oats, honey, chia seeds, vanilla and salt in a bowl until combined.','If the mixture is too soft, refrigerate for 15–20 minutes.','Roll into bite-sized balls (approximately 12).','Optional: roll in cacao powder or dark chocolate chips.','Place on a lined tray and refrigerate for at least 30 minutes to set.'], note:'Peanut butter provides healthy fats and protein to support blood sugar stability — key for managing PCOS symptoms.' },
+  { id:20, dieticianId:3, title:'Roasted Mixed Veg with Yoghurt & Chilli Oil', subtitle:'Ottolenghi-inspired weeknight veggie plate', emoji:'🌈', photo:`${CP}5ff7dc13b2c4ae564e1104c6/1695730989420/IMG_0873.jpg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'35 min', servings:4, ingredients:['Selection of mixed veg: courgette, aubergine, peppers, sweet potato','3 tbsp olive oil','1 tsp cumin, 1 tsp coriander','For yoghurt: 200g natural yoghurt, 1 garlic clove (minced), pinch of salt','For chilli oil: 3 tbsp olive oil, 1–2 tsp chilli flakes, 1 garlic clove (sliced)'], instructions:['Preheat oven to 200°C.','Chop all veg into similar-sized pieces.','Toss with olive oil, cumin, coriander and seasoning.','Spread on baking trays (do not crowd) and roast for 30–35 minutes until caramelised.','While roasting, mix yoghurt with garlic and salt.','Warm olive oil in a small pan and gently heat chilli flakes and sliced garlic for 2–3 minutes.','Spread yoghurt on a plate, pile roasted veg on top, drizzle with chilli oil.'], note:'A PCOS-friendly colourful plate — the variety of vegetables provides diverse fibre and antioxidants.' },
+  { id:21, dieticianId:3, title:'Lentil Bolognese', subtitle:'Plant-based comfort food packed with fibre & protein', emoji:'🍝', photo:`${CP}66e6aaecf767460e0590c6f5/1726560029569/IMG_2410.jpeg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'30 min', servings:5, ingredients:['1 tbsp olive oil','1 carrot, finely diced','1 celery stalk, finely diced','300g mushrooms, chopped','¾ cup brown lentils, washed','3 tbsp tomato paste','2 x 400g tins chopped tomatoes','2 cups vegetable stock','1 bay leaf','½ tsp chilli flakes','¼ tsp smoked paprika','2 tsp dried oregano','1 tsp dried thyme','1 tsp dried basil','1 tbsp balsamic vinegar','Salt & pepper'], instructions:['Heat olive oil in a saucepan. Add carrots and celery and sauté for 5 minutes.','Add mushrooms and cook for 3–5 minutes until water has evaporated.','Add tomato paste and cook until it deepens in colour.','Add lentils, chopped tomatoes and stock. Bring to a boil.','Add bay leaf, chilli flakes, paprika, oregano, thyme, basil and balsamic vinegar. Season.','Reduce to a simmer and cook for 30 minutes until lentils are tender.','Serve over pasta. Store sauce separately from pasta when meal prepping.'], note:'A plant-based take on a classic — lentils provide gut-loving fibre and plant-based protein, key for PCOS management.' },
+  // ── Alysse Vocca (id:4) ──────────────────────────────────────
+  { id:22, dieticianId:4, title:'Cauliflower Shrimp Fried Rice', subtitle:'Low-carb, blood sugar-friendly weeknight dinner', emoji:'🦐', photo:null, healthLabels:['pcos','hormones'], prepTime:'10 min', cookTime:'15 min', servings:1, ingredients:['3 cups cauliflower rice','½ lb shrimp, peeled','1 egg','½ cup peas + carrots','2 tbsp soy sauce','1 tbsp sesame oil','2 cloves garlic'], instructions:['Heat sesame oil in pan.','Cook shrimp until pink (2–3 min), remove.','Add garlic + veggies; cook 3–4 min.','Add cauliflower rice; cook 5 min.','Push aside and scramble egg.','Add shrimp back + soy sauce; mix well.'], note:'Cauliflower rice is lower-carb and blood sugar friendly, making it ideal for managing insulin resistance in PCOS. Shrimp provides lean protein that supports insulin balance and reduces blood sugar spikes. Veggies increase fibre and nutrient density, keeping you fuller for longer. Much lower glycaemic load than traditional fried rice.' },
+  { id:23, dieticianId:4, title:'Berry Chia Pudding', subtitle:'Overnight prep, omega-3 rich & hormone-balancing', emoji:'🫐', photo:null, healthLabels:['pcos','hormones','energy'], prepTime:'5 min', cookTime:'0 min', servings:1, ingredients:['3 tbsp chia seeds','¾ cup unsweetened almond milk','½ tsp vanilla','½ cup mixed berries'], instructions:['Mix chia seeds, almond milk, vanilla.','Refrigerate at least 4 hours or overnight.','Stir and top with berries.'], note:'Chia seeds are rich in soluble fibre, which slows glucose absorption and blunts blood sugar spikes. Low glycaemic berries support insulin balance without spiking cortisol. The omega-3 fats in chia seeds are essential for hormone regulation and reducing inflammation. This breakfast helps reduce sugar cravings naturally throughout the day.' },
+  { id:24, dieticianId:4, title:'Egg Muffins', subtitle:'High-protein grab-and-go for hormone-stabilising mornings', emoji:'🥚', photo:null, healthLabels:['pcos','energy','hormones'], prepTime:'10 min', cookTime:'25 min', servings:6, ingredients:['6 eggs','1 cup spinach, chopped','½ cup mushrooms, diced','½ cup cooked turkey sausage','¼ cup shredded cheese (optional)','Salt + pepper'], instructions:['Preheat oven to 375°F (190°C).','Whisk eggs in a bowl.','Stir in all ingredients.','Pour into greased muffin tin.','Bake 18–22 minutes.'], note:'A high-protein breakfast helps reduce morning insulin spikes, a key concern in PCOS. Easy grab-and-go format prevents skipped meals, which cause blood sugar dips and cravings later. Balanced fat and protein work together to improve satiety and reduce cortisol. Great for hormone-stabilising meal prep throughout the week.' },
+  { id:25, dieticianId:4, title:'Spicy Peanut Tofu Stir-Fry', subtitle:'Plant-based protein with hormone-balancing fats', emoji:'🥜', photo:null, healthLabels:['pcos','hormones','anti-inflammatory'], prepTime:'10 min', cookTime:'15 min', servings:2, ingredients:['14 oz firm tofu, cubed','2 cups broccoli florets','1 bell pepper, sliced','2 tbsp peanut butter','2 tbsp soy sauce','1 tsp chili flakes','1 tbsp olive oil'], instructions:['Heat oil and pan-fry tofu until golden (8–10 min).','Remove tofu and sauté vegetables 5–6 min.','Mix peanut butter, soy sauce, chili flakes + 2 tbsp water.','Return tofu to pan and add sauce.','Stir until coated and warm.'], note:'Tofu provides plant-based protein that supports insulin sensitivity without taxing the digestive system. Peanut butter adds healthy monounsaturated fats that are essential for hormone production. High-fibre broccoli and peppers slow glucose absorption and feed beneficial gut bacteria. Anti-inflammatory soy consumed in moderation may actually support oestrogen balance.' },
+  { id:26, dieticianId:4, title:'Mediterranean Quinoa Bowl', subtitle:'High-protein, low-GI with anti-inflammatory olive oil', emoji:'🥗', photo:null, healthLabels:['pcos','hormones','anti-inflammatory'], prepTime:'10 min', cookTime:'15 min', servings:2, ingredients:['1 cup cooked quinoa','½ cup chickpeas','½ cucumber, diced','½ cup cherry tomatoes, halved','¼ cup feta cheese','1 tbsp olive oil','1 tbsp lemon juice'], instructions:['Cook quinoa according to package.','Mix quinoa, chickpeas, cucumber, tomatoes.','Add olive oil + lemon juice.','Top with feta.'], note:'Quinoa is a complete protein with a low glycaemic index, making it ideal for PCOS blood sugar management. Extra virgin olive oil is rich in oleocanthal, a natural anti-inflammatory compound. Chickpeas combined with veggies add resistant starch and fibre for sustained glucose control. Balanced macros in this bowl help reduce afternoon cravings and energy crashes.' },
+  { id:27, dieticianId:4, title:'Salmon Avocado Cucumber Boats', subtitle:'Omega-3 rich, lower-carb & hormone-supportive', emoji:'🥑', photo:null, healthLabels:['pcos','hormones','anti-inflammatory'], prepTime:'10 min', cookTime:'10 min', servings:2, ingredients:['1 can salmon (5 oz)','1 avocado','1 large cucumber','1 tbsp lemon juice','½ tsp dill','Salt + pepper'], instructions:['Slice cucumber lengthwise and scoop centre slightly.','Mix salmon, avocado, lemon juice, dill, salt, pepper.','Spoon mixture into cucumber halves.'], note:'Omega-3 fatty acids from salmon are among the most powerful natural tools for reducing PCOS-related inflammation. Healthy fats from avocado directly support progesterone and oestrogen production. The low-carb cucumber base keeps this blood sugar friendly without sacrificing fullness. High protein content keeps appetite stable for hours after eating.' },
+  { id:28, dieticianId:4, title:'Sweet Potato Egg Hash', subtitle:'Slow-digesting carbs with protein for insulin support', emoji:'🍳', photo:null, healthLabels:['pcos','energy','hormones'], prepTime:'10 min', cookTime:'20 min', servings:2, ingredients:['1 medium sweet potato, diced small','1 tbsp olive oil','½ bell pepper, diced','2 cups spinach','4 eggs','Salt + pepper'], instructions:['Heat oil in skillet.','Cook sweet potato 10–12 min until soft.','Add bell pepper and cook 3–4 min.','Stir in spinach until wilted.','Push veggies aside and cook eggs in same pan (scramble or fry).','Combine and season.'], note:'Protein and fat from eggs prevent the glucose spikes that worsen PCOS symptoms and fatigue. Sweet potato is a slower-digesting complex carb that provides energy without the insulin crash of refined carbs. High fibre content supports gut microbiome health, which is directly linked to hormone metabolism. This dish is particularly beneficial for managing insulin resistance.' },
+  { id:29, dieticianId:4, title:'Zucchini Turkey Taco Skillet', subtitle:'Lean protein, low-carb taco night done right', emoji:'🌮', photo:null, healthLabels:['pcos','hormones','high-protein'], prepTime:'10 min', cookTime:'15 min', servings:3, ingredients:['1 lb ground turkey','2 medium zucchini, diced','½ onion, chopped','2 cloves garlic, minced','2 tbsp taco seasoning','1 tbsp olive oil','1 avocado (for topping)'], instructions:['Heat oil in skillet over medium heat.','Cook turkey until browned (5–7 min).','Add onion + garlic; cook 2–3 min.','Add zucchini and taco seasoning.','Cook until zucchini softens (5–6 min).','Top with sliced avocado.'], note:'Lean turkey protein supports stable blood sugar and provides the amino acids needed for hormone synthesis. Zucchini is low-carb and high in fibre, helping you feel full without a glycaemic spike. Avocado adds hormone-supportive healthy fats and potassium for adrenal health. A significantly lower glycaemic alternative to traditional taco bowls or wraps.' },
+  { id:30, dieticianId:4, title:'Cinnamon Almond Yogurt Bowl', subtitle:'5-minute breakfast for insulin sensitivity & cravings', emoji:'🍓', photo:null, healthLabels:['pcos','energy','hormones'], prepTime:'5 min', cookTime:'0 min', servings:1, ingredients:['¾ cup plain Greek yogurt','1 tbsp almond butter','1 tbsp chia seeds','½ tsp cinnamon','½ cup blueberries'], instructions:['Add yogurt to a bowl.','Stir in cinnamon.','Top with blueberries and chia seeds.','Swirl almond butter on top.'], note:'High-protein Greek yogurt stabilises blood sugar by slowing carbohydrate digestion and reducing insulin spikes. Cinnamon contains cinnamaldehyde, shown in studies to improve insulin sensitivity in women with PCOS. Chia seeds add soluble fibre and omega-3s essential for hormone balance and inflammation reduction. Healthy fats from almond butter keep cravings stable for hours.' },
+  { id:31, dieticianId:4, title:'Turmeric Coconut Chickpea Curry', subtitle:'Anti-inflammatory, gut-friendly one-pan curry', emoji:'🍛', photo:null, healthLabels:['pcos','anti-inflammatory','gut','hormones'], prepTime:'5 min', cookTime:'15 min', servings:2, ingredients:['1 can chickpeas (15 oz), drained/rinsed','1 tbsp olive oil','2 cloves garlic, minced','1 tsp turmeric','½ tsp cumin','¼ tsp black pepper','½ can (7 oz) coconut milk','2 cups spinach'], instructions:['Heat olive oil in a skillet over medium heat.','Add garlic and sauté 1 minute.','Stir in turmeric, cumin, and black pepper.','Add chickpeas and stir to coat.','Pour in coconut milk and simmer 5–7 minutes.','Add spinach and cook until wilted (1–2 min).'], note:'High-fibre chickpeas are a cornerstone PCOS food — they stabilise blood sugar and feed beneficial gut bacteria. Turmeric combined with black pepper is one of the most potent natural anti-inflammatory combinations available. Coconut milk provides medium-chain triglycerides that support hormone regulation and reduce inflammation. Plant-based protein from chickpeas improves satiety without spiking insulin.' },
+];
 
+// ── COMMUNITY DATA (from portal) ─────────────────────────────
+// Community recipes now loaded from Supabase dynamically in App
+const communityDieticians = [];
+const communityRecipes    = [];
+const adminRecipes        = (() => { try { return JSON.parse(localStorage.getItem('nuri_custom_recipes')      || '[]'); } catch { return []; } })();
+const adminDieticians     = (() => { try { return JSON.parse(localStorage.getItem('nuri_custom_dieticians')   || '[]'); } catch { return []; } })();
+// Deduplicate: only add community/admin dieticians whose id isn't already in DIETICIANS
+const hardcodedIds = new Set(DIETICIANS.map(d => d.id));
+const filteredCommunity = communityDieticians.filter(d => !hardcodedIds.has(d.id));
+const filteredAdmin = adminDieticians.filter(d => !hardcodedIds.has(d.id));
+const ALL_DIETICIANS = [...DIETICIANS, ...filteredCommunity, ...filteredAdmin];
+const ALL_RECIPES    = [...RECIPES,    ...communityRecipes,    ...adminRecipes];
+
+const getD = (id) => ALL_DIETICIANS.find(d => d.id === parseInt(id, 10));
+const getRecipesByD = (id) => ALL_RECIPES.filter(r => r.dieticianId === id);
+
+// Returns the gingham style for a recipe — community recipes carry their own bg/s
+function getRecipeGingham(recipe) {
+  if (recipe.ginghamBg) {
+    const sz = 26;
+    return {
+      backgroundColor: recipe.ginghamBg,
+      backgroundImage: [
+        `repeating-linear-gradient(transparent 0px,transparent ${sz}px,${recipe.ginghamS} ${sz}px,${recipe.ginghamS} ${sz*2}px)`,
+        `repeating-linear-gradient(90deg,transparent 0px,transparent ${sz}px,${recipe.ginghamS} ${sz}px,${recipe.ginghamS} ${sz*2}px)`,
+      ].join(','),
+    };
+  }
+  // Use grid index if available to ensure adjacent tiles never share same color
+  if (recipe._gridIndex !== undefined) {
+    const idx = recipe._gridIndex;
+    // In a 3-col grid, positions 0,1,2 are in same row — ensure all 3 differ
+    const p = GINGHAM[idx % GINGHAM.length];
+    const sz = 26;
+    return {
+      backgroundColor: p.bg,
+      backgroundImage: [
+        `repeating-linear-gradient(transparent 0px,transparent ${sz}px,${p.s} ${sz}px,${p.s} ${sz*2}px)`,
+        `repeating-linear-gradient(90deg,transparent 0px,transparent ${sz}px,${p.s} ${sz}px,${p.s} ${sz*2}px)`,
+      ].join(','),
+    };
+  }
+  return getGingham(recipe.id, recipe.dieticianId || recipe.dietitian_id || 0);
+}
+const fmt = (n) => n >= 1000 ? `${(n/1000).toFixed(1)}k` : String(n);
+
+// ── GINGHAM ───────────────────────────────────────────────────
+const GINGHAM = [
+  { bg:'#A8C4A8', s:'rgba(58,107,74,0.32)' },    // sage
+  { bg:'#D9A0A0', s:'rgba(160,60,60,0.30)' },    // rose
+  { bg:'#A8BBD4', s:'rgba(40,80,140,0.28)' },    // blue
+  { bg:'#D4B87A', s:'rgba(140,95,20,0.34)' },    // tan
+  { bg:'#BBA8CC', s:'rgba(90,50,130,0.28)' },    // plum
+  { bg:'#C8A080', s:'rgba(140,80,30,0.32)' },    // clay
+  { bg:'#A8C4B8', s:'rgba(40,107,80,0.28)' },    // teal
+  { bg:'#D4A8A8', s:'rgba(140,60,60,0.28)' },    // dusty rose
+];
+function getGingham(id, dieticianId) {
+  const offset = (dieticianId || 0) * 3;
+  const p = GINGHAM[(id - 1 + offset) % GINGHAM.length];
+  const sz = 26;
+  return {
+    backgroundColor: p.bg,
+    backgroundImage: [
+      `repeating-linear-gradient(transparent 0px,transparent ${sz}px,${p.s} ${sz}px,${p.s} ${sz*2}px)`,
+      `repeating-linear-gradient(90deg,transparent 0px,transparent ${sz}px,${p.s} ${sz}px,${p.s} ${sz*2}px)`,
+    ].join(','),
+  };
+}
+function photoUrl(id, supaPhoto) {
+  if (supaPhoto) return supaPhoto;
+  const pid = PHOTO_IDS[id-1];
+  if (!pid) return null;
+  return `https://images.unsplash.com/photo-${pid}?w=800&q=70&auto=format&fit=crop`;
+}
+const SUPA_STORAGE_URL = 'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public';
+function recipePhotoUrl(r) { return r.supaPhoto || r.photo || null; }
+function dietitianAvatarUrl(d) { return d.supaAvatar || d.photo || null; }
+function ls(k, fb) { try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : fb; } catch { return fb; } }
+function lsSave(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+
+// ── ONE-TIME MIGRATION: clear stale localStorage from old builds ──
+(function() {
+  const CURRENT_VERSION = '2';
+  if (localStorage.getItem('nuri_build_version') !== CURRENT_VERSION) {
+    ['tee_onboarded','tee_goals','tee_followed','tee_saved','tee_tried',
+     'tee_triedphotos','tee_comments','tee_rdmode','tee_rdid',
+     'tee_community_dieticians','tee_community_recipes',
+     'nuri_custom_recipes','nuri_custom_dieticians'].forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('nuri_build_version', CURRENT_VERSION);
+  }
+})();
+
+// ── SMALL COMPONENTS ──────────────────────────────────────────
+function HealthTag({ label }) {
+  const info = LABEL_MAP[label];
+  if (!info) return null;
+  return <span className="health-tag" style={{ background: info.color, color: info.text }}>{info.label}</span>;
+}
+
+function Avatar({ initials, color, cls = 'avatar-sm', photo }) {
+  if (photo) return <div className={cls} style={{ background: color, backgroundImage: `url(${photo})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />;
+  return <div className={cls} style={{ background: color }}>{initials}</div>;
+}
+
+// ── RESTORE PURCHASE BUTTON ─────────────────────────────────
+function RestorePurchaseButton({ user, onSuccess }) {
+  const [loading, setLoading] = React.useState(false);
+  const [msg, setMsg] = React.useState('');
+  const db = window._supa;
+  const handleRestore = async () => {
+    setLoading(true); setMsg('');
+    try {
+      const { data } = await db.from('subscriptions').select('status, updated_at').eq('user_id', user.id).maybeSingle();
+      if (data?.status === 'active') {
+        onSuccess();
+        setMsg('✅ Premium access restored!');
+      } else if (data?.status === 'pending') {
+        await db.from('subscriptions').upsert(
+          { user_id: user.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'active', updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' }
+        );
+        onSuccess();
+        setMsg('✅ Purchase restored successfully!');
+      } else {
+        setMsg('No purchase found. Contact support if you believe this is an error.');
+      }
+    } catch(e) {
+      setMsg('Something went wrong. Please try again.');
+    }
+    setLoading(false);
+  };
+  return (
+    <div style={{ textAlign: 'center', marginTop: 8 }}>
+      <button onClick={handleRestore} disabled={loading} style={{ background: 'none', border: 'none', color: 'var(--text-light)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'var(--font-body)' }}>
+        {loading ? 'Checking…' : 'Already paid? Restore purchase'}
+      </button>
+      {msg && <div style={{ fontSize: 12, marginTop: 4, color: msg.startsWith('✅') ? '#2E7D32' : '#8B2020' }}>{msg}</div>}
+    </div>
+  );
+}
+
+// ── SUBSCRIPTION MODAL ───────────────────────────────────────
+function SubscriptionModal({ onClose, onSuccess, user, onSignIn }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [billingPeriod, setBillingPeriod] = useState('monthly');
+
+  const handleSubscribe = async () => {
+    if (!user) { onClose(); onSignIn('signup'); return; }
+    setLoading(true); setError('');
+    try {
+      await window._supa.from('subscriptions').upsert(
+        { user_id: user.id, stripe_price_id: NURI_PREMIUM_PRICE_ID, status: 'pending', updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      );
+      // Store where to redirect after payment
+      if (window._postPayRedirect) {
+        sessionStorage.setItem('nuri_post_pay', JSON.stringify(window._postPayRedirect));
+      }
+      const base = billingPeriod === 'annual' ? STRIPE_PAYMENT_LINK_ANNUAL : STRIPE_PAYMENT_LINK_MONTHLY;
+      const params = new URLSearchParams({
+        prefilled_email: user.email || '',
+        client_reference_id: user.id,
+      });
+      window.location.href = base + '?' + params.toString();
+    } catch(e) {
+      setError('Something went wrong. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="sub-modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="sub-modal">
+        <div className="sub-modal-banner">
+          <button className="sub-modal-close" onClick={onClose}>✕</button>
+          <div className="sub-modal-inner">
+            <div className="sub-modal-eyebrow">nuri. Premium</div>
+            <div className="sub-modal-rd-name">Unlock everything</div>
+            <div className="sub-modal-rd-creds">All current & future exclusive dietitians included</div>
+          </div>
+        </div>
+        <div className="sub-modal-body">
+          <div className="sub-modal-title">One subscription, all the experts</div>
+          <p className="sub-modal-text">Get full access to every nuri. exclusive dietitian — now and as we grow. Cancel anytime.</p>
+          <div style={{ display:'flex', gap:8, marginBottom:20, background:'var(--warm-beige)', padding:4, borderRadius:50 }}>
+            <button onClick={() => setBillingPeriod('monthly')} style={{ flex:1, padding:'8px 0', borderRadius:50, border:'none', fontFamily:'var(--font-body)', fontSize:13, fontWeight:600, cursor:'pointer', background: billingPeriod==='monthly' ? 'var(--brown)' : 'transparent', color: billingPeriod==='monthly' ? 'white' : 'var(--text-mid)', transition:'all 0.18s' }}>Monthly</button>
+            <button onClick={() => setBillingPeriod('annual')} style={{ flex:1, padding:'8px 0', borderRadius:50, border:'none', fontFamily:'var(--font-body)', fontSize:13, fontWeight:600, cursor:'pointer', background: billingPeriod==='annual' ? 'var(--brown)' : 'transparent', color: billingPeriod==='annual' ? 'white' : 'var(--text-mid)', transition:'all 0.18s', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+              Annual <span style={{ fontSize:10, background:'#C8E6C9', color:'#2E7D32', padding:'2px 6px', borderRadius:50 }}>Save $20</span>
+            </button>
+          </div>
+          <div className="sub-modal-price">
+            <span className="sub-modal-price-num">{billingPeriod === 'annual' ? '$99.99' : '$9.99'}</span>
+            <span className="sub-modal-price-period">{billingPeriod === 'annual' ? '/ year' : '/ month'}</span>
+          </div>
+          {billingPeriod === 'annual' && <div style={{ fontSize:12, color:'var(--text-light)', marginTop:-16, marginBottom:16 }}>That's just $8.33/month</div>}
+          <div className="sub-modal-perks">
+            {[
+              { icon:'🔓', text:'Unlock all exclusive recipes' },
+              { icon:'🩺', text:'Access every nuri. premium dietitian' },
+              { icon:'✨', text:'New dietitians automatically included' },
+              { icon:'❌', text:'Cancel anytime, no commitment' },
+            ].map(p => (
+              <div key={p.text} className="sub-modal-perk">
+                <span style={{fontSize:16,flexShrink:0}}>{p.icon}</span>
+                <span>{p.text}</span>
+              </div>
+            ))}
+          </div>
+          {error && <div style={{color:'#8B2020',fontSize:13,marginBottom:12}}>{error}</div>}
+          <button className="sub-modal-cta" onClick={handleSubscribe} disabled={loading}>
+            {loading ? 'Redirecting to checkout…' : user ? `Subscribe for ${billingPeriod === 'annual' ? '$99.99/year' : '$9.99/month'} →` : 'Sign up to subscribe →'}
+          </button>
+          <div className="sub-modal-note">Secure payment via Stripe · Cancel anytime</div>
+          {user && <RestorePurchaseButton user={user} onSuccess={onSuccess} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UnlockModal({ recipe, onClose, onSignIn }) {
+  return (
+    <div className="unlock-modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="unlock-modal">
+        <div className="unlock-modal-banner">
+          <button className="unlock-modal-close" onClick={onClose}>✕</button>
+          <div className="unlock-modal-recipe">
+            <div className="unlock-modal-recipe-emoji">{recipe.emoji}</div>
+            <div className="unlock-modal-recipe-title">{recipe.title}</div>
+            <div className="unlock-modal-recipe-sub">{recipe.subtitle}</div>
+          </div>
+        </div>
+        <div className="unlock-modal-body">
+          <div className="unlock-modal-heading">Create a free account to unlock this recipe</div>
+          <p className="unlock-modal-text">nuri. is free to join. Sign up to get full access to every recipe, save your favourites, and build your grocery list.</p>
+          <div className="unlock-modal-perks">
+            {[
+              { icon:'🩺', text:'Recipes by verified registered dietitians' },
+              { icon:'🔬', text:'Condition-specific: PCOS / PMOS, endo, hormones & more' },
+              { icon:'🛒', text:'Auto grocery lists from your saved recipes' },
+              { icon:'❤️', text:'Save recipes and build your personal recipe book' },
+            ].map(p => (
+              <div key={p.text} className="unlock-perk">
+                <span className="unlock-perk-icon">{p.icon}</span>
+                <span>{p.text}</span>
+              </div>
+            ))}
+          </div>
+          <button className="unlock-modal-cta" onClick={() => { onClose(); onSignIn('signup'); }}>Create free account →</button>
+          <div className="unlock-modal-signin">
+            Already have an account?{' '}
+            <button className="unlock-modal-signin-btn" onClick={() => { onClose(); onSignIn('signin'); }}>Sign in</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function RecipeCard({ recipe, onRecipeClick, onDieticianClick, isSaved, onToggleSave, isLocked, onSignIn, isPremiumLocked, onSubscribe, supaDietitians, supaAllDietitians }) {
   const _dId = parseInt(recipe.dieticianId, 10);
@@ -1250,6 +1537,42 @@ function WelcomeBack({ userName, onContinue }) {
       <button className="onboarding-btn" onClick={onContinue}>
         Take me in →
       </button>
+    </div>
+  );
+}
+
+function WelcomeToPremium({ onContinue }) {
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--cream)',padding:'24px'}}>
+      <div style={{maxWidth:480,width:'100%',textAlign:'center'}}>
+        <div style={{fontFamily:'var(--font-logo)',fontSize:40,fontStyle:'italic',fontWeight:600,color:'var(--green-dark)',display:'inline-flex',alignItems:'flex-end',marginBottom:8}}>
+          nuri<span style={{display:'inline-block',width:9,height:9,borderRadius:'50%',background:'var(--rose)',marginLeft:2,marginBottom:3}} />
+        </div>
+        <div style={{fontSize:12,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--tan)',marginBottom:24}}>Premium</div>
+        <h1 style={{fontFamily:'var(--font-serif)',fontSize:30,fontStyle:'italic',fontWeight:600,color:'var(--text)',lineHeight:1.2,marginBottom:12}}>
+          Welcome to Nuri Premium
+        </h1>
+        <p style={{fontSize:14,color:'var(--text-mid)',lineHeight:1.7,marginBottom:32,maxWidth:380,margin:'0 auto 32px'}}>
+          Everything you need to eat well for your body, now unlocked.
+        </p>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:32,textAlign:'left'}}>
+          {[
+            { icon:'📅', title:'Weekly meal plan', desc:'Built around your condition. Swap any recipe.' },
+            { icon:'🛒', title:'Grocery list', desc:'Generated from your plan, sorted by category.' },
+            { icon:'📓', title:'Symptom log', desc:'Track how food makes you feel over time.' },
+            { icon:'📖', title:'Recipe book', desc:'Download a printable book of your favourites.' },
+          ].map(f => (
+            <div key={f.title} style={{background:'var(--white)',borderRadius:12,padding:'16px',boxShadow:'var(--shadow)'}}>
+              <div style={{fontSize:24,marginBottom:6}}>{f.icon}</div>
+              <div style={{fontFamily:'var(--font-serif)',fontSize:14,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:4}}>{f.title}</div>
+              <div style={{fontSize:12,color:'var(--text-mid)',lineHeight:1.5}}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
+        <button onClick={onContinue} style={{display:'block',width:'100%',maxWidth:340,margin:'0 auto',padding:'14px 0',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:15,fontWeight:600,cursor:'pointer'}}>
+          Let me in 🌿
+        </button>
+      </div>
     </div>
   );
 }
@@ -1674,7 +1997,6 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
   const [communityPhotos, setCommunityPhotos] = useState([]);
   const isAdmin = user?.email === 'nuriteam@nuri.com' || user?.role === 'admin';
 
-
   useEffect(() => {
     // Load all community photos for this recipe from Supabase
     window._supa.from('tried').select('user_id, photo_url').eq('recipe_id', recipe.id).not('photo_url', 'is', null)
@@ -1720,34 +2042,7 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
                 <span className="detail-meta-label">{lbl}</span>
               </div>
             ))}
-          </div>
-          {(() => {
-            const m = macros;
-            if (macrosLoading) return (
-              <div style={{ margin:'12px 0', padding:'12px 14px', background:'var(--warm-beige)', borderRadius:'var(--radius-sm)', display:'flex', alignItems:'center', gap:10 }}>
-                <div style={{ width:16, height:16, border:'2px solid var(--tan)', borderTopColor:'transparent', borderRadius:'50%', animation:'spin 0.8s linear infinite', flexShrink:0 }} />
-                <span style={{ fontSize:12, color:'var(--text-light)' }}>Calculating nutrition…</span>
-              </div>
-            );
-            if (!m) return null;
-            const total = m.protein * 4 + m.carbs * 4 + m.fat * 9;
-            const pp = Math.round((m.protein * 4 / total) * 100);
-            const cp = Math.round((m.carbs * 4 / total) * 100);
-            const fp = 100 - pp - cp;
-            return (
-              <div style={{ marginBottom:16 }}>
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-                  <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--tan)' }}>Nutrition per serving</div>
-                  <div style={{ fontSize:10, color:'var(--text-light)', fontStyle:'italic' }}>AI-estimated</div>
-                </div>
-                <div className="macro-grid">
-                  {[{val:m.kcal,lbl:'kcal'},{val:`${m.protein}g`,lbl:'protein'},{val:`${m.carbs}g`,lbl:'carbs'},{val:`${m.fat}g`,lbl:'fat'}].map(({val,lbl}) => (
-                    <div key={lbl} className="macro-cell"><span className="macro-cell-val">{val}</span><span className="macro-cell-label">{lbl}</span></div>
-                  ))}
-                </div>
-            );
-          })()}
-          <div className="detail-section">
+          </div>          <div className="detail-section">
             <div className="section-script">Ingredients</div>
             <ul className="ingredient-list">
               {recipe.ingredients.map((ing, i) => <li key={i} className="ingredient-item">{ing}</li>)}
@@ -3953,10 +4248,10 @@ function App() {
         const profile = await loadUserData(u.id);
         setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
         if (profile?.health_goals?.length) {
-          const welcomedKey = 'nuri_premium_welcomed_' + u.id;
-          const subRes = await db.from('subscriptions').select('status').eq('user_id', u.id).maybeSingle();
-          if (subRes?.data?.status === 'active' && !localStorage.getItem(welcomedKey)) {
-            localStorage.setItem(welcomedKey, 'true');
+          const _pwk = 'nuri_pw_' + uid;
+          const { data: _sub } = await db.from('subscriptions').select('status').eq('user_id', uid).maybeSingle();
+          if (_sub?.status === 'active' && !localStorage.getItem(_pwk)) {
+            localStorage.setItem(_pwk, '1');
             setScreen('welcome_premium');
           } else {
             setScreen('app');
@@ -4223,6 +4518,7 @@ function App() {
     </>
   );
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} userName={user?.name || user?.email} />;
+  if (screen === 'welcome_premium') return <WelcomeToPremium onContinue={() => setScreen('app')} />;
   if (screen === 'welcome_new') return <ShareNuriScreen userName={user?.name || user?.email} onContinue={() => setScreen('app')} />;
 
 
