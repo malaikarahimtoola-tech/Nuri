@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -4249,8 +4248,7 @@ function App() {
         setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
         if (profile?.health_goals?.length) {
           const _pwk = 'nuri_pw_' + uid;
-          const { data: _sub } = await db.from('subscriptions').select('status').eq('user_id', uid).maybeSingle();
-          if (_sub?.status === 'active' && !localStorage.getItem(_pwk)) {
+          if (!localStorage.getItem(_pwk) && isPremium) {
             localStorage.setItem(_pwk, '1');
             setScreen('welcome_premium');
           } else {
