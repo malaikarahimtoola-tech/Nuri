@@ -3358,6 +3358,58 @@ function MySubscription({ user, isPremium, onSubscribe }) {
   );
 }
 
+function ReferralCard({ user }) {
+  const [code, setCode] = React.useState(null);
+  const [copied, setCopied] = React.useState(false);
+  const db = window._supa;
+
+  React.useEffect(() => {
+    if (!user) return;
+    db.from('profiles').select('referral_code').eq('id', user.id).single().then(({ data }) => {
+      if (data?.referral_code) {
+        setCode(data.referral_code);
+      } else {
+        // Generate a new code
+        const newCode = user.id.split('-')[0].toUpperCase();
+        db.from('profiles').update({ referral_code: newCode }).eq('id', user.id).then(() => setCode(newCode));
+      }
+    });
+  }, [user]);
+
+  const referralLink = code ? 'https://www.nurirecipes.com?ref=' + code : null;
+
+  const handleShare = () => {
+    const msg = 'I found Nuri - recipes built by registered dietitians for PCOS, endo and hormonal conditions. Use my link to sign up and we both get a free month: ' + referralLink;
+    if (navigator.share) {
+      navigator.share({ title: 'Nuri', text: msg, url: referralLink });
+    } else {
+      navigator.clipboard?.writeText(referralLink).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+    }
+  };
+
+  if (!referralLink) return null;
+
+  return (
+    <div className="card-block" style={{background:'linear-gradient(135deg, var(--warm-beige), var(--cream))'}}>
+      <div className="card-block-title"><span>🌿 Refer a Friend</span></div>
+      <p style={{fontSize:13,color:'var(--text-mid)',lineHeight:1.6,marginBottom:12}}>
+        Share Nuri with a friend and you both get <strong>1 month free</strong>. No catch.
+      </p>
+      <div style={{background:'var(--white)',borderRadius:10,padding:'10px 14px',fontSize:12,color:'var(--text-light)',fontFamily:'var(--font-body)',marginBottom:12,wordBreak:'break-all',border:'1px solid var(--border)'}}>
+        {referralLink}
+      </div>
+      <div style={{display:'flex',gap:8}}>
+        <button onClick={handleShare} style={{flex:1,padding:'10px 0',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+          Share link 🌿
+        </button>
+        <button onClick={() => { navigator.clipboard?.writeText(referralLink); setCopied(true); setTimeout(() => setCopied(false), 2000); }} style={{padding:'10px 16px',background:'transparent',color:'var(--brown)',border:'1.5px solid var(--brown)',borderRadius:50,fontFamily:'var(--font-body)',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+          {copied ? 'Copied!' : 'Copy'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician, supaDietitians, user, isPremium, onSubscribe, supaAllDietitians }) {
   const goals = HEALTH_GOALS.filter(g => healthGoals.includes(g.id));
   const allKnownDs = [
@@ -3386,6 +3438,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
           </div>
 
           <MySubscription user={user} isPremium={isPremium} onSubscribe={onSubscribe} />
+          <ReferralCard user={user} />
 
           <div className="card-block">
             <div className="card-block-title">
@@ -4154,7 +4207,7 @@ function App() {
 
   const loadUserData = async (uid) => {
     const [{ data: profile }, { data: savesData }, { data: followsData }, { data: triedData }, { data: subData }] = await Promise.all([
-      db.from('profiles').select('name, health_goals, rd_mode, rd_dietitian_id, dietary_preferences').eq('id', uid).single(),
+      db.from('profiles').select('name, health_goals, rd_mode, rd_dietitian_id, dietary_preferences, referral_code').eq('id', uid).single(),
       db.from('saves').select('recipe_id').eq('user_id', uid),
       db.from('follows').select('dietitian_id').eq('user_id', uid),
       db.from('tried').select('recipe_id, photo_url').eq('user_id', uid),
@@ -4178,6 +4231,12 @@ function App() {
     }
     if (profile?.health_goals?.length) setHealthGoals(profile.health_goals);
     if (profile?.dietary_preferences?.length) setDietaryPreferences(profile.dietary_preferences);
+
+    // Generate referral code if user doesn't have one
+    if (profile && !profile.referral_code) {
+      const code = uid.split('-')[0].toUpperCase();
+      await db.from('profiles').update({ referral_code: code }).eq('id', uid);
+    }
     if (profile?.rd_mode != null) setIsRD(profile.rd_mode);
     if (profile?.rd_dietitian_id) setRdDieticianId(profile.rd_dietitian_id);
     if (savesData) setSaved(new Set(savesData.map(r => r.recipe_id)));
@@ -4197,6 +4256,13 @@ function App() {
       const params = new URLSearchParams(window.location.search);
       const justSubscribed = params.get('subscribed') === 'true';
       if (justSubscribed) {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+
+      // Detect referral code in URL and store it for use on signup
+      const refCode = params.get('ref');
+      if (refCode) {
+        localStorage.setItem('nuri_ref_code', refCode);
         window.history.replaceState({}, '', window.location.pathname);
       }
 
@@ -4378,6 +4444,54 @@ function App() {
       window._ph.identify(u.id, { email: u.email, name: u.name });
       window._ph.capture('signed_in');
     }
+
+    // Process referral if this is a new signup
+    const refCode = localStorage.getItem('nuri_ref_code');
+    if (refCode) {
+      localStorage.removeItem('nuri_ref_code');
+      try {
+        // Find referrer by their referral_code
+        const { data: referrer } = await db.from('profiles').select('id').eq('referral_code', refCode).maybeSingle();
+        if (referrer && referrer.id !== u.id) {
+          const oneMonthFromNow = new Date();
+          oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+          const periodEnd = oneMonthFromNow.toISOString();
+
+          // Log the referral
+          await db.from('referrals').insert({
+            referrer_id: referrer.id,
+            referred_email: u.email,
+            referred_user_id: u.id,
+            rewarded: true,
+          });
+
+          // Give new user 1 free month
+          await db.from('subscriptions').upsert({
+            user_id: u.id,
+            stripe_price_id: 'price_1TeJRT1L75noll9TSVxVWbPt',
+            status: 'active',
+            current_period_end: periodEnd,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' });
+
+          // Give referrer 1 free month (extend or create)
+          const { data: referrerSub } = await db.from('subscriptions').select('current_period_end').eq('user_id', referrer.id).maybeSingle();
+          const baseDate = referrerSub?.current_period_end ? new Date(referrerSub.current_period_end) : new Date();
+          if (baseDate < new Date()) baseDate.setTime(new Date().getTime()); // if expired, start from now
+          baseDate.setMonth(baseDate.getMonth() + 1);
+          await db.from('subscriptions').upsert({
+            user_id: referrer.id,
+            stripe_price_id: 'price_1TeJRT1L75noll9TSVxVWbPt',
+            status: 'active',
+            current_period_end: baseDate.toISOString(),
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' });
+
+          console.log('Referral processed for', u.email, 'referred by', refCode);
+        }
+      } catch(e) { console.error('Referral processing error:', e); }
+    }
+
     const profile = await loadUserData(u.id);
     // If user already went through onboarding before signing up, persist those goals
     if (window._pendingGoals?.length) {
