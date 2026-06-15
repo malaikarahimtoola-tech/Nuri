@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -4246,17 +4247,7 @@ function App() {
 
         const profile = await loadUserData(u.id);
         setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
-        if (profile?.health_goals?.length) {
-          const _pwk = 'nuri_pw_' + uid;
-          if (!localStorage.getItem(_pwk) && isPremium) {
-            localStorage.setItem(_pwk, '1');
-            setScreen('welcome_premium');
-          } else {
-            setScreen('app');
-          }
-        } else {
-          setScreen('onboarding');
-        }
+        setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
       } else {
         setScreen('welcome');
       }
