@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -707,6 +706,17 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── MACRO BAR ──────────────────────────────────────────────── */
+.macro-bar { display:flex; gap:0; border-radius:var(--radius-sm); overflow:hidden; height:6px; margin-bottom:6px; }
+.macro-seg { height:100%; transition:width 0.4s ease; }
+.macro-legend { display:flex; gap:12px; flex-wrap:wrap; }
+.macro-item { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--text-mid); }
+.macro-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.macro-val { font-weight:600; color:var(--text); }
+.macro-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:12px 0; }
+.macro-cell { background:var(--warm-beige); border-radius:var(--radius-sm); padding:10px 8px; text-align:center; }
+.macro-cell-val { font-family:var(--font-serif); font-size:20px; font-weight:600; color:var(--text); display:block; }
+.macro-cell-label { font-size:10px; color:var(--text-light); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-top:2px; }
 .macro-card-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
 .macro-pill-sm { font-size:10px; padding:2px 7px; border-radius:50px; font-weight:600; }
 
@@ -1015,6 +1025,61 @@ const CP = 'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a101
 
 // ── AI MACRO ESTIMATION ───────────────────────────────────────
 // Cache lives in localStorage under 'nuri_macros_v1'
+function getMacroCache() {
+  try { return JSON.parse(localStorage.getItem('nuri_macros_v1') || '{}'); } catch { return {}; }
+}
+function setMacroCache(id, data) {
+  try {
+    const c = getMacroCache();
+    c[id] = data;
+    localStorage.setItem('nuri_macros_v1', JSON.stringify(c));
+  } catch {}
+}
+
+async function estimateMacros(recipe) {
+  const cached = getMacroCache()[recipe.id];
+  if (cached) return cached;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        system: 'You are a nutrition expert. Respond ONLY with a JSON object, no markdown, no explanation.',
+        messages: [{
+          role: 'user',
+          content: `Estimate nutrition per serving for this recipe.\nTitle: ${recipe.title}\nServings: ${recipe.servings}\nIngredients:\n${recipe.ingredients.join('\n')}\n\nRespond with ONLY this JSON (integers only): {"kcal":0,"protein":0,"carbs":0,"fat":0}`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const macros = JSON.parse(clean);
+    // Validate shape
+    if (typeof macros.kcal === 'number') {
+      setMacroCache(recipe.id, macros);
+      return macros;
+    }
+  } catch (e) {
+    console.warn('Macro estimation failed for recipe', recipe.id, e);
+  }
+  return null;
+}
+
+// Hook: returns { macros, loading } for a given recipe
+function useMacros(recipe) {
+  const [macros, setMacros] = React.useState(() => getMacroCache()[recipe?.id] || null);
+  const [loading, setLoading] = React.useState(!getMacroCache()[recipe?.id]);
+  useEffect(() => {
+    if (!recipe) return;
+    if (getMacroCache()[recipe.id]) { setMacros(getMacroCache()[recipe.id]); setLoading(false); return; }
+    setLoading(true);
+    estimateMacros(recipe).then(m => { setMacros(m); setLoading(false); });
+  }, [recipe?.id]);
+  return { macros, loading };
+}
 
 const RECIPES = [
   { id:1,  dieticianId:3, title:'Pumpkin, Orange & Zaatar Soup', subtitle:'Middle Eastern twist on a winter warmer', emoji:'🎃', photo:`${CP}6955a58e920e3020578746fb/1770821699612/soup+2.jpg?format=800w`, healthLabels:['pcos'], prepTime:'15 min', cookTime:'75 min', servings:4, ingredients:['1 pumpkin, cut into large chunks','2 tbsp zaatar','1 white onion, peeled and diced','1 tsp sumac','Juice of 2 oranges','500 ml vegetable stock','2 tbsp cream or crème fraîche','Olive oil, salt & pepper'], instructions:['Preheat oven to 185°C.','Cut pumpkin into roughly 8 large pieces. Lay on a baking tray, drizzle with olive oil, zaatar, salt and pepper.','Roast for 45–60 minutes until flesh is soft.','Remove seeds and peel from the pumpkin.','Heat oil in a pan and fry the onion until soft. Add sumac and a pinch of salt.','Add pumpkin and 500 ml stock. Pour in orange juice and mix.','Bring to the boil, then simmer for 10 minutes.','Blend with a hand blender. Stir in cream or crème fraîche.'], note:'Keeps in the fridge for 2 days or freeze for up to 2 months. Reheat well before serving.' },
@@ -1541,42 +1606,6 @@ function WelcomeBack({ userName, onContinue }) {
   );
 }
 
-function WelcomeToPremium({ onContinue }) {
-  return (
-    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--cream)',padding:'24px'}}>
-      <div style={{maxWidth:480,width:'100%',textAlign:'center'}}>
-        <div style={{fontFamily:'var(--font-logo)',fontSize:40,fontStyle:'italic',fontWeight:600,color:'var(--green-dark)',display:'inline-flex',alignItems:'flex-end',marginBottom:8}}>
-          nuri<span style={{display:'inline-block',width:9,height:9,borderRadius:'50%',background:'var(--rose)',marginLeft:2,marginBottom:3}} />
-        </div>
-        <div style={{fontSize:12,fontWeight:600,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--tan)',marginBottom:24}}>Premium</div>
-        <h1 style={{fontFamily:'var(--font-serif)',fontSize:30,fontStyle:'italic',fontWeight:600,color:'var(--text)',lineHeight:1.2,marginBottom:12}}>
-          Welcome to Nuri Premium
-        </h1>
-        <p style={{fontSize:14,color:'var(--text-mid)',lineHeight:1.7,marginBottom:32,maxWidth:380,margin:'0 auto 32px'}}>
-          Everything you need to eat well for your body, now unlocked.
-        </p>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:32,textAlign:'left'}}>
-          {[
-            { icon:'📅', title:'Weekly meal plan', desc:'Built around your condition. Swap any recipe.' },
-            { icon:'🛒', title:'Grocery list', desc:'Generated from your plan, sorted by category.' },
-            { icon:'📓', title:'Symptom log', desc:'Track how food makes you feel over time.' },
-            { icon:'📖', title:'Recipe book', desc:'Download a printable book of your favourites.' },
-          ].map(f => (
-            <div key={f.title} style={{background:'var(--white)',borderRadius:12,padding:'16px',boxShadow:'var(--shadow)'}}>
-              <div style={{fontSize:24,marginBottom:6}}>{f.icon}</div>
-              <div style={{fontFamily:'var(--font-serif)',fontSize:14,fontStyle:'italic',fontWeight:600,color:'var(--text)',marginBottom:4}}>{f.title}</div>
-              <div style={{fontSize:12,color:'var(--text-mid)',lineHeight:1.5}}>{f.desc}</div>
-            </div>
-          ))}
-        </div>
-        <button onClick={onContinue} style={{display:'block',width:'100%',maxWidth:340,margin:'0 auto',padding:'14px 0',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:15,fontWeight:600,cursor:'pointer'}}>
-          Let me in 🌿
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function ShareNuriScreen({ userName, onContinue }) {
   const firstName = userName ? userName.split('@')[0].split(' ')[0] : 'there';
   const shareUrl = 'https://www.nurirecipes.com';
@@ -1996,6 +2025,7 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
   const [showMadeIt, setShowMadeIt] = useState(false);
   const [communityPhotos, setCommunityPhotos] = useState([]);
   const isAdmin = user?.email === 'nuriteam@nuri.com' || user?.role === 'admin';
+  const { macros, loading: macrosLoading } = useMacros(recipe);
 
   useEffect(() => {
     // Load all community photos for this recipe from Supabase
@@ -2042,7 +2072,45 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
                 <span className="detail-meta-label">{lbl}</span>
               </div>
             ))}
-          </div>          <div className="detail-section">
+          </div>
+          {(() => {
+            const m = macros;
+            if (macrosLoading) return (
+              <div style={{ margin:'12px 0', padding:'12px 14px', background:'var(--warm-beige)', borderRadius:'var(--radius-sm)', display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ width:16, height:16, border:'2px solid var(--tan)', borderTopColor:'transparent', borderRadius:'50%', animation:'spin 0.8s linear infinite', flexShrink:0 }} />
+                <span style={{ fontSize:12, color:'var(--text-light)' }}>Calculating nutrition…</span>
+              </div>
+            );
+            if (!m) return null;
+            const total = m.protein * 4 + m.carbs * 4 + m.fat * 9;
+            const pp = Math.round((m.protein * 4 / total) * 100);
+            const cp = Math.round((m.carbs * 4 / total) * 100);
+            const fp = 100 - pp - cp;
+            return (
+              <div style={{ marginBottom:16 }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+                  <div style={{ fontSize:11, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--tan)' }}>Nutrition per serving</div>
+                  <div style={{ fontSize:10, color:'var(--text-light)', fontStyle:'italic' }}>AI-estimated</div>
+                </div>
+                <div className="macro-grid">
+                  {[{val:m.kcal,lbl:'kcal'},{val:`${m.protein}g`,lbl:'protein'},{val:`${m.carbs}g`,lbl:'carbs'},{val:`${m.fat}g`,lbl:'fat'}].map(({val,lbl}) => (
+                    <div key={lbl} className="macro-cell"><span className="macro-cell-val">{val}</span><span className="macro-cell-label">{lbl}</span></div>
+                  ))}
+                </div>
+                <div className="macro-bar">
+                  <div className="macro-seg" style={{ width:`${pp}%`, background:'#7A9E7E' }} title={`Protein ${pp}%`} />
+                  <div className="macro-seg" style={{ width:`${cp}%`, background:'#C4A265' }} title={`Carbs ${cp}%`} />
+                  <div className="macro-seg" style={{ width:`${fp}%`, background:'#C47A7A' }} title={`Fat ${fp}%`} />
+                </div>
+                <div className="macro-legend">
+                  {[{color:'#7A9E7E',label:'Protein'},{color:'#C4A265',label:'Carbs'},{color:'#C47A7A',label:'Fat'}].map(({color,label}) => (
+                    <div key={label} className="macro-item"><div className="macro-dot" style={{background:color}} />{label}</div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+          <div className="detail-section">
             <div className="section-script">Ingredients</div>
             <ul className="ingredient-list">
               {recipe.ingredients.map((ing, i) => <li key={i} className="ingredient-item">{ing}</li>)}
@@ -4507,7 +4575,6 @@ function App() {
     </>
   );
   if (screen === 'onboarding') return <Onboarding onComplete={completeOnboarding} userName={user?.name || user?.email} />;
-  if (screen === 'welcome_premium') return <WelcomeToPremium onContinue={() => setScreen('app')} />;
   if (screen === 'welcome_new') return <ShareNuriScreen userName={user?.name || user?.email} onContinue={() => setScreen('app')} />;
 
 
