@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -4315,6 +4316,7 @@ function App() {
 
         const profile = await loadUserData(u.id);
         setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
+        if (window._ph) window._ph.capture('app_opened', { source: 'session_restore' });
         setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
       } else {
         setScreen('welcome');
@@ -4426,6 +4428,7 @@ function App() {
         const u = session.user;
         const profile = await loadUserData(u.id);
         setUser({ id: u.id, email: u.email, name: profile?.name || u.email.split('@')[0] });
+        if (window._ph) window._ph.capture('app_opened', { source: 'sign_in' });
         setScreen(profile?.health_goals?.length ? 'app' : 'onboarding');
       }
     });
@@ -4533,6 +4536,7 @@ function App() {
     const has = tried.has(id);
     setTried(p => { const n = new Set(p); has ? n.delete(id) : n.add(id); return n; });
     if (photo) setTriedPhotos(p => ({ ...p, [id]: photo }));
+    if (!has && window._ph) window._ph.capture('recipe_tried', { recipe_id: id });
     if (user) {
       if (has) await db.from('tried').delete().eq('user_id', user.id).eq('recipe_id', id);
       else await db.from('tried').upsert({ user_id: user.id, recipe_id: id, photo_url: photo || null }, { onConflict: 'user_id,recipe_id' });
@@ -4593,7 +4597,7 @@ function App() {
       <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
       <RecipeDetail recipe={view.data} onBack={goBack} onDieticianClick={d => navigate('profile', d)} followed={followed.has(view.data.dieticianId)} onToggleFollow={toggleFollow} isSaved={saved.has(view.data.id)} onToggleSave={toggleSave} tried={tried} onToggleTried={toggleTried} triedPhotos={triedPhotos} comments={comments} onAddComment={addComment} user={user} supaAllDietitians={supaAllDietitians} />
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
-      {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
+      {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => { setIsPremium(true); if (window._ph) window._ph.capture('subscription_completed'); }} />}
     </>
   );
 
@@ -4602,7 +4606,7 @@ function App() {
       <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
       <ProfilePage dietician={view.data} onBack={goBack} onRecipeClick={r => navigate('recipe', r)} followed={followed.has(view.data.id)} onToggleFollow={toggleFollow} saved={saved} onToggleSave={toggleSave} user={user} onSignIn={(mode='signup') => setShowAuthModal(mode)} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaRecipes={supaRecipes} supaDietitians={supaDietitians} premiumSettings={premiumSettings} supaAllDietitians={supaAllDietitians} newSupaRecipes={newSupaRecipes} />
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
-      {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
+      {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => { setIsPremium(true); if (window._ph) window._ph.capture('subscription_completed'); }} />}
     </>
   );
 
@@ -4619,7 +4623,7 @@ function App() {
       <button className="feedback-btn" onClick={() => setShowFeedback(true)}>✉️ Feedback</button>
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} user={user} />}
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuth={handleAuth} defaultMode={showAuthModal} />}
-      {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => setIsPremium(true)} />}
+      {showSubModal && <SubscriptionModal onClose={() => setShowSubModal(false)} user={user} onSignIn={m => { setShowSubModal(false); setShowAuthModal(m); }} onSuccess={() => { setIsPremium(true); if (window._ph) window._ph.capture('subscription_completed'); }} />}
       {showLegalModal && <LegalModal type={showLegalModal} onClose={() => setShowLegalModal(false)} />}
     </>
   );
