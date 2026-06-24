@@ -2117,7 +2117,7 @@ function RecipeDetail({ recipe, onBack, onDieticianClick, followed, onToggleFoll
             </ul>
           </div>
           <div className="dietician-card-strip" style={{ marginTop: 16 }} onClick={() => onDieticianClick(d)}>
-            <Avatar initials={d.initials} color={d.avatarColor} cls="avatar-lg" />
+            <Avatar initials={d.initials} color={d.avatarColor} cls="avatar-lg" photo={d.photo} />
             <div style={{ flex: 1 }}>
               <div className="strip-name">{d.name}</div>
               <div className="strip-creds">{d.credentials} · {d.specialty}</div>
