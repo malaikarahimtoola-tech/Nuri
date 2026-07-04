@@ -584,7 +584,7 @@ function Dashboard({ user, onSignOut }) {
     if (rdData) setRd(rdData);
 
     // Load recipes from Supabase for this RD
-    const { data: recipesData } = await db.from('recipes').select('id, title, emoji, health_labels').eq('dietitian_id', rdId).eq('is_draft', false);
+    const { data: recipesData } = await db.from('recipes').select('id, title, emoji, health_labels').eq('dietitian_id', rdId);
     const recipes = recipesData || [];
     setMyRecipes(recipes);
     const recipeIds = recipes.map(r => r.id);
@@ -735,7 +735,7 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
   const canSaveDraft = title.trim().length > 0;
   const initials = user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
 
-  const buildRecipeData = (isDraft) => ({
+  const buildRecipeData = () => ({
     dietitian_id: parseInt(user.dietitianId, 10) || null,
     title: title.trim(),
     subtitle: subtitle.trim(),
@@ -747,19 +747,17 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
     ingredients: ingredients.filter(Boolean),
     instructions: instructions.filter(Boolean),
     note: note,
-    is_draft: isDraft,
-    is_published: false,
   });
 
   const handleSaveDraft = async () => {
     setSavingDraft(true); setDraftMsg('');
     try {
-      const recipeData = buildRecipeData(true);
+      const draftData = buildRecipeData();
       if (draftId) {
-        const { error } = await db.from('recipes').update(recipeData).eq('id', draftId);
+        const { error } = await db.from('recipe_drafts').update(draftData).eq('id', draftId);
         if (error) throw error;
       } else {
-        const { data: insertedData, error } = await db.from('recipes').insert(recipeData).select();
+        const { data: insertedData, error } = await db.from('recipe_drafts').insert(draftData).select();
         if (error) throw error;
         if (insertedData?.[0]?.id) setDraftId(insertedData[0].id);
       }
@@ -773,17 +771,16 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
   const handlePublish = async () => {
     setSubmitting(true);
     try {
-      const recipeData = buildRecipeData(false);
-      let error;
-      if (draftId) {
-        ({ error } = await db.from('recipes').update(recipeData).eq('id', draftId));
-      } else {
-        ({ error } = await db.from('recipes').insert(recipeData).select());
-      }
+      const recipeData = { ...buildRecipeData(), is_published: false };
+      const { error } = await db.from('recipes').insert(recipeData).select();
       if (error) {
         alert('Error saving recipe: ' + error.message + '\nCode: ' + error.code);
         setSubmitting(false);
         return;
+      }
+      // If this recipe started life as a draft, remove it from recipe_drafts now that it's a real recipe.
+      if (draftId) {
+        await db.from('recipe_drafts').delete().eq('id', draftId);
       }
       setSubmitting(false);
       onPublish();
@@ -1042,16 +1039,21 @@ function EditMyRecipes({ user }) {
 
   useEffect(() => {
     if (!user.dietitianId) return;
-    db.from('recipes').select('*').eq('dietitian_id', user.dietitianId).order('id').then(({ data }) => {
-      if (data) setRecipes(data);
+    Promise.all([
+      db.from('recipes').select('*').eq('dietitian_id', user.dietitianId).order('id'),
+      db.from('recipe_drafts').select('*').eq('dietitian_id', user.dietitianId).order('id'),
+    ]).then(([recipesRes, draftsRes]) => {
+      const recipeRows = (recipesRes.data || []).map(r => ({ ...r, _source: 'recipe' }));
+      const draftRows = (draftsRes.data || []).map(r => ({ ...r, _source: 'draft' }));
+      setRecipes([...draftRows, ...recipeRows]);
     });
   }, [user.dietitianId]);
 
   const handleSave = async () => {
     setSaving(true); setMsg('');
     try {
-      console.log('Saving recipe:', selected.id, 'photo:', selected.photo);
-      const { data, error } = await db.from('recipes').update({
+      const table = selected._source === 'draft' ? 'recipe_drafts' : 'recipes';
+      const payload = {
         title: selected.title,
         subtitle: selected.subtitle,
         note: selected.note,
@@ -1062,11 +1064,10 @@ function EditMyRecipes({ user }) {
         ingredients: selected.ingredients,
         instructions: selected.instructions,
         photo: selected.photo,
-        is_draft: selected.is_draft,
-      }).eq('id', selected.id).select();
-      console.log('Save result:', data, error);
+      };
+      const { data, error } = await db.from(table).update(payload).eq('id', selected.id).select();
       if (error) throw error;
-      setRecipes(rs => rs.map(r => r.id === selected.id ? selected : r));
+      setRecipes(rs => rs.map(r => (r.id === selected.id && r._source === selected._source) ? selected : r));
       setMsg('Saved ✓');
     } catch(e) { setMsg('Error: ' + e.message); console.error('Save error:', e); }
     setSaving(false);
@@ -1076,7 +1077,8 @@ function EditMyRecipes({ user }) {
     const file = e.target.files?.[0]; if (!file) return;
     setUploading(true); setMsg('');
     try {
-      const url = await uploadToStorage('recipe-images', `recipe-${selected.id}-${Date.now()}`, file);
+      const prefix = selected._source === 'draft' ? 'draft' : 'recipe';
+      const url = await uploadToStorage('recipe-images', `${prefix}-${selected.id}-${Date.now()}`, file);
       setSelected(s => ({ ...s, photo: url }));
       setMsg('Photo uploaded ✓ — click Save to apply');
     } catch(e) { setMsg('Upload failed: ' + e.message); }
@@ -1086,17 +1088,23 @@ function EditMyRecipes({ user }) {
   const handleSubmitForReview = async () => {
     setSaving(true); setMsg('');
     try {
-      const { error } = await db.from('recipes').update({ is_draft: false }).eq('id', selected.id);
-      if (error) throw error;
-      const updated = { ...selected, is_draft: false };
-      setSelected(updated);
-      setRecipes(rs => rs.map(r => r.id === selected.id ? updated : r));
+      const { dietitian_id, title, subtitle, emoji, health_labels, prep_time, cook_time, servings, ingredients, instructions, note, photo } = selected;
+      const { data: insertedData, error: insertError } = await db.from('recipes').insert({
+        dietitian_id, title, subtitle, emoji, health_labels, prep_time, cook_time, servings, ingredients, instructions, note, photo,
+        is_published: false,
+      }).select();
+      if (insertError) throw insertError;
+      const { error: deleteError } = await db.from('recipe_drafts').delete().eq('id', selected.id);
+      if (deleteError) throw deleteError;
+      const newRecipe = { ...insertedData[0], _source: 'recipe' };
+      setRecipes(rs => [newRecipe, ...rs.filter(r => !(r.id === selected.id && r._source === 'draft'))]);
+      setSelected(newRecipe);
       setMsg('Submitted for review ✓');
     } catch(e) { setMsg('Error: ' + e.message); }
     setSaving(false);
   };
 
-  const statusOf = (r) => r.is_draft ? { label: 'Draft', cls: 'status-draft' } : r.is_published ? { label: 'Published', cls: 'status-published' } : { label: 'Pending review', cls: 'status-pending' };
+  const statusOf = (r) => r._source === 'draft' ? { label: 'Draft', cls: 'status-draft' } : r.is_published ? { label: 'Published', cls: 'status-published' } : { label: 'Pending review', cls: 'status-pending' };
 
   return (
     <div className="portal-body">
@@ -1116,9 +1124,9 @@ function EditMyRecipes({ user }) {
         <div style={{display:'grid',gridTemplateColumns:selected?'260px 1fr':'repeat(auto-fill,minmax(220px,1fr))',gap:20,alignItems:'start'}}>
           <div style={{background:'var(--white)',borderRadius:'var(--radius)',boxShadow:'var(--shadow)',overflow:'hidden'}}>
             {recipes.map(r => (
-              <div key={r.id} onClick={() => { setSelected({...r}); setMsg(''); }} style={{
+              <div key={`${r._source}-${r.id}`} onClick={() => { setSelected({...r}); setMsg(''); }} style={{
                 padding:'12px 16px',cursor:'pointer',borderBottom:'1px solid var(--border)',
-                background:selected?.id===r.id?'var(--warm-beige)':'transparent',
+                background:(selected?.id===r.id && selected?._source===r._source)?'var(--warm-beige)':'transparent',
                 display:'flex',alignItems:'center',gap:10,
               }}>
                 {r.photo ? <img src={r.photo} style={{width:32,height:32,borderRadius:6,objectFit:'cover',flexShrink:0}} onError={e=>e.target.style.display='none'} /> : <div style={{width:32,height:32,borderRadius:6,background:'var(--warm-beige)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>{r.emoji||'🍽'}</div>}
@@ -1143,7 +1151,7 @@ function EditMyRecipes({ user }) {
                   <button onClick={handleSave} disabled={saving} style={{padding:'8px 18px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer',opacity:saving?0.6:1}}>
                     {saving?'Saving…':'Save'}
                   </button>
-                  {selected.is_draft && (
+                  {selected._source === 'draft' && (
                     <button onClick={handleSubmitForReview} disabled={saving} style={{padding:'8px 18px',background:'var(--green-dark)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer',opacity:saving?0.6:1}}>
                       ✦ Submit for review
                     </button>
