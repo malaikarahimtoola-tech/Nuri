@@ -151,8 +151,12 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .list-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tan); flex-shrink: 0; margin: 0 4px; }
 .remove-btn { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--white); cursor: pointer; color: var(--text-light); font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
 .remove-btn:hover { border-color: #C0392B; color: #C0392B; background: #fff5f5; }
-.add-btn { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--warm-beige); border: 1.5px dashed var(--border); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-mid); cursor: pointer; transition: all 0.18s; font-family: var(--font-body); width: 100%; margin-top: 4px; }
+.add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 14px; background: var(--warm-beige); border: 1.5px dashed var(--border); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-mid); cursor: pointer; transition: all 0.18s; font-family: var(--font-body); flex: 1; margin-top: 4px; }
 .add-btn:hover { border-color: var(--brown); color: var(--brown); background: var(--cream); }
+.add-btn-row { display: flex; gap: 8px; }
+.add-btn-secondary { background: transparent; }
+.list-item-row-heading { margin: 14px 0 8px; }
+.list-heading-input { font-family: var(--font-serif); font-style: italic; font-weight: 600; color: var(--brown); background: var(--warm-beige); border-style: dashed; }
 
 /* ── HEALTH LABELS ── */
 .label-grid { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -243,6 +247,8 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .preview-section-head { font-family: var(--font-serif); font-size: 18px; font-style: italic; color: var(--brown); margin-bottom: 8px; margin-top: 16px; }
 .preview-ing-item { padding: 7px 0; border-bottom: 1px solid var(--warm-beige); font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; }
 .preview-ing-item::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--tan); flex-shrink: 0; }
+.preview-ing-heading { font-family: var(--font-serif); font-style: italic; font-weight: 600; font-size: 14px; color: var(--brown); margin: 14px 0 4px; padding-top: 10px; border-top: 1px dashed var(--border); }
+.preview-ing-heading:first-child { margin-top: 0; padding-top: 0; border-top: none; }
 .preview-step { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
 .preview-step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--warm-beige); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--brown); flex-shrink: 0; margin-top: 1px; }
 .preview-step-text { font-size: 13px; color: var(--text); line-height: 1.5; }
@@ -286,6 +292,10 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .portal-body { max-width: 1100px; margin: 0 auto; padding: 48px 32px 80px; }
 .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
 @media (max-width: 700px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+.status-badge { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 50px; font-size: 10px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+.status-draft { background: var(--warm-beige); color: var(--text-mid); }
+.status-pending { background: #FCEFD9; color: #8A5A00; }
+.status-published { background: #E3EEE5; color: #2F6B45; }
 .stat-tile { background: var(--white); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
 .stat-tile-icon { font-size: 24px; margin-bottom: 10px; }
 .stat-tile-num { font-family: var(--font-serif); font-size: 32px; font-weight: 600; color: var(--text); line-height: 1; margin-bottom: 4px; }
@@ -325,21 +335,30 @@ const { useState, useEffect, useMemo } = React;
 const db = window._supa;
 
 // ── RECIPE STUDIO DATA ────────────────────────────────────────
-const LABEL_MAP = {
-  pcos: { label: 'PCOS', color: '#F2C4CE', text: '#8B3A52' },
-  fertility: { label: 'Fertility', color: '#C8E6C4', text: '#2E6B3E' },
-  hormones: { label: 'Hormones', color: '#F5E6A3', text: '#7A6000' },
-  energy: { label: 'Energy', color: '#FFD9B3', text: '#8B4A00' },
-  period: { label: 'Period Health', color: '#F4C4C4', text: '#8B2020' },
-  gut: { label: 'Gut Health', color: '#C4DEB8', text: '#2E5E1E' },
-  thyroid: { label: 'Thyroid', color: '#B8D4E8', text: '#1E4E6E' },
-  menopause: { label: 'Menopause', color: '#D4B8E8', text: '#4A2E6E' },
-  postpartum: { label: 'Postpartum', color: '#F5E6A3', text: '#6E5000' },
-  endometriosis: { label: 'Endo', color: '#F2C4CE', text: '#6E1E3A' },
-  'high-protein': { label: 'High Protein', color: '#D4C4B0', text: '#4A3020' },
-  'anti-inflammatory': { label: 'Anti-Inflam.', color: '#C4DEB8', text: '#2E5E1E' },
-  'gut-friendly': { label: 'Gut-Friendly', color: '#C8E6C4', text: '#2E6B3E' },
-};
+// Canonical set of Nuri health/condition tags — single source of truth used
+// across the Create Recipe form, the live preview, Dashboard tag pills, and
+// the My Recipes editor, so all three stay in sync.
+const HEALTH_TAGS = [
+  { id:'pcos',                label:'PCOS/PMOS',          icon:'🌸', color:'#F2C4CE', text:'#8B3A52' },
+  { id:'hormones',            label:'Hormones',           icon:'⚖️', color:'#F5E6A3', text:'#7A6000' },
+  { id:'gut',                 label:'Gut',                icon:'🌿', color:'#C4DEB8', text:'#2E5E1E' },
+  { id:'vegetarian',          label:'Vegetarian',         icon:'🥦', color:'#D7E8C8', text:'#3C6B2E' },
+  { id:'endometriosis',       label:'Endometriosis',      icon:'🔴', color:'#F2C4CE', text:'#6E1E3A' },
+  { id:'anti-inflammatory',   label:'Anti-Inflammatory',  icon:'🌾', color:'#C4DEB8', text:'#2E5E1E' },
+  { id:'gluten-free',         label:'Gluten-Free',        icon:'🌾', color:'#EDE0A0', text:'#6E5000' },
+  { id:'dairy-free',          label:'Dairy-Free',         icon:'🥛', color:'#D8E8EE', text:'#265A66' },
+  { id:'high-protein',        label:'High-Protein',       icon:'🥩', color:'#D4C4B0', text:'#4A3020' },
+  { id:'fertility',           label:'Fertility',          icon:'🌱', color:'#C8E6C4', text:'#2E6B3E' },
+  { id:'vegan',               label:'Vegan',              icon:'🌱', color:'#BFE0C0', text:'#2E5E3E' },
+  { id:'insulin-resistance',  label:'Insulin Resistance', icon:'🩸', color:'#E8C8D0', text:'#7A2E42' },
+  { id:'energy',              label:'Energy',             icon:'⚡', color:'#FFD9B3', text:'#8B4A00' },
+  { id:'immune',              label:'Immune',             icon:'🛡', color:'#C8DCE8', text:'#1E4E6E' },
+  { id:'thyroid',             label:'Thyroid',            icon:'🦋', color:'#B8D4E8', text:'#1E4E6E' },
+  { id:'menopause',           label:'Menopause',          icon:'🌙', color:'#D4B8E8', text:'#4A2E6E' },
+  { id:'high-fiber',          label:'High-Fiber',         icon:'🌿', color:'#D9E8C4', text:'#3C5E1E' },
+  { id:'quick-easy',          label:'Quick & Easy',       icon:'⏱', color:'#FFE8B8', text:'#8A5A00' },
+];
+const LABEL_MAP = Object.fromEntries(HEALTH_TAGS.map(t => [t.id, { label: t.label, color: t.color, text: t.text }]));
 
 const GINGHAM_OPTIONS = [
   { id: 'sage',      name: 'Sage',         bg: '#A8C4A8', s: 'rgba(58,107,74,0.32)' },
@@ -418,38 +437,52 @@ function getGinghamStyle(id, size = 26) {
   };
 }
 
-function ListEditor({ items, onChange, placeholder, numbered }) {
+const HEADING_PREFIX = '## ';
+const isHeadingItem = (v) => typeof v === 'string' && v.startsWith(HEADING_PREFIX);
+
+// Renumbers only the non-heading items, so sub-headings don't break step/ingredient counts.
+function itemDisplayIndex(items, idx) {
+  let n = 0;
+  for (let i = 0; i <= idx; i++) { if (!isHeadingItem(items[i])) n++; }
+  return n;
+}
+
+function ListEditor({ items, onChange, placeholder, numbered, allowHeadings }) {
   const update = (i, v) => { const n=[...items]; n[i]=v; onChange(n); };
   const remove = (i) => onChange(items.filter((_,idx)=>idx!==i));
   const add = () => onChange([...items,'']);
+  const addHeading = () => onChange([...items, HEADING_PREFIX]);
   return (
     <div>
-      {items.map((item,i) => (
-        <div key={i} className="list-item-row">
-          {numbered ? <span className="list-num">{i+1}</span> : <span className="list-dot"/>}
-          <input className="form-input list-item-input" value={item} onChange={e=>update(i,e.target.value)} placeholder={`${placeholder} ${i+1}`} />
-          <button className="remove-btn" onClick={()=>remove(i)}>×</button>
-        </div>
-      ))}
-      <button className="add-btn" onClick={add}>+ Add {numbered?'step':'ingredient'}</button>
+      {items.map((item,i) => {
+        const heading = allowHeadings && isHeadingItem(item);
+        if (heading) {
+          return (
+            <div key={i} className="list-item-row list-item-row-heading">
+              <input className="form-input list-heading-input" value={item.slice(HEADING_PREFIX.length)}
+                onChange={e=>update(i, HEADING_PREFIX + e.target.value)} placeholder="Sub-heading, e.g. For the dressing" />
+              <button className="remove-btn" onClick={()=>remove(i)}>×</button>
+            </div>
+          );
+        }
+        return (
+          <div key={i} className="list-item-row">
+            {numbered ? <span className="list-num">{itemDisplayIndex(items,i)}</span> : <span className="list-dot"/>}
+            <input className="form-input list-item-input" value={item} onChange={e=>update(i,e.target.value)} placeholder={`${placeholder} ${itemDisplayIndex(items,i)}`} />
+            <button className="remove-btn" onClick={()=>remove(i)}>×</button>
+          </div>
+        );
+      })}
+      <div className="add-btn-row">
+        <button className="add-btn" onClick={add}>+ Add {numbered?'step':'ingredient'}</button>
+        {allowHeadings && <button className="add-btn add-btn-secondary" onClick={addHeading}>+ Add sub-heading</button>}
+      </div>
     </div>
   );
 }
 
 
 // ── PORTAL DATA ───────────────────────────────────────────────
-const HEALTH_GOALS = [
-  { id:'pcos', label:'PCOS Support', icon:'🌸', color:'#F2C4CE' },
-  { id:'fertility', label:'Fertility & Conception', icon:'🌱', color:'#C8E6C9' },
-  { id:'hormones', label:'Hormone Balance', icon:'⚖️', color:'#E1BEE7' },
-  { id:'energy', label:'Low Energy & Fatigue', icon:'⚡', color:'#FFF9C4' },
-  { id:'period', label:'Period Regulation', icon:'🗓', color:'#FFCDD2' },
-  { id:'gut', label:'Gut Health', icon:'🌿', color:'#C8E6C9' },
-  { id:'thyroid', label:'Thyroid Support', icon:'🦋', color:'#B8D4E8' },
-  { id:'menopause', label:'Menopause', icon:'🌙', color:'#E8D5F5' },
-  { id:'postpartum', label:'Postpartum Recovery', icon:'🤱', color:'#FFE0B2' },
-  { id:'endometriosis', label:'Endometriosis', icon:'🔴', color:'#FFCDD2' },
-];
 
 const ALL_DIETICIANS = [
   { id:1, name:'Emily', credentials:'Co-founder', initials:'EY', avatarColor:'#C4A882', recipeIds:[] },
@@ -551,7 +584,7 @@ function Dashboard({ user, onSignOut }) {
     if (rdData) setRd(rdData);
 
     // Load recipes from Supabase for this RD
-    const { data: recipesData } = await db.from('recipes').select('id, title, emoji, health_labels').eq('dietitian_id', rdId);
+    const { data: recipesData } = await db.from('recipes').select('id, title, emoji, health_labels').eq('dietitian_id', rdId).eq('is_draft', false);
     const recipes = recipesData || [];
     setMyRecipes(recipes);
     const recipeIds = recipes.map(r => r.id);
@@ -638,7 +671,7 @@ function Dashboard({ user, onSignOut }) {
             {Object.keys(conditionRecipes).length === 0 ? (
               <div style={{ fontSize:13, color:'var(--text-light)' }}>No condition data yet.</div>
             ) : Object.entries(conditionRecipes).sort((a,b) => b[1]-a[1]).map(([id, count]) => {
-              const g = HEALTH_GOALS.find(x => x.id === id) || { icon:'🏷', label: id, color:'var(--warm-beige)' };
+              const g = HEALTH_TAGS.find(x => x.id === id) || { icon:'🏷', label: id, color:'var(--warm-beige)' };
               const maxCount = Math.max(...Object.values(conditionRecipes), 1);
               const pct = Math.round((count / maxCount) * 100);
               return (
@@ -692,30 +725,61 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
   const [deco, setDeco] = useState('none');
   const [showFull, setShowFull] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [draftId, setDraftId] = useState(null);
+  const [draftMsg, setDraftMsg] = useState('');
 
   const toggleLabel = id => setLabels(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
   const decoData = DECORATIONS.find(d=>d.id===deco)||DECORATIONS[0];
-  const canPublish = title.trim() && ingredients.some(i=>i.trim()) && instructions.some(i=>i.trim());
+  const canPublish = title.trim() && ingredients.some(i=>i.trim() && !isHeadingItem(i)) && instructions.some(i=>i.trim());
+  const canSaveDraft = title.trim().length > 0;
   const initials = user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+  const buildRecipeData = (isDraft) => ({
+    dietitian_id: parseInt(user.dietitianId, 10) || null,
+    title: title.trim(),
+    subtitle: subtitle.trim(),
+    emoji: illus?.emoji || '🍽',
+    health_labels: labels,
+    prep_time: prepTime || '—',
+    cook_time: cookTime || '—',
+    servings: Number(servings) || 0,
+    ingredients: ingredients.filter(Boolean),
+    instructions: instructions.filter(Boolean),
+    note: note,
+    is_draft: isDraft,
+    is_published: false,
+  });
+
+  const handleSaveDraft = async () => {
+    setSavingDraft(true); setDraftMsg('');
+    try {
+      const recipeData = buildRecipeData(true);
+      if (draftId) {
+        const { error } = await db.from('recipes').update(recipeData).eq('id', draftId);
+        if (error) throw error;
+      } else {
+        const { data: insertedData, error } = await db.from('recipes').insert(recipeData).select();
+        if (error) throw error;
+        if (insertedData?.[0]?.id) setDraftId(insertedData[0].id);
+      }
+      setDraftMsg('Draft saved ✓ — find it anytime under "My Recipes"');
+    } catch(e) {
+      setDraftMsg('Error saving draft: ' + e.message);
+    }
+    setSavingDraft(false);
+  };
 
   const handlePublish = async () => {
     setSubmitting(true);
     try {
-      const insertData = {
-        dietitian_id: parseInt(user.dietitianId, 10) || null,
-        title: title.trim(),
-        subtitle: subtitle.trim(),
-        emoji: illus?.emoji || '🍽',
-        health_labels: labels,
-        prep_time: prepTime || '—',
-        cook_time: cookTime || '—',
-        servings: Number(servings) || 0,
-        ingredients: ingredients.filter(Boolean),
-        instructions: instructions.filter(Boolean),
-        note: note,
-        is_published: false,
-      };
-      const { data: insertedData, error } = await db.from('recipes').insert(insertData).select();
+      const recipeData = buildRecipeData(false);
+      let error;
+      if (draftId) {
+        ({ error } = await db.from('recipes').update(recipeData).eq('id', draftId));
+      } else {
+        ({ error } = await db.from('recipes').insert(recipeData).select());
+      }
       if (error) {
         alert('Error saving recipe: ' + error.message + '\nCode: ' + error.code);
         setSubmitting(false);
@@ -739,7 +803,11 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
             <span className="studio-bar-title">Recipe Studio</span>
           </div>
           <div className="studio-bar-right">
+            {draftMsg && <span style={{fontSize:12,color:draftMsg.startsWith('Error')?'#8B2020':'var(--green-dark)'}}>{draftMsg}</span>}
             <span className="bar-user">👤 {user.name} · {user.creds}</span>
+            <button className="bar-btn bar-btn-ghost" disabled={!canSaveDraft||savingDraft} onClick={handleSaveDraft}>
+              {savingDraft?'Saving…':draftId?'Update draft':'Save draft'}
+            </button>
             <button className="bar-btn bar-btn-primary" disabled={!canPublish||submitting} onClick={handlePublish}>
               {submitting?'Publishing…':'✦ Publish Recipe'}
             </button>
@@ -747,7 +815,11 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
         </header>
       )}
       {hideHeader && (
-        <div style={{ padding:'12px 32px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'flex-end', background:'var(--cream)' }}>
+        <div style={{ padding:'12px 32px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'flex-end', alignItems:'center', gap:12, background:'var(--cream)' }}>
+          {draftMsg && <span style={{fontSize:12,color:draftMsg.startsWith('Error')?'#8B2020':'var(--green-dark)'}}>{draftMsg}</span>}
+          <button className="bar-btn bar-btn-ghost" disabled={!canSaveDraft||savingDraft} onClick={handleSaveDraft}>
+            {savingDraft?'Saving…':draftId?'Update draft':'Save draft'}
+          </button>
           <button className="bar-btn bar-btn-primary" disabled={!canPublish||submitting} onClick={handlePublish}>
             {submitting?'Publishing…':'✦ Publish Recipe'}
           </button>
@@ -796,7 +868,7 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
 
           <div className="form-section">
             <div className="form-section-head"><span className="form-section-icon">🥕</span><span className="form-section-title">Ingredients</span></div>
-            <ListEditor items={ingredients} onChange={setIngredients} placeholder="Ingredient" numbered={false} />
+            <ListEditor items={ingredients} onChange={setIngredients} placeholder="Ingredient" numbered={false} allowHeadings={true} />
           </div>
 
           <div className="form-section">
@@ -902,7 +974,10 @@ function RecipeStudio({ user, onPublish, hideHeader }) {
                 {subtitle&&<div className="preview-recipe-sub">{subtitle}</div>}
                 {ingredients.some(Boolean)&&(
                   <><div className="preview-section-head">Ingredients</div>
-                  {ingredients.filter(Boolean).map((ing,i)=><div key={i} className="preview-ing-item">{ing}</div>)}</>
+                  {ingredients.filter(Boolean).map((ing,i)=> isHeadingItem(ing)
+                    ? <div key={i} className="preview-ing-heading">{ing.slice(HEADING_PREFIX.length) || 'Section'}</div>
+                    : <div key={i} className="preview-ing-item">{ing}</div>
+                  )}</>
                 )}
                 {instructions.some(Boolean)&&(
                   <><div className="preview-section-head">Instructions</div>
@@ -965,14 +1040,6 @@ function EditMyRecipes({ user }) {
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState('');
 
-  const HEALTH_GOALS = [
-    {id:'pcos',label:'PCOS'},{id:'fertility',label:'Fertility'},{id:'hormones',label:'Hormones'},
-    {id:'energy',label:'Energy'},{id:'period',label:'Period'},{id:'gut',label:'Gut'},
-    {id:'thyroid',label:'Thyroid'},{id:'menopause',label:'Menopause'},
-    {id:'postpartum',label:'Postpartum'},{id:'endometriosis',label:'Endometriosis'},
-    {id:'anti-inflammatory',label:'Anti-inflammatory'},{id:'high-protein',label:'High Protein'},
-  ];
-
   useEffect(() => {
     if (!user.dietitianId) return;
     db.from('recipes').select('*').eq('dietitian_id', user.dietitianId).order('id').then(({ data }) => {
@@ -995,6 +1062,7 @@ function EditMyRecipes({ user }) {
         ingredients: selected.ingredients,
         instructions: selected.instructions,
         photo: selected.photo,
+        is_draft: selected.is_draft,
       }).eq('id', selected.id).select();
       console.log('Save result:', data, error);
       if (error) throw error;
@@ -1014,6 +1082,21 @@ function EditMyRecipes({ user }) {
     } catch(e) { setMsg('Upload failed: ' + e.message); }
     setUploading(false);
   };
+
+  const handleSubmitForReview = async () => {
+    setSaving(true); setMsg('');
+    try {
+      const { error } = await db.from('recipes').update({ is_draft: false }).eq('id', selected.id);
+      if (error) throw error;
+      const updated = { ...selected, is_draft: false };
+      setSelected(updated);
+      setRecipes(rs => rs.map(r => r.id === selected.id ? updated : r));
+      setMsg('Submitted for review ✓');
+    } catch(e) { setMsg('Error: ' + e.message); }
+    setSaving(false);
+  };
+
+  const statusOf = (r) => r.is_draft ? { label: 'Draft', cls: 'status-draft' } : r.is_published ? { label: 'Published', cls: 'status-published' } : { label: 'Pending review', cls: 'status-pending' };
 
   return (
     <div className="portal-body">
@@ -1041,6 +1124,7 @@ function EditMyRecipes({ user }) {
                 {r.photo ? <img src={r.photo} style={{width:32,height:32,borderRadius:6,objectFit:'cover',flexShrink:0}} onError={e=>e.target.style.display='none'} /> : <div style={{width:32,height:32,borderRadius:6,background:'var(--warm-beige)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>{r.emoji||'🍽'}</div>}
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontFamily:'var(--font-serif)',fontSize:13,fontStyle:'italic',fontWeight:600,color:'var(--text)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{r.title}</div>
+                  <span className={`status-badge ${statusOf(r).cls}`} style={{marginTop:4}}>{statusOf(r).label}</span>
                 </div>
               </div>
             ))}
@@ -1049,13 +1133,21 @@ function EditMyRecipes({ user }) {
           {selected && (
             <div style={{background:'var(--white)',borderRadius:'var(--radius)',padding:28,boxShadow:'var(--shadow)'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:10}}>
-                <div style={{fontFamily:'var(--font-serif)',fontSize:18,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>Editing: {selected.title}</div>
+                <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+                  <div style={{fontFamily:'var(--font-serif)',fontSize:18,fontStyle:'italic',fontWeight:600,color:'var(--text)'}}>Editing: {selected.title}</div>
+                  <span className={`status-badge ${statusOf(selected).cls}`}>{statusOf(selected).label}</span>
+                </div>
                 <div style={{display:'flex',gap:8,alignItems:'center'}}>
                   {msg && <span style={{fontSize:13,color:msg.includes('Error')||msg.includes('failed')?'#8B2020':'var(--green-dark)'}}>{msg}</span>}
                   <button onClick={() => setSelected(null)} style={{padding:'8px 14px',border:'1.5px solid var(--border)',borderRadius:50,background:'none',fontFamily:'var(--font-body)',fontSize:13,cursor:'pointer'}}>Cancel</button>
                   <button onClick={handleSave} disabled={saving} style={{padding:'8px 18px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer',opacity:saving?0.6:1}}>
                     {saving?'Saving…':'Save'}
                   </button>
+                  {selected.is_draft && (
+                    <button onClick={handleSubmitForReview} disabled={saving} style={{padding:'8px 18px',background:'var(--green-dark)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer',opacity:saving?0.6:1}}>
+                      ✦ Submit for review
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1083,7 +1175,7 @@ function EditMyRecipes({ user }) {
               <div style={{marginBottom:12}}>
                 <div className="section-eyebrow" style={{marginBottom:6}}>Health labels</div>
                 <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-                  {HEALTH_GOALS.map(g => {
+                  {HEALTH_TAGS.map(g => {
                     const active=(selected.health_labels||[]).includes(g.id);
                     return <button key={g.id} onClick={()=>setSelected(s=>({...s,health_labels:active?s.health_labels.filter(x=>x!==g.id):[...(s.health_labels||[]),g.id]}))}
                       style={{padding:'3px 10px',borderRadius:50,border:`1.5px solid ${active?'var(--brown)':'var(--border)'}`,background:active?'var(--brown)':'transparent',color:active?'white':'var(--text-mid)',fontFamily:'var(--font-body)',fontSize:11,cursor:'pointer'}}>
@@ -1101,6 +1193,7 @@ function EditMyRecipes({ user }) {
 
               <div style={{marginBottom:12}}>
                 <div className="section-eyebrow" style={{marginBottom:5}}>Ingredients (one per line)</div>
+                <div style={{fontSize:11,color:'var(--text-light)',marginBottom:5}}>Tip: start a line with "## " to add a sub-heading, e.g. "## For the dressing"</div>
                 <textarea value={(selected.ingredients||[]).join('\n')} onChange={e=>setSelected(s=>({...s,ingredients:e.target.value.split('\n')}))} rows={5}
                   style={{width:'100%',padding:'9px 12px',border:'1.5px solid var(--border)',borderRadius:8,fontFamily:'var(--font-body)',fontSize:13,color:'var(--text)',background:'var(--cream)',outline:'none',resize:'vertical'}} />
               </div>
