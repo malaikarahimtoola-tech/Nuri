@@ -986,6 +986,7 @@ const HEALTH_GOALS = [
   { id: 'endometriosis', label: 'Endometriosis', icon: '🩷', description: 'Anti-inflammatory, pain-reducing foods', color: '#F2C4CE' },
   { id: 'insulin-resistance', label: 'Insulin Resistance', icon: '🩸', description: 'Stabilise blood sugar & improve insulin sensitivity', color: '#FFD9B3' },
   { id: 'immune', label: 'Immune Health', icon: '🛡️', description: 'Strengthen your immune system through nutrition', color: '#C4DEB8' },
+  { id: 'anti-inflammatory', label: 'Anti-Inflammatory', icon: '🌾', description: 'Calm inflammation and support long-term health', color: '#C4DEB8' },
 ];
 
 const LABEL_MAP = {
@@ -1004,6 +1005,10 @@ const LABEL_MAP = {
   'high-protein': { label: 'High Protein', color: '#D4C4B0', text: '#4A3020' },
   'anti-inflammatory': { label: 'Anti-Inflam.', color: '#C4DEB8', text: '#2E5E1E' },
   'gut-friendly': { label: 'Gut-Friendly', color: '#C8E6C4', text: '#2E6B3E' },
+  'gluten-free': { label: 'Gluten-Free', color: '#EDE0A0', text: '#6E5000' },
+  'dairy-free': { label: 'Dairy-Free', color: '#D8E8EE', text: '#265A66' },
+  'high-fiber': { label: 'High-Fiber', color: '#D9E8C4', text: '#3C5E1E' },
+  'quick-easy': { label: 'Quick & Easy', color: '#FFE8B8', text: '#8A5A00' },
 };
 
 const DIETICIANS = [
@@ -1759,6 +1764,7 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
     { id: 'gluten-free', label: 'Gluten-free' },
     { id: 'dairy-free', label: 'Dairy-free' },
     { id: 'high-protein', label: 'High Protein' },
+    { id: 'high-fiber', label: 'High Fiber' },
   ];
 
   const toggleDietary = (id) => {
