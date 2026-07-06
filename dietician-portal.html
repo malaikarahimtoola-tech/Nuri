@@ -709,24 +709,24 @@ function Dashboard({ user, onSignOut }) {
 }
 
 // ── RECIPE STUDIO ─────────────────────────────────────────────
-function RecipeStudio({ user, onPublish, hideHeader }) {
-  const [title, setTitle] = useState('');
-  const [subtitle, setSubtitle] = useState('');
-  const [prepTime, setPrepTime] = useState('');
-  const [cookTime, setCookTime] = useState('');
-  const [servings, setServings] = useState('');
-  const [labels, setLabels] = useState([]);
-  const [ingredients, setIngredients] = useState(['','']);
-  const [instructions, setInstructions] = useState(['','']);
-  const [note, setNote] = useState('');
+function RecipeStudio({ user, onPublish, hideHeader, resumeDraft }) {
+  const [title, setTitle] = useState(resumeDraft?.title || '');
+  const [subtitle, setSubtitle] = useState(resumeDraft?.subtitle || '');
+  const [prepTime, setPrepTime] = useState(resumeDraft && resumeDraft.prep_time !== '—' ? (resumeDraft.prep_time || '') : '');
+  const [cookTime, setCookTime] = useState(resumeDraft && resumeDraft.cook_time !== '—' ? (resumeDraft.cook_time || '') : '');
+  const [servings, setServings] = useState(resumeDraft?.servings ? String(resumeDraft.servings) : '');
+  const [labels, setLabels] = useState(resumeDraft?.health_labels || []);
+  const [ingredients, setIngredients] = useState(resumeDraft?.ingredients?.length ? resumeDraft.ingredients : ['','']);
+  const [instructions, setInstructions] = useState(resumeDraft?.instructions?.length ? resumeDraft.instructions : ['','']);
+  const [note, setNote] = useState(resumeDraft?.note || '');
   const [gingham, setGingham] = useState('sage');
-  const [illus, setIllus] = useState(null);
+  const [illus, setIllus] = useState(resumeDraft?.emoji ? { emoji: resumeDraft.emoji } : null);
   const [illusTab, setIllusTab] = useState('Breakfast');
   const [deco, setDeco] = useState('none');
   const [showFull, setShowFull] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
-  const [draftId, setDraftId] = useState(null);
+  const [draftId, setDraftId] = useState(resumeDraft?.id || null);
   const [draftMsg, setDraftMsg] = useState('');
 
   const toggleLabel = id => setLabels(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
@@ -1030,7 +1030,7 @@ async function uploadToStorage(bucket, path, file) {
 // ── PROFILE SETTINGS ─────────────────────────────────────────
 
 // ── EDIT MY RECIPES ───────────────────────────────────────────
-function EditMyRecipes({ user }) {
+function EditMyRecipes({ user, onResumeDraft }) {
   const [recipes, setRecipes] = useState([]);
   const [selected, setSelected] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -1052,7 +1052,6 @@ function EditMyRecipes({ user }) {
   const handleSave = async () => {
     setSaving(true); setMsg('');
     try {
-      const table = selected._source === 'draft' ? 'recipe_drafts' : 'recipes';
       const payload = {
         title: selected.title,
         subtitle: selected.subtitle,
@@ -1065,7 +1064,7 @@ function EditMyRecipes({ user }) {
         instructions: selected.instructions,
         photo: selected.photo,
       };
-      const { data, error } = await db.from(table).update(payload).eq('id', selected.id).select();
+      const { data, error } = await db.from('recipes').update(payload).eq('id', selected.id).select();
       if (error) throw error;
       setRecipes(rs => rs.map(r => (r.id === selected.id && r._source === selected._source) ? selected : r));
       setMsg('Saved ✓');
@@ -1077,31 +1076,20 @@ function EditMyRecipes({ user }) {
     const file = e.target.files?.[0]; if (!file) return;
     setUploading(true); setMsg('');
     try {
-      const prefix = selected._source === 'draft' ? 'draft' : 'recipe';
-      const url = await uploadToStorage('recipe-images', `${prefix}-${selected.id}-${Date.now()}`, file);
+      const url = await uploadToStorage('recipe-images', `recipe-${selected.id}-${Date.now()}`, file);
       setSelected(s => ({ ...s, photo: url }));
       setMsg('Photo uploaded ✓ — click Save to apply');
     } catch(e) { setMsg('Upload failed: ' + e.message); }
     setUploading(false);
   };
 
-  const handleSubmitForReview = async () => {
-    setSaving(true); setMsg('');
+  const handleDeleteDraft = async (draft) => {
+    if (!confirm(`Delete the draft "${draft.title}"? This can't be undone.`)) return;
     try {
-      const { dietitian_id, title, subtitle, emoji, health_labels, prep_time, cook_time, servings, ingredients, instructions, note, photo } = selected;
-      const { data: insertedData, error: insertError } = await db.from('recipes').insert({
-        dietitian_id, title, subtitle, emoji, health_labels, prep_time, cook_time, servings, ingredients, instructions, note, photo,
-        is_published: false,
-      }).select();
-      if (insertError) throw insertError;
-      const { error: deleteError } = await db.from('recipe_drafts').delete().eq('id', selected.id);
-      if (deleteError) throw deleteError;
-      const newRecipe = { ...insertedData[0], _source: 'recipe' };
-      setRecipes(rs => [newRecipe, ...rs.filter(r => !(r.id === selected.id && r._source === 'draft'))]);
-      setSelected(newRecipe);
-      setMsg('Submitted for review ✓');
-    } catch(e) { setMsg('Error: ' + e.message); }
-    setSaving(false);
+      const { error } = await db.from('recipe_drafts').delete().eq('id', draft.id);
+      if (error) throw error;
+      setRecipes(rs => rs.filter(r => !(r.id === draft.id && r._source === 'draft')));
+    } catch(e) { alert('Error deleting draft: ' + e.message); }
   };
 
   const statusOf = (r) => r._source === 'draft' ? { label: 'Draft', cls: 'status-draft' } : r.is_published ? { label: 'Published', cls: 'status-published' } : { label: 'Pending review', cls: 'status-pending' };
@@ -1124,7 +1112,7 @@ function EditMyRecipes({ user }) {
         <div style={{display:'grid',gridTemplateColumns:selected?'260px 1fr':'repeat(auto-fill,minmax(220px,1fr))',gap:20,alignItems:'start'}}>
           <div style={{background:'var(--white)',borderRadius:'var(--radius)',boxShadow:'var(--shadow)',overflow:'hidden'}}>
             {recipes.map(r => (
-              <div key={`${r._source}-${r.id}`} onClick={() => { setSelected({...r}); setMsg(''); }} style={{
+              <div key={`${r._source}-${r.id}`} onClick={() => { r._source === 'draft' ? onResumeDraft(r) : setSelected({...r}); setMsg(''); }} style={{
                 padding:'12px 16px',cursor:'pointer',borderBottom:'1px solid var(--border)',
                 background:(selected?.id===r.id && selected?._source===r._source)?'var(--warm-beige)':'transparent',
                 display:'flex',alignItems:'center',gap:10,
@@ -1134,6 +1122,14 @@ function EditMyRecipes({ user }) {
                   <div style={{fontFamily:'var(--font-serif)',fontSize:13,fontStyle:'italic',fontWeight:600,color:'var(--text)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{r.title}</div>
                   <span className={`status-badge ${statusOf(r).cls}`} style={{marginTop:4}}>{statusOf(r).label}</span>
                 </div>
+                {r._source === 'draft' && (
+                  <button onClick={(e) => { e.stopPropagation(); handleDeleteDraft(r); }} title="Delete draft"
+                    style={{flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',width:26,height:26,borderRadius:'50%',background:'none',border:'1.5px solid var(--border)',color:'#8B2020',cursor:'pointer',fontSize:14,lineHeight:1,padding:0}}
+                    onMouseEnter={e=>{e.currentTarget.style.background='#F4C4C4';e.currentTarget.style.borderColor='#8B2020';}}
+                    onMouseLeave={e=>{e.currentTarget.style.background='none';e.currentTarget.style.borderColor='var(--border)';}}>
+                    🗑
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -1151,11 +1147,6 @@ function EditMyRecipes({ user }) {
                   <button onClick={handleSave} disabled={saving} style={{padding:'8px 18px',background:'var(--brown)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer',opacity:saving?0.6:1}}>
                     {saving?'Saving…':'Save'}
                   </button>
-                  {selected._source === 'draft' && (
-                    <button onClick={handleSubmitForReview} disabled={saving} style={{padding:'8px 18px',background:'var(--green-dark)',color:'white',border:'none',borderRadius:50,fontFamily:'var(--font-body)',fontSize:13,fontWeight:600,cursor:'pointer',opacity:saving?0.6:1}}>
-                      ✦ Submit for review
-                    </button>
-                  )}
                 </div>
               </div>
 
@@ -1306,6 +1297,7 @@ function App() {
   const [tab, setTab] = useState('create');
   const [published, setPublished] = useState(false);
   const [rdData, setRdData] = useState(null);
+  const [resumeDraft, setResumeDraft] = useState(null);
 
   useEffect(() => {
     const init = async () => {
@@ -1332,6 +1324,7 @@ function App() {
   }, []);
 
   const handleSignOut = async () => { await db.auth.signOut(); setUser(null); };
+  const handleResumeDraft = (draft) => { setResumeDraft(draft); setPublished(false); setTab('create'); };
 
   if (loading) return <div className="loading"><div style={{ fontFamily:'var(--font-logo)', fontSize:48, fontStyle:'italic', color:'var(--green-dark)' }}>nuri.</div></div>;
   if (!user) return <AuthScreen onAuth={async (u) => {
@@ -1349,7 +1342,7 @@ function App() {
           <div className="portal-logo">nuri<span className="portal-logo-dot" /></div>
           <div className="portal-nav-tabs">
             <button className={`portal-nav-tab ${tab==='dashboard'?'active':''}`} onClick={() => { setTab('dashboard'); setPublished(false); }}>📊 Dashboard</button>
-            <button className={`portal-nav-tab ${tab==='create'?'active':''}`} onClick={() => { setTab('create'); setPublished(false); }}>✦ Create Recipe</button>
+            <button className={`portal-nav-tab ${tab==='create'?'active':''}`} onClick={() => { setTab('create'); setPublished(false); setResumeDraft(null); }}>✦ Create Recipe</button>
             <button className={`portal-nav-tab ${tab==='edit'?'active':''}`} onClick={() => { setTab('edit'); setPublished(false); }}>✏️ My Recipes</button>
             <button className={`portal-nav-tab ${tab==='profile'?'active':''}`} onClick={() => { setTab('profile'); setPublished(false); }}>👤 My Profile</button>
           </div>
@@ -1360,9 +1353,9 @@ function App() {
         </div>
       </nav>
       {tab === 'dashboard' && <Dashboard user={user} onSignOut={handleSignOut} />}
-      {tab === 'edit' && <EditMyRecipes user={user} />}
+      {tab === 'edit' && <EditMyRecipes user={user} onResumeDraft={handleResumeDraft} />}
       {tab === 'profile' && <ProfileSettings user={user} />}
-      {tab === 'create' && !published && <RecipeStudio user={{ name: user.name || rdData?.name, email: user.email, creds: rdData?.credentials || 'RD', dietitianId: user.dietitianId }} onPublish={() => setPublished(true)} hideHeader={true} />}
+      {tab === 'create' && !published && <RecipeStudio user={{ name: user.name || rdData?.name, email: user.email, creds: rdData?.credentials || 'RD', dietitianId: user.dietitianId }} onPublish={() => { setPublished(true); setResumeDraft(null); }} hideHeader={true} resumeDraft={resumeDraft} />}
       {tab === 'create' && published && <SuccessPage user={{ name: user.name, email: user.email }} onAnother={() => setPublished(false)} />}
     </>
   );
