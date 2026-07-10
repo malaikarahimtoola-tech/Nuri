@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -839,6 +836,7 @@ function Overview({ onSignOut }) {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
   const [allDietitians, setAllDietitians] = useState([]);
+  const [allRecipes, setAllRecipes] = useState(ALL_RECIPES);
 
   useEffect(() => {
     const load = async () => {
@@ -848,15 +846,34 @@ function Overview({ onSignOut }) {
         db.from('views').select('entity_type, entity_id'),
         db.from('profiles').select('*', { count:'exact', head:true }),
         db.from('dietitians').select('*'),
-        db.from('recipes').select('id, dietitian_id').eq('is_published', true),
+        db.from('recipes').select('id, title, emoji, dietitian_id, health_labels').eq('is_published', true),
       ]);
+
+      // Merge live Supabase recipes with the hardcoded fallback list, deduping by id.
+      // Supabase is the source of truth for the count — it now holds all published
+      // recipes (54+), not just the original 31 hardcoded ones.
+      const recipeMap = new Map();
+      ALL_RECIPES.forEach(r => recipeMap.set(r.id, r));
+      (newRecipes || []).forEach(r => {
+        const existing = recipeMap.get(r.id);
+        recipeMap.set(r.id, {
+          id: r.id,
+          dieticianId: parseInt(r.dietitian_id, 10),
+          title: r.title || existing?.title || 'Untitled recipe',
+          emoji: r.emoji || existing?.emoji || '🍽',
+          healthLabels: (r.health_labels && r.health_labels.length) ? r.health_labels : (existing?.healthLabels || []),
+        });
+      });
+      const mergedRecipes = Array.from(recipeMap.values());
+      setAllRecipes(mergedRecipes);
+
       if (dData) {
         const mapped = dData.map((d, i) => ({
           ...d,
           id: parseInt(d.id, 10),
           initials: (d.name||'RD').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
           avatarColor: AVATAR_COLORS[i % AVATAR_COLORS.length],
-          recipeIds: newRecipes ? newRecipes.filter(r => parseInt(r.dietitian_id,10) === parseInt(d.id,10)).map(r => r.id) : (HARDCODED_RECIPE_IDS[d.id] || []),
+          recipeIds: mergedRecipes.filter(r => r.dieticianId === parseInt(d.id,10)).map(r => r.id),
         }));
         setAllDietitians(mapped);
       }
@@ -879,13 +896,13 @@ function Overview({ onSignOut }) {
   }));
 
   const conditionCounts = {};
-  ALL_RECIPES.forEach(r => r.healthLabels.forEach(l => { conditionCounts[l]=(conditionCounts[l]||0)+1; }));
+  allRecipes.forEach(r => (r.healthLabels||[]).forEach(l => { conditionCounts[l]=(conditionCounts[l]||0)+1; }));
   const maxCond = Math.max(...Object.values(conditionCounts),1);
   const conditionSaves = {};
-  saves.forEach(s => { const r=ALL_RECIPES.find(x=>x.id===s.recipe_id); if(r) r.healthLabels.forEach(l=>{ conditionSaves[l]=(conditionSaves[l]||0)+1; }); });
+  saves.forEach(s => { const r=allRecipes.find(x=>x.id===s.recipe_id); if(r) (r.healthLabels||[]).forEach(l=>{ conditionSaves[l]=(conditionSaves[l]||0)+1; }); });
 
   const selectedRd = selected ? allDietitians.find(d=>d.id===selected) : null;
-  const selectedRecipes = selectedRd ? ALL_RECIPES.filter(r=>r.dieticianId===selected) : [];
+  const selectedRecipes = selectedRd ? allRecipes.filter(r=>r.dieticianId===selected) : [];
 
   if (loading) return <div className="loading"><div style={{fontFamily:'var(--font-logo)',fontSize:40,fontStyle:'italic',color:'var(--green-dark)'}}>nuri.</div><div style={{fontSize:13,color:'var(--text-light)'}}>Loading…</div></div>;
 
@@ -897,7 +914,7 @@ function Overview({ onSignOut }) {
       </div>
 
       <div className="overview-grid">
-        {[{icon:'👥',num:userCount,lbl:'Total users'},{icon:'📖',num:ALL_RECIPES.length,lbl:'Total recipes'},{icon:'🩺',num:allDietitians.length,lbl:'Dietitians'},{icon:'❤️',num:totalSaves,lbl:'Total saves'},{icon:'👁',num:totalViews,lbl:'Total views'}].map((s,i)=>(
+        {[{icon:'👥',num:userCount,lbl:'Total users'},{icon:'📖',num:allRecipes.length,lbl:'Total recipes'},{icon:'🩺',num:allDietitians.length,lbl:'Dietitians'},{icon:'❤️',num:totalSaves,lbl:'Total saves'},{icon:'👁',num:totalViews,lbl:'Total views'}].map((s,i)=>(
           <div key={i} className="stat-card"><div className="stat-icon">{s.icon}</div><div className="stat-num">{s.num}</div><div className="stat-lbl">{s.lbl}</div></div>
         ))}
       </div>
