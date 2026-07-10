@@ -1,3 +1,4 @@
+
 <!-- v2 — July 10 2026 — explore page reorder (Alysse, Lyndsay, Claire Nanda, Mercy, Kelsey, Meredith, Claire Pettitt, Alice March); sort_order query bug fixed -->
 <!DOCTYPE html>
 <html lang="en">
@@ -2281,9 +2282,17 @@ function ProfilePage({ dietician: d, onBack, onRecipeClick, followed, onToggleFo
 function ExploreTab({ onDieticianClick, followed, onToggleFollow, supaDietitians }) {
   const [supaRDs, setSupaRDs] = useState([]);
   useEffect(() => {
-    window._supa.from('dietitians').select('id, name, credentials, specialty, bio, photo, tags, sort_order').eq('is_active', true).then(({ data }) => {
+    const fetchRDs = async () => {
+      // Try with sort_order first (once you've added that column in Supabase this
+      // takes effect automatically). If the column doesn't exist yet, this query
+      // errors, so we retry without it rather than showing nothing.
+      let { data, error } = await window._supa.from('dietitians').select('id, name, credentials, specialty, bio, photo, tags, sort_order').eq('is_active', true);
+      if (error) {
+        ({ data, error } = await window._supa.from('dietitians').select('id, name, credentials, specialty, bio, photo, tags').eq('is_active', true));
+      }
       if (data) setSupaRDs(data);
-    });
+    };
+    fetchRDs();
   }, []);
 
   // Merge hardcoded + Supabase RDs (Supabase wins for new ones, hardcoded provides fallback data)
