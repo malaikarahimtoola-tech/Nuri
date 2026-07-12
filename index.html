@@ -1,5 +1,5 @@
 
-<!-- v2 — July 10 2026 — explore page reorder (Alysse, Lyndsay, Claire Nanda, Mercy, Kelsey, Meredith, Claire Pettitt, Alice March); sort_order query bug fixed -->
+<!-- — July 12 2026 — explore page reorder (Alysse, Lyndsay, Claire Nanda, Mercy, Kelsey, Meredith, Claire Pettitt, Alice March); sort_order query bug fixed -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +11,7 @@
 <title>nuri.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Fraunces:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -56,6 +56,7 @@
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-logo: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-landing: 'Fraunces', Georgia, serif;
   --max: 1200px;
   /* ── brand palette ── */
   --sage: #7A9E7E;
@@ -119,9 +120,12 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 
 /* ── WELCOME ─────────────────────────────────────────────── */
 .welcome-page {
-  min-height: 100vh;
+  background: var(--cream);
+}
+.welcome-hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-items: stretch;
   overflow: hidden;
 }
 .welcome-left {
@@ -141,6 +145,7 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 480px;
 }
 .welcome-recipe-stack { display: flex; flex-direction: column; gap: 16px; width: 340px; }
 .welcome-mini-card {
@@ -152,15 +157,41 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
   align-items: center;
   gap: 14px;
 }
-.welcome-mini-emoji { font-size: 36px; }
-.welcome-mini-title { font-family: var(--font-serif); font-size: 16px; font-style: italic; font-weight: 600; color: var(--text); }
+.welcome-mini-photo { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; display: block; flex-shrink: 0; }
+.welcome-mini-fallback { width: 48px; height: 48px; border-radius: 10px; flex-shrink: 0; background: var(--warm-beige); align-items: center; justify-content: center; font-size: 24px; }
+.welcome-mini-overlay { min-width: 0; }
+.welcome-mini-title { font-family: var(--font-landing); font-size: 16px; font-style: italic; font-weight: 600; color: var(--text); }
 .welcome-mini-tag { font-size: 11px; color: var(--text-light); margin-top: 2px; }
 .welcome-brand-line { font-family: var(--font-body); font-size: 13px; font-weight: 300; letter-spacing: 0.1em; color: var(--tan); margin-bottom: 8px; }
-.welcome-headline { font-family: var(--font-serif); font-size: 52px; font-style: italic; font-weight: 600; color: var(--text); line-height: 1.1; margin-bottom: 20px; }
-.welcome-sub { font-size: 16px; color: var(--text-mid); line-height: 1.65; margin-bottom: 40px; max-width: 420px; }
+.welcome-headline { font-family: var(--font-landing); font-size: 48px; font-style: italic; font-weight: 600; color: var(--text); line-height: 1.15; margin-bottom: 20px; }
+.welcome-sub { font-size: 16px; color: var(--text-mid); line-height: 1.65; margin-bottom: 32px; max-width: 420px; }
 .welcome-cta { display: inline-block; padding: 16px 36px; background: var(--brown); color: white; border: none; border-radius: 50px; font-family: var(--font-body); font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
 .welcome-cta:hover { background: #4A3024; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(92,61,46,0.28); }
+.welcome-cta-ghost { display: inline-block; background: none; border: none; color: var(--text-light); font-size: 13px; font-family: var(--font-body); cursor: pointer; text-decoration: underline; }
 .welcome-note { margin-top: 16px; font-size: 13px; color: var(--text-light); }
+
+/* ── WELCOME: sections below hero (edge-to-edge, matches hero's left padding) ── */
+.wl-section { padding: 72px 64px; }
+.wl-section-tight { padding-top: 0; }
+.wl-eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-light); margin-bottom: 10px; }
+.wl-section-title { font-family: var(--font-landing); font-style: italic; font-weight: 600; font-size: 28px; color: var(--text); margin-bottom: 8px; }
+.wl-section-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; max-width: 520px; }
+.wl-pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+.wl-pill { padding: 9px 18px; border-radius: 50px; font-size: 13px; font-family: var(--font-body); cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text-mid); transition: all 0.15s; }
+.wl-pill:hover { border-color: var(--tan); }
+.wl-pill.active { background: var(--brown); color: #fff; border-color: var(--brown); }
+.wl-teaser-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; max-width: 960px; }
+.wl-teaser-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+.wl-teaser-emoji { font-size: 28px; margin-bottom: 10px; }
+.wl-teaser-title { font-family: var(--font-landing); font-style: italic; font-weight: 600; font-size: 15px; color: var(--text); margin-bottom: 4px; }
+.wl-teaser-meta { font-size: 11px; color: var(--text-light); }
+.wl-teaser-empty { font-size: 14px; color: var(--text-mid); font-style: italic; font-family: var(--font-serif); }
+.wl-picker { background: var(--warm-beige); }
+.wl-lifestyle { background: var(--cream); }
+.wl-chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.wl-chip { background: #fff; border-radius: var(--radius-sm); padding: 11px 18px; font-size: 13px; color: var(--brown); }
+.wl-trust { background: var(--warm-beige); border-top: 1px solid var(--border); }
+.wl-trust-text { font-size: 14px; line-height: 1.75; color: var(--text-mid); max-width: 640px; margin-bottom: 28px; }
 
 /* ── ONBOARDING ──────────────────────────────────────────── */
 .onboarding-wrap { max-width: 720px; margin: 0 auto; padding: 60px 32px; }
@@ -868,24 +899,26 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 /* ── MOBILE ──────────────────────────────────────────────── */
 @media (max-width: 600px) {
   /* Welcome page */
-  .welcome-page { grid-template-columns: 1fr; min-height: 100vh; display: flex; flex-direction: column; }
-  .welcome-left { padding: 60px 28px 48px; justify-content: center; align-items: center; text-align: center; flex: 1; }
-  .welcome-right { 
-    display: block; 
-    height: 140px; 
+  .welcome-hero { grid-template-columns: 1fr; min-height: auto; display: flex; flex-direction: column; }
+  .welcome-left { padding: 48px 24px 32px; justify-content: center; align-items: center; text-align: center; flex: 1; }
+  .welcome-right {
     order: -1;
-    background-color: #D4B87A;
-    background-image:
-      repeating-linear-gradient(transparent 0px, transparent 20px, rgba(140,95,20,0.28) 20px, rgba(140,95,20,0.28) 40px),
-      repeating-linear-gradient(90deg, transparent 0px, transparent 20px, rgba(140,95,20,0.28) 20px, rgba(140,95,20,0.28) 40px);
-    flex-shrink: 0;
+    min-height: 0;
+    height: auto;
+    padding: 20px 20px 4px;
   }
-  .welcome-recipe-stack { display: none; }
+  .welcome-recipe-stack { display: flex !important; flex-direction: row; overflow-x: auto; width: 100%; gap: 12px; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+  .welcome-mini-card { min-width: 230px; flex-shrink: 0; }
   .welcome-brand-line { text-align: center; }
-  .welcome-headline { font-size: 52px; text-align: center; }
-  .welcome-sub { font-size: 15px; margin-bottom: 32px; text-align: center; }
+  .welcome-headline { font-size: 38px; text-align: center; }
+  .welcome-sub { font-size: 15px; margin-bottom: 28px; text-align: center; }
   .welcome-cta { width: 100%; text-align: center; padding: 16px 24px; font-size: 16px; }
   .welcome-note { text-align: center; }
+  .wl-section { padding: 48px 20px; }
+  .wl-section-title { font-size: 22px; }
+  .wl-pill-row { justify-content: center; }
+  .wl-teaser-grid { grid-template-columns: 1fr; }
+  .wl-left-actions { align-items: center; }
 
   /* Top nav */
   .top-nav-inner { padding: 0 12px; height: 52px; }
@@ -1559,36 +1592,160 @@ function ResetPasswordScreen({ onDone }) {
   );
 }
 
+const WELCOME_CONDITIONS = [
+  { key:'pcos', slug:'pcos', label:'PCOS', blurb:"Recipes built to lower inflammation and support hormone balance — without cutting out real food." },
+  { key:'hormones', slug:'hormones', label:'Hormones', blurb:"Recipes designed around how your hormones actually work — not generic wellness advice." },
+  { key:'insulin-resistance', slug:'insulin-resistance', label:'Insulin Resistance', blurb:"Blood sugar-friendly meals that don't feel like restriction." },
+  { key:'gut', slug:'gut-health', label:'Gut Health', blurb:"Gut-friendly meals that actually taste like food, not a protocol." },
+  { key:'endometriosis', slug:'endometriosis', label:'Endometriosis', blurb:"Anti-inflammatory recipes designed around flare days and everything in between." },
+  { key:'immune', slug:'immune-health', label:'Immune Health', blurb:"Recipes built to support your immune system, day to day." },
+  { key:'menopause', slug:'menopause', label:'Menopause', blurb:"Food for the transition — hormone-aware, symptom-aware, judgment-free." },
+  { key:'thyroid', slug:'thyroid', label:'Thyroid', blurb:"Recipes built around the nutrients your thyroid actually needs." },
+  { key:'fertility', slug:'fertility', label:'Fertility', blurb:"Recipes designed to support your body through trying to conceive." },
+];
+
+const WELCOME_OCCASIONS = ['15-minute weeknights', 'Sunday meal prep', 'A busy night out', 'When you have nothing left tonight'];
+
+/* Lightweight teaser dataset for the marketing landing page — kept separate from the
+   in-app RECIPES catalog so this page never depends on auth state or the full recipe payload. */
+const WELCOME_TEASER_RECIPES = [
+  {id:1,title:'Pumpkin, Orange & Zaatar Soup',emoji:'🎃',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/6955a58e920e3020578746fb/1770821699612/soup+2.jpg?format=800w',healthLabels:['pcos','hormones','gut','vegetarian'],prepTime:'15 min',cookTime:'75 min'},
+  {id:2,title:'Soft & Chewy Oatmeal Chocolate Chip Cookies',emoji:'🍪',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/682624cad29e5148a3cdf047/1750963301821/13cc14cf-97c3-44ee-9645-6dd73ca26231.jpg?format=800w',healthLabels:['pcos','hormones','vegetarian'],prepTime:'10 min',cookTime:'25 min'},
+  {id:3,title:'Citrus Roasted Salmon',emoji:'🐟',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/66bdab540360b04c1e129d61/1723795250313/Feature+image.jpeg?format=800w',healthLabels:['pcos','endometriosis','anti-inflammatory','gluten-free','dairy-free','high-protein'],prepTime:'15 min',cookTime:'40 min'},
+  {id:4,title:'Moroccan Inspired Traybake',emoji:'🥕',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/654fb1f084fd254ec1e6c616/1706264040640/Blog+Feature+Image.jpeg?format=800w',healthLabels:['pcos','hormones','anti-inflammatory','vegetarian','vegan','gluten-free','dairy-free'],prepTime:'15 min',cookTime:'40 min'},
+  {id:5,title:'Protein Pancakes',emoji:'🥞',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/64d5fb2c2d8da932d1d8ca75/1695730700022/Blog+feature+image+Protein+pancakes.jpeg?format=800w',healthLabels:['pcos','hormones','vegetarian','gluten-free','dairy-free'],prepTime:'5 min',cookTime:'15 min'},
+  {id:6,title:'Chickpea & Aubergine Stew',emoji:'🍆',photo:'',healthLabels:['pcos','gut','anti-inflammatory','vegetarian','vegan','gluten-free','dairy-free'],prepTime:'15 min',cookTime:'30 min'},
+  {id:7,title:'Veggie & Cheese Frittata',emoji:'🥚',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/60ec43136e267257945cbf62/1695730794461/IMG_6587-2.jpg?format=800w',healthLabels:['pcos','fertility','hormones','vegetarian','gluten-free'],prepTime:'10 min',cookTime:'20 min'},
+  {id:8,title:'Roasted Beetroot',emoji:'🔴',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/68dfb6d77be4bb063728f4d6/1765443955429/main.jpg?format=800w',healthLabels:['pcos','anti-inflammatory','vegetarian','vegan','gluten-free','dairy-free'],prepTime:'10 min',cookTime:'45 min'},
+  {id:9,title:'Squash Soup',emoji:'🍵',photo:'',healthLabels:['pcos','gut','vegetarian','gluten-free'],prepTime:'10 min',cookTime:'35 min'},
+  {id:10,title:'Coconut & Butternut Squash Curry',emoji:'🍛',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/5f90f84f585dd565cc3432fb/1710293434680/2024-02-19%2B09.55.17.jpg?format=800w',healthLabels:['pcos','anti-inflammatory','vegetarian','vegan','gluten-free','dairy-free'],prepTime:'15 min',cookTime:'35 min'},
+  {id:11,title:'Homemade Oreo Cookies',emoji:'🖤',photo:'',healthLabels:['pcos','hormones','vegetarian'],prepTime:'20 min',cookTime:'15 min'},
+  {id:12,title:'Aubergine with Green Beans & Freekeh',emoji:'🥗',photo:'',healthLabels:['pcos','gut','anti-inflammatory','vegetarian','vegan','dairy-free'],prepTime:'15 min',cookTime:'30 min'},
+  {id:13,title:'Cauliflower, Pomegranate & Pistachio Salad',emoji:'🥦',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/60b5a7ced093263ad54f68d6/1695730872701/IMG_5471.jpg?format=800w',healthLabels:['pcos','anti-inflammatory','vegetarian','vegan','gluten-free','dairy-free'],prepTime:'10 min',cookTime:'25 min'},
+  {id:14,title:'Chocolate Date Cake',emoji:'🍰',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/611912332d65e7269d934c8d/1695730777376/IMG_7259.jpg?format=800w',healthLabels:['pcos','hormones','vegetarian'],prepTime:'20 min',cookTime:'35 min'},
+  {id:15,title:'Squash with Chilli Yoghurt & Coriander Sauce',emoji:'🌶',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/608bac351625d50fe195eb57/1619766340907/IMG_4988_2.jpg?format=800w',healthLabels:['pcos','hormones','vegetarian','gluten-free'],prepTime:'15 min',cookTime:'40 min'},
+  {id:16,title:'Wintery Parsnip Soup',emoji:'🍂',photo:'',healthLabels:['pcos','gut','vegetarian','gluten-free'],prepTime:'10 min',cookTime:'35 min'},
+  {id:17,title:'Spinach & Sweet Potato Dahl',emoji:'🌿',photo:'',healthLabels:['pcos','hormones','anti-inflammatory','vegetarian','vegan','gluten-free','dairy-free'],prepTime:'10 min',cookTime:'30 min'},
+  {id:18,title:'Chickpea, Mango & Cauliflower Salad',emoji:'🥭',photo:'',healthLabels:['pcos','gut','anti-inflammatory','vegetarian','vegan','gluten-free','dairy-free'],prepTime:'15 min',cookTime:'25 min'},
+  {id:19,title:'Peanut Butter Balls',emoji:'🥜',photo:'',healthLabels:['pcos','hormones','energy','vegetarian','gluten-free'],prepTime:'15 min',cookTime:'0 min'},
+  {id:20,title:'Roasted Mixed Veg with Yoghurt & Chilli Oil',emoji:'🌈',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/5ff7dc13b2c4ae564e1104c6/1695730989420/IMG_0873.jpg?format=800w',healthLabels:['pcos','hormones','vegetarian','gluten-free'],prepTime:'15 min',cookTime:'35 min'},
+  {id:21,title:'Lentil Bolognese',emoji:'🍝',photo:'https://images.squarespace-cdn.com/content/v1/5f6dcaff3971e61f55a10122/66e6aaecf767460e0590c6f5/1726560029569/IMG_2410.jpeg?format=800w',healthLabels:['pcos','gut','anti-inflammatory','vegetarian','vegan','gluten-free','dairy-free'],prepTime:'15 min',cookTime:'30 min'},
+  {id:22,title:'Cauliflower Shrimp Fried Rice',emoji:'🦐',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-22-1778772290962',healthLabels:['pcos','hormones','insulin-resistance','gluten-free'],prepTime:'10 min',cookTime:'15 min'},
+  {id:23,title:'Berry Chia Pudding',emoji:'🫐',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-23-1778807281758',healthLabels:['pcos','hormones','energy','insulin-resistance','vegan','gluten-free','dairy-free'],prepTime:'5 min',cookTime:'0 min'},
+  {id:24,title:'Egg Muffins',emoji:'🥚',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-24-1778807124046',healthLabels:['pcos','energy','hormones','vegetarian','gluten-free'],prepTime:'10 min',cookTime:'25 min'},
+  {id:25,title:'Spicy Peanut Tofu Stir-Fry',emoji:'🥜',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-25-1778807142926',healthLabels:['pcos','hormones','anti-inflammatory','vegan','insulin-resistance','high-protein'],prepTime:'10 min',cookTime:'15 min'},
+  {id:26,title:'Mediterranean Quinoa Bowl',emoji:'🥗',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-26-1778807153850',healthLabels:['pcos','hormones','anti-inflammatory','vegetarian','gluten-free','insulin-resistance'],prepTime:'10 min',cookTime:'15 min'},
+  {id:27,title:'Salmon Avocado Cucumber Boats',emoji:'🥑',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-27-1778807162526',healthLabels:['pcos','hormones','anti-inflammatory','gluten-free','dairy-free','insulin-resistance','high-protein'],prepTime:'10 min',cookTime:'10 min'},
+  {id:28,title:'Sweet Potato Egg Hash',emoji:'🍳',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-28-1778807172760',healthLabels:['pcos','energy','hormones','vegetarian','gluten-free','dairy-free','insulin-resistance','high-protein'],prepTime:'10 min',cookTime:'20 min'},
+  {id:29,title:'Zucchini Turkey Taco Skillet',emoji:'🌮',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-29-1778807182307',healthLabels:['pcos','hormones','high-protein','gluten-free','dairy-free','insulin-resistance'],prepTime:'10 min',cookTime:'15 min'},
+  {id:30,title:'Cinnamon Almond Yogurt Bowl',emoji:'🍓',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-30-1778807199192',healthLabels:['pcos','energy','hormones','vegetarian','gluten-free','insulin-resistance'],prepTime:'5 min',cookTime:'0 min'},
+  {id:31,title:'Turmeric Coconut Chickpea Curry',emoji:'🍛',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-31-1778807270530',healthLabels:['pcos','anti-inflammatory','gut','hormones','vegan','gluten-free','dairy-free','insulin-resistance'],prepTime:'5 min',cookTime:'15 min'},
+  {id:52,title:'Peanut Butter Energy Oat Bites',emoji:'🍽',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-52-1780422121888',healthLabels:['pcos','insulin-resistance','vegetarian'],prepTime:'10',cookTime:''},
+  {id:53,title:'Fresh Quinoa and Salmon Salad',emoji:'🥗',photo:'',healthLabels:['pcos','endometriosis','thyroid','insulin-resistance','high-protein'],prepTime:'',cookTime:''},
+  {id:54,title:'Low FODMAP Immunity Smoothie',emoji:'🥤',photo:'',healthLabels:['gut','anti-inflammatory','immune','vegetarian'],prepTime:'5',cookTime:''},
+  {id:55,title:'Protein packed egg bites',emoji:'🥚',photo:'',healthLabels:['pcos','endometriosis','thyroid','vegetarian','high-protein','fertility'],prepTime:'10',cookTime:'20'},
+  {id:56,title:'Rich and Creamy Chocolate Peanut Butter Fruit Dip',emoji:'🍫',photo:'',healthLabels:['pcos','hormones','anti-inflammatory','insulin-resistance','vegetarian'],prepTime:'5',cookTime:''},
+  {id:57,title:'Double Chocolate Banana Bread',emoji:'🍌',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-57-1780663176270',healthLabels:['pcos','hormones','anti-inflammatory','vegetarian'],prepTime:'20',cookTime:'55'},
+  {id:58,title:'Lentil & Walnut Bolognese',emoji:'🍽',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-58-1780663538596',healthLabels:['gut','anti-inflammatory'],prepTime:'10',cookTime:'35'},
+  {id:59,title:'Mediterranean Turkey Bowls',emoji:'🥙',photo:'',healthLabels:['pcos','high-protein','endometriosis','insulin-resistance'],prepTime:'15',cookTime:''},
+  {id:60,title:'4 Ingredient Overnight Creamy Chia Pudding',emoji:'🫐',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-60-1780670125707',healthLabels:['pcos','gut','endometriosis','vegetarian','gluten-free'],prepTime:'10',cookTime:'0'},
+  {id:61,title:'Strawberry Kiwi Immunity Pops',emoji:'🍓',photo:'',healthLabels:['anti-inflammatory','gut','immune','vegetarian','gluten-free'],prepTime:'5',cookTime:'0'},
+  {id:62,title:'Split Pea Soup',emoji:'🍲',photo:'',healthLabels:['dairy-free','hormones','energy','budget-friendly','high-protein','pcos','gut','meal-prep','high-fiber','insulin-resistance','menopause'],prepTime:'15 min',cookTime:'75 min'},
+  {id:63,title:'2-Ingredient High-Protein Bagels',emoji:'🥯',photo:'',healthLabels:['hormones','energy','freezer-friendly','vegetarian','high-protein','pcos','meal-prep','insulin-resistance','menopause'],prepTime:'10 minutes',cookTime:'25 minutes'},
+  {id:64,title:'Spring Vegetable Cream Cheese Spread',emoji:'🥒',photo:'',healthLabels:['snack','energy','hormones','quick-easy','immune','vegetarian','gut','meal-prep'],prepTime:'10 minutes',cookTime:'0 minutes'},
+  {id:65,title:'Cherry Chocolate High-Protein Pudding',emoji:'🍒',photo:'',healthLabels:['snack','energy','hormones','no-bake','dessert','vegetarian','high-protein','pcos','gluten-free','insulin-resistance'],prepTime:'10 minutes',cookTime:'0 minutes'},
+  {id:66,title:'Mediterranean Chicken Power Bowl',emoji:'🥗',photo:'',healthLabels:['energy','hormones','high-protein','pcos','gluten-free','meal-prep','high-fiber','insulin-resistance','menopause'],prepTime:'15 minutes',cookTime:'20 minutes'},
+  {id:67,title:'Southwest Cottage Cheese Taco Bowl',emoji:'🌮',photo:'',healthLabels:['hormones','energy','high-protein','pcos','meal-prep','gluten-free','high-fiber','insulin-resistance'],prepTime:'10 minutes',cookTime:'20 minutes'},
+  {id:68,title:'Lemon Blueberry Baked Oatmeal',emoji:'🫐',photo:'',healthLabels:['hormones','energy','breakfast','vegetarian','high-protein','pcos','meal-prep','high-fiber','insulin-resistance'],prepTime:'10 minutes',cookTime:'35 minutes'},
+  {id:69,title:'Sheet Pan Maple Dijon Salmon & Brussels Sprouts',emoji:'🐟',photo:'',healthLabels:['menopause','thyroid','dairy-free','energy','hormones','immune','high-protein','meal-prep','gluten-free'],prepTime:'10 minutes',cookTime:'25 minutes'},
+  {id:86,title:'Mediterranean Turmeric Salmon & Lentil Power Bowl',emoji:'🍽',photo:'',healthLabels:['pcos','insulin-resistance','anti-inflammatory'],prepTime:'15 min',cookTime:'20 min'},
+  {id:87,title:'Dark Chocolate Tahini Fudge Squares',emoji:'🍽',photo:'',healthLabels:['pcos','insulin-resistance','anti-inflammatory'],prepTime:'15 minutes',cookTime:'2 hours'},
+  {id:88,title:'Chocolate Almond Cottage Cheese Truffles',emoji:'🍽',photo:'',healthLabels:['pcos','anti-inflammatory','insulin-resistance'],prepTime:'10 minutes',cookTime:'1 hour'},
+  {id:89,title:'Crispy Parmesan Zucchini Chips with Herbed Greek Yogurt Dip',emoji:'🍽',photo:'',healthLabels:['pcos','insulin-resistance','anti-inflammatory'],prepTime:'10 minutes',cookTime:'25 minutes'},
+  {id:90,title:'Cinnamon Almond Pancakes',emoji:'🍽',photo:'',healthLabels:['pcos','high-protein','anti-inflammatory','insulin-resistance'],prepTime:'5 minutes',cookTime:'10 minutes'},
+  {id:91,title:'Buffalo Chicken Stuffed Bell Peppers',emoji:'🍽',photo:'',healthLabels:['pcos','anti-inflammatory','high-protein','insulin-resistance'],prepTime:'15 minutes',cookTime:'25 minutes'},
+  {id:92,title:'25 Minute Peanut Butter Noodles',emoji:'🍽',photo:'https://zgjtibyhuhpibrxcormd.supabase.co/storage/v1/object/public/recipe-images/recipe-92-1783611689523',healthLabels:['pcos','endometriosis','hormones','gut','vegetarian','anti-inflammatory','dairy-free','quick-easy','high-fiber','gluten-free','vegan','high-protein'],prepTime:'10 min',cookTime:'15 min'},
+];
+
 function Welcome({ onSignIn, onSignUp }) {
-  const previewRecipes = RECIPES.slice(0, 3);
+  const previewRecipes = WELCOME_TEASER_RECIPES.slice(0, 3);
+  const [activeCondition, setActiveCondition] = useState('pcos');
+  const activeInfo = WELCOME_CONDITIONS.find(c => c.key === activeCondition);
+  const conditionRecipes = WELCOME_TEASER_RECIPES.filter(r => r.healthLabels.includes(activeCondition)).slice(0, 6);
+
   return (
     <div className="welcome-page">
-      <div className="welcome-left">
-        <div className="welcome-brand-line">food that works for your body</div>
-        <h1 className="welcome-headline" style={{fontFamily:'var(--font-logo)',fontStyle:'italic',fontWeight:600,color:'var(--green-dark)',display:'inline-flex',alignItems:'flex-end'}}>
-          nuri<span style={{display:'inline-block',width:12,height:12,borderRadius:'50%',background:'var(--rose)',marginLeft:3,marginBottom:3,flexShrink:0}} />
-        </h1>
-        <p className="welcome-sub">
-          Recipes built by registered dietitians — for PCOS / PMOS, IBS, endometriosis, and more. Not generic wellness. Real clinical expertise, in your kitchen.
-        </p>
-        <button className="welcome-cta" onClick={onSignUp}>Create an account 🌿</button>
-        <button onClick={onSignIn} style={{background:'none',border:'none',color:'var(--text-light)',fontSize:13,cursor:'pointer',fontFamily:'var(--font-body)',marginTop:10,textDecoration:'underline'}}>
-          Already have an account? Sign in
-        </button>
-        <p className="welcome-note">🩺 Recipes by verified registered dietitians</p>
-      </div>
-      <div className="welcome-right">
-        <div className="welcome-recipe-stack">
-          {previewRecipes.map(r => (
-            <div key={r.id} className="welcome-mini-card">
-              <span className="welcome-mini-emoji">{r.emoji}</span>
-              <div>
-                <div className="welcome-mini-title">{r.title}</div>
-                <div className="welcome-mini-tag">{r.healthLabels.slice(0,2).map(l => LABEL_MAP[l]?.label).filter(Boolean).join(' · ')}</div>
+      <div className="welcome-hero">
+        <div className="welcome-left">
+          <div className="welcome-brand-line">nutrition made by registered dietitians</div>
+          <h1 className="welcome-headline">Food that works for your body.</h1>
+          <p className="welcome-sub">
+            Nutrition made entirely by registered dietitians — for women managing hormonal and chronic health. Real, delicious food with clinical expertise, right in your kitchen.
+          </p>
+          <div className="wl-left-actions" style={{display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
+            <button className="welcome-cta" onClick={onSignUp}>Create your account</button>
+            <button className="welcome-cta-ghost" onClick={onSignIn}>Already have an account? Sign in</button>
+          </div>
+          <p className="welcome-note">Every recipe is written and reviewed by a registered dietitian — no one else touches it.</p>
+        </div>
+        <div className="welcome-right">
+          <div className="welcome-recipe-stack">
+            {previewRecipes.map(r => (
+              <div key={r.id} className="welcome-mini-card">
+                {r.photo ? (
+                  <img className="welcome-mini-photo" src={r.photo} alt={r.title} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                ) : null}
+                <div className="welcome-mini-fallback" style={{ display: r.photo ? 'none' : 'flex' }}>{r.emoji}</div>
+                <div className="welcome-mini-overlay">
+                  <div className="welcome-mini-title">{r.title}</div>
+                  <div className="welcome-mini-tag">{r.healthLabels.slice(0,2).map(l => LABEL_MAP[l]?.label).filter(Boolean).join(' · ')}</div>
+                </div>
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="wl-section wl-picker">
+        <div className="wl-eyebrow">no explaining required</div>
+        <h2 className="wl-section-title">What are you managing?</h2>
+        <p className="wl-section-sub">Just tell us — we'll show you what's built for it.</p>
+        <div className="wl-pill-row">
+          {WELCOME_CONDITIONS.map(c => (
+            <button key={c.key} className={`wl-pill ${activeCondition === c.key ? 'active' : ''}`} onClick={() => setActiveCondition(c.key)}>{c.label}</button>
           ))}
         </div>
+        <p style={{fontSize:14,color:'var(--text-mid)',marginBottom:20,maxWidth:520}}>{activeInfo?.blurb}</p>
+        {conditionRecipes.length > 0 ? (
+          <div className="wl-teaser-grid">
+            {conditionRecipes.map(r => (
+              <div key={r.id} className="wl-teaser-card">
+                <div className="wl-teaser-emoji">{r.emoji}</div>
+                <div className="wl-teaser-title">{r.title}</div>
+                <div className="wl-teaser-meta">{[r.prepTime && `${r.prepTime} prep`, r.cookTime && `${r.cookTime} cook`].filter(Boolean).join(' · ') || 'Dietitian-reviewed'}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="wl-teaser-empty">More {activeInfo?.label} recipes are added every week — sign up to be first to see them.</p>
+        )}
+      </div>
+
+      <div className="wl-section wl-lifestyle">
+        <div className="wl-eyebrow">built for your actual week</div>
+        <h2 className="wl-section-title">Not just your condition. Your life, too.</h2>
+        <div className="wl-chip-row">
+          {WELCOME_OCCASIONS.map(o => <div key={o} className="wl-chip">{o}</div>)}
+        </div>
+      </div>
+
+      <div className="wl-section wl-trust">
+        <div className="wl-eyebrow">built by women, for women</div>
+        <h2 className="wl-section-title">Built by women, for women.</h2>
+        <p className="wl-trust-text">
+          We got tired of finding out the hard way what most wellness content actually is — someone else's guess, dressed up as certainty. Every recipe on nuri. is written and reviewed by a registered dietitian.
+        </p>
+        <button className="welcome-cta" onClick={onSignUp}>Create your account</button>
       </div>
     </div>
   );
@@ -4294,6 +4451,17 @@ function App() {
       const refCode = params.get('ref');
       if (refCode) {
         localStorage.setItem('nuri_ref_code', refCode);
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+
+      // Detect landing source (e.g. a condition SEO page) for attribution, and
+      // auto-open the signup modal when a marketing page deep-links with ?signup=1
+      const landingSrc = params.get('src');
+      if (landingSrc) {
+        localStorage.setItem('nuri_landing_source', landingSrc);
+      }
+      if (params.get('signup') === '1') {
+        setShowAuthModal('signup');
         window.history.replaceState({}, '', window.location.pathname);
       }
 
