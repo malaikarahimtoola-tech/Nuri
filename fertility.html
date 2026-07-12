@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fertility Recipes by Registered Dietitians | nuri.</title>
+<meta name="description" content="Fertility-supportive recipes written and reviewed by registered dietitians. No influencers, no guessing — real food for trying to conceive." />
+<link rel="canonical" href="https://nurirecipes.com/fertility" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Fertility Recipes by Registered Dietitians | nuri." />
+<meta property="og:description" content="Fertility-supportive recipes written and reviewed by registered dietitians. No influencers, no guessing — real food for trying to conceive." />
+<meta property="og:url" content="https://nurirecipes.com/fertility" />
+<meta name="twitter:card" content="summary" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Fraunces:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cream:#FAF6F0; --warm-beige:#F0E8DC; --border:#E4D9CC; --brown:#5C3D2E; --tan:#C4A882;
+  --text:#2C1810; --text-mid:#6B4D3C; --text-light:#9C7B6A; --green-dark:#3A6B4A; --rose:#C47A7A;
+  --radius:14px; --radius-sm:8px; --max:1200px;
+  --font-landing:'Fraunces',Georgia,serif; --font-logo:'Cormorant Garamond',Georgia,serif; --font-body:'DM Sans',system-ui,sans-serif;
+}
+body{background:var(--cream);color:var(--text);font-family:var(--font-body);line-height:1.5;}
+a{color:inherit;text-decoration:none;}
+/* .wrap only ever sets horizontal padding; section/hero/footer only ever set vertical padding.
+   Keeping these on disjoint properties means combining classes (e.g. class="hero wrap") can
+   never have one shorthand silently wipe out the other's spacing. */
+.wrap{padding-left:64px;padding-right:64px;}
+header{padding-top:24px;padding-bottom:24px;}
+.logo{font-family:var(--font-logo);font-size:24px;font-style:italic;font-weight:600;color:var(--green-dark);display:inline-flex;align-items:flex-end;}
+.logo-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--rose);margin-left:2px;margin-bottom:2px;}
+header .signin{float:right;font-size:13px;color:var(--text-mid);padding:8px 16px;border:1px solid var(--border);border-radius:50px;}
+.hero{padding-top:64px;padding-bottom:64px;text-align:center;}
+.hero-inner{max-width:680px;margin:0 auto;}
+.eyebrow{font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-light);margin-bottom:14px;}
+h1{font-family:var(--font-landing);font-style:italic;font-weight:600;font-size:40px;color:var(--text);line-height:1.2;margin:0 auto 16px;}
+.sub{font-size:16px;color:var(--text-mid);line-height:1.65;margin:0 auto 28px;max-width:520px;}
+.cta-row{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;}
+.cta{display:inline-block;padding:16px 36px;background:var(--brown);color:#fff;border-radius:50px;font-size:15px;font-weight:500;}
+.cta-ghost{font-size:13px;color:var(--text-light);text-decoration:underline;}
+.note{margin-top:16px;font-size:13px;color:var(--text-light);}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px;}
+.pill{padding:9px 18px;border-radius:50px;font-size:13px;border:1px solid var(--border);background:#fff;color:var(--text-mid);}
+.pill.active{background:var(--brown);color:#fff;border-color:var(--brown);}
+section{padding-top:72px;padding-bottom:72px;}
+.picker{background:var(--warm-beige);}
+.section-title{font-family:var(--font-landing);font-style:italic;font-weight:600;font-size:28px;color:var(--text);margin-bottom:8px;}
+.section-sub{font-size:14px;color:var(--text-mid);margin-bottom:28px;max-width:520px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:8px;max-width:960px;}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+.card-emoji{font-size:28px;margin-bottom:10px;}
+.card-title{font-family:var(--font-landing);font-style:italic;font-weight:600;font-size:15px;color:var(--text);margin-bottom:4px;}
+.card-meta{font-size:11px;color:var(--text-light);}
+.card-locked{background:var(--cream);border-style:dashed;text-align:center;}
+.card-lock{font-size:20px;margin-bottom:8px;opacity:0.6;}
+.lifestyle{background:var(--cream);}
+.chip-row{display:flex;flex-wrap:wrap;gap:10px;}
+.chip{background:#fff;border-radius:var(--radius-sm);padding:11px 18px;font-size:13px;color:var(--brown);}
+.trust{background:var(--warm-beige);border-top:1px solid var(--border);}
+.trust-text{font-size:14px;line-height:1.75;color:var(--text-mid);max-width:640px;margin-bottom:28px;}
+footer{border-top:1px solid var(--border);padding:32px 64px;font-size:12px;color:var(--text-light);}
+footer a{text-decoration:underline;margin-right:16px;}
+@media(max-width:700px){
+  .wrap{padding-left:20px;padding-right:20px;}
+  section{padding-top:48px;padding-bottom:48px;}
+  h1{font-size:28px;}
+  .section-title{font-size:22px;}
+  .grid{grid-template-columns:1fr;}
+  header .signin{float:none;display:inline-block;margin-top:12px;}
+  footer{padding-top:32px;padding-bottom:32px;padding-left:20px;padding-right:20px;}
+}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <a class="logo" href="/">nuri<span class="logo-dot"></span></a>
+  <a class="signin" href="/">Sign in</a>
+</header>
+
+<div class="hero wrap">
+  <div class="hero-inner">
+    <div class="eyebrow">nutrition made by registered dietitians</div>
+    <h1>Fertility recipes, built by registered dietitians.</h1>
+    <p class="sub">Recipes designed to support your body through trying to conceive. Real, delicious food built around what your body needs.</p>
+    <div class="cta-row">
+      <a class="cta" href="/?signup=1&src=fertility">Create your account</a>
+      <a class="cta-ghost" href="/">See how it works</a>
+    </div>
+    <p class="note">Every recipe is written and reviewed by a registered dietitian — no one else touches it.</p>
+  </div>
+</div>
+
+<section class="picker wrap">
+  <div class="eyebrow">no explaining required</div>
+  <div class="section-title">What are you managing?</div>
+  <div class="section-sub">Just tell us — we'll show you what's built for it.</div>
+  <div class="pill-row">
+    <a class="pill" href="pcos.html">PCOS</a>
+        <a class="pill" href="hormones.html">Hormones</a>
+        <a class="pill" href="insulin-resistance.html">Insulin Resistance</a>
+        <a class="pill" href="gut-health.html">Gut Health</a>
+        <a class="pill" href="endometriosis.html">Endometriosis</a>
+        <a class="pill" href="immune-health.html">Immune Health</a>
+        <a class="pill" href="menopause.html">Menopause</a>
+        <a class="pill" href="thyroid.html">Thyroid</a>
+        <a class="pill active" href="fertility.html">Fertility</a>
+  </div>
+  <div class="section-sub">A look at what's inside — sign up for the full Fertility library.</div>
+  <div class="grid">
+    <div class="card">
+          <div class="card-emoji">🥚</div>
+          <div class="card-title">Veggie &amp; Cheese Frittata</div>
+          <div class="card-meta">10 min prep · 20 min cook</div>
+        </div>
+        <div class="card">
+          <div class="card-emoji">🥚</div>
+          <div class="card-title">Protein packed egg bites</div>
+          <div class="card-meta">10 prep · 20 cook</div>
+        </div>
+    <div class="card card-locked"><div class="card-lock">🔒</div><div class="card-title">Unlock to see</div></div>
+        <div class="card card-locked"><div class="card-lock">🔒</div><div class="card-title">Unlock to see</div></div>
+        <div class="card card-locked"><div class="card-lock">🔒</div><div class="card-title">Unlock to see</div></div>
+  </div>
+</section>
+
+<section class="lifestyle wrap">
+  <div class="eyebrow">built for your actual week</div>
+  <div class="section-title">Not just your condition. Your life, too.</div>
+  <div class="chip-row">
+    <div class="chip">15-minute weeknights</div>
+      <div class="chip">Sunday meal prep</div>
+      <div class="chip">A busy night out</div>
+      <div class="chip">When you have nothing left tonight</div>
+  </div>
+</section>
+
+<section class="trust wrap">
+  <div class="eyebrow">built by women, for women</div>
+  <div class="section-title">Built by women, for women.</div>
+  <p class="trust-text">We got tired of finding out the hard way what most wellness content actually is — someone else's guess, dressed up as certainty. Every recipe on nuri. is written and reviewed by a registered dietitian.</p>
+  <a class="cta" href="/?signup=1&src=fertility">Create your account</a>
+</section>
+
+<footer>
+  <a href="/">nuri. home</a>
+  <a href="pcos.html">PCOS</a>
+  <a href="hormones.html">Hormones</a>
+  <a href="insulin-resistance.html">Insulin Resistance</a>
+  <a href="gut-health.html">Gut Health</a>
+  <a href="endometriosis.html">Endometriosis</a>
+  <a href="immune-health.html">Immune Health</a>
+  <a href="menopause.html">Menopause</a>
+  <a href="thyroid.html">Thyroid</a>
+</footer>
+
+</body>
+</html>
