@@ -202,9 +202,13 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .onboarding-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
 .onboarding-grid:last-of-type { margin-bottom: 40px; }
 .onboarding-grid-top { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 auto 12px; max-width: 75%; }
+.onboarding-grid-two { display: flex; justify-content: center; gap: 16px; margin-bottom: 40px; flex-wrap: wrap; }
+.onboarding-grid-two .goal-card { width: 220px; }
 @media (max-width: 700px) {
   .onboarding-grid { grid-template-columns: 1fr; }
   .onboarding-grid-top { grid-template-columns: 1fr; max-width: 100%; }
+  .onboarding-grid-two { flex-direction: column; align-items: stretch; }
+  .onboarding-grid-two .goal-card { width: 100%; }
 }
 .goal-card { background: var(--white); border: 2px solid var(--border); border-radius: var(--radius); padding: 20px 14px; cursor: pointer; transition: all 0.18s; text-align: center; position: relative; overflow: hidden; }
 .goal-card:hover { border-color: var(--tan); transform: translateY(-2px); box-shadow: var(--shadow); }
@@ -1030,6 +1034,13 @@ const HEALTH_GOALS = [
   { id: 'anti-inflammatory', label: 'Anti-Inflammatory', icon: '🌾', description: 'Calm inflammation and support long-term health', color: '#C4DEB8' },
 ];
 
+// Shared across onboarding, the Feed's "Cooking style" filter, and the You tab
+// preference toggle — one source of truth for these two lifestyle tags.
+const COOKING_STYLE_OPTIONS = [
+  { id: 'meal-prep', label: 'Meal Prep', icon: '🥡', description: 'Batch-cook and set your week up in advance', color: '#E8D5A8' },
+  { id: 'quick-easy', label: 'Quick & Easy', icon: '⚡', description: 'Recipes ready in 25 minutes or less', color: '#FFE8B8' },
+];
+
 const LABEL_MAP = {
   pcos: { label: 'PCOS / PMOS', color: '#F2C4CE', text: '#8B3A52' },
   fertility: { label: 'Fertility', color: '#C8E6C4', text: '#2E6B3E' },
@@ -1050,6 +1061,7 @@ const LABEL_MAP = {
   'dairy-free': { label: 'Dairy-Free', color: '#D8E8EE', text: '#265A66' },
   'high-fiber': { label: 'High-Fiber', color: '#D9E8C4', text: '#3C5E1E' },
   'quick-easy': { label: 'Quick & Easy', color: '#FFE8B8', text: '#8A5A00' },
+  'meal-prep': { label: 'Meal Prep', color: '#E8D5A8', text: '#6E5300' },
 };
 
 const DIETICIANS = [
@@ -1862,8 +1874,11 @@ function WelcomeSlide({ userName, healthGoals, onContinue }) {
 }
 
 function Onboarding({ onComplete, userName }) {
+  const [step, setStep] = useState(1);
   const [selected, setSelected] = useState([]);
+  const [cookingPrefs, setCookingPrefs] = useState([]);
   const toggle = id => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  const toggleCooking = id => setCookingPrefs(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
   const renderGoal = g => (
     <div key={g.id} className={`goal-card ${selected.includes(g.id) ? 'selected' : ''}`} onClick={() => toggle(g.id)}>
       <div className="goal-card-bg" style={{ background: g.color }} />
@@ -1873,6 +1888,37 @@ function Onboarding({ onComplete, userName }) {
       <div className="goal-check">✓</div>
     </div>
   );
+
+  if (step === 2) {
+    return (
+      <div className="onboarding-wrap">
+        <div className="onboarding-head">
+          <div className="onboarding-step">Personalise your feed</div>
+          <h1 className="onboarding-title">How do you like to cook?</h1>
+          <p className="onboarding-sub">Optional — pick as many as apply, or skip this for now.</p>
+        </div>
+        <div className="onboarding-grid-two">
+          {COOKING_STYLE_OPTIONS.map(g => (
+            <div key={g.id} className={`goal-card ${cookingPrefs.includes(g.id) ? 'selected' : ''}`} onClick={() => toggleCooking(g.id)}>
+              <div className="goal-card-bg" style={{ background: g.color }} />
+              <div className="goal-icon">{g.icon}</div>
+              <div className="goal-label">{g.label}</div>
+              <div className="goal-desc">{g.description}</div>
+              <div className="goal-check">✓</div>
+            </div>
+          ))}
+        </div>
+        <div className="onboarding-actions">
+          <button className="onboarding-btn" onClick={() => onComplete(selected, cookingPrefs)}>
+            {cookingPrefs.length === 0 ? 'Show my feed' : `Show my feed (${cookingPrefs.length} selected)`}
+          </button>
+          <button className="onboarding-skip" onClick={() => onComplete(selected, [])}>Skip this step</button>
+          <button className="onboarding-skip" style={{marginTop:4}} onClick={() => setStep(1)}>← Back</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="onboarding-wrap">
       <div className="onboarding-head">
@@ -1890,10 +1936,10 @@ function Onboarding({ onComplete, userName }) {
         {HEALTH_GOALS.slice(7, 11).map(renderGoal)}
       </div>
       <div className="onboarding-actions">
-        <button className="onboarding-btn" onClick={() => onComplete(selected)} disabled={selected.length === 0}>
-          {selected.length === 0 ? 'Select at least one' : `Show my feed (${selected.length} selected)`}
+        <button className="onboarding-btn" onClick={() => setStep(2)} disabled={selected.length === 0}>
+          {selected.length === 0 ? 'Select at least one' : `Continue (${selected.length} selected)`}
         </button>
-        <button className="onboarding-skip" onClick={() => onComplete([])}>Browse all recipes</button>
+        <button className="onboarding-skip" onClick={() => onComplete([], [])}>Browse all recipes</button>
       </div>
     </div>
   );
@@ -1927,6 +1973,7 @@ const FALLBACK_FREE_RECIPE_COUNT = 3;
 function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggleSave, user, onSignIn, isPremium, onSubscribe, supaRecipes, supaDietitians, premiumSettings, newSupaRecipes, supaAllDietitians, dietaryPreferences, onDietaryChange, showShareBanner, setShowShareBanner }) {
   const [active, setActive] = useState(healthGoals?.length > 0 ? healthGoals[0] : 'all');
   const [showDietaryDropdown, setShowDietaryDropdown] = useState(false);
+  const [showCookingDropdown, setShowCookingDropdown] = useState(false);
   const activeDietary = dietaryPreferences || [];
   const getLocalD = (id) => { const nid = parseInt(id, 10); return ALL_DIETICIANS.find(d => d.id === nid) || (supaAllDietitians || []).find(d => d.id === nid) || { id: nid, name:'Unknown', credentials:'RD', initials:'?', avatarColor:'#C4A882', photo:null }; };
 
@@ -1939,9 +1986,21 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
     { id: 'high-fiber', label: 'High Fiber' },
   ];
 
+  // Cooking-style is a second, separate dropdown in the UI (how you cook, not
+  // what's in it) but shares the same underlying tag array/Supabase field as
+  // Dietary — both are just tags checked against a recipe's healthLabels.
+  // Uses the shared COOKING_STYLE_OPTIONS constant (also used by onboarding and the You tab).
+  const COOKING_STYLE_FILTERS = COOKING_STYLE_OPTIONS;
+
+  const activeDietaryCount = activeDietary.filter(id => DIETARY_FILTERS.some(f => f.id === id)).length;
+  const activeCookingCount = activeDietary.filter(id => COOKING_STYLE_FILTERS.some(f => f.id === id)).length;
+
   const toggleDietary = (id) => {
     const next = activeDietary.includes(id) ? activeDietary.filter(x => x !== id) : [...activeDietary, id];
     onDietaryChange(next);
+  };
+  const clearGroup = (group) => {
+    onDietaryChange(activeDietary.filter(id => !group.some(f => f.id === id)));
   };
 
   const mergedRecipes = useMemo(() => {
@@ -2000,13 +2059,13 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
         <div style={{width:'1px',height:'22px',background:'var(--border)',flexShrink:0,margin:'0 4px'}} />
         <div style={{position:'relative',flexShrink:0}}>
           <button
-            className={`filter-chip ${activeDietary.length > 0 ? 'dietary-active' : ''}`}
+            className={`filter-chip ${activeDietaryCount > 0 ? 'dietary-active' : ''}`}
             onClick={() => setShowDietaryDropdown(p => !p)}
             style={{display:'flex',alignItems:'center',gap:6}}
           >
             <span>Dietary</span>
-            {activeDietary.length > 0 && (
-              <span style={{background:'var(--sage)',color:'white',borderRadius:'50%',width:16,height:16,fontSize:10,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>{activeDietary.length}</span>
+            {activeDietaryCount > 0 && (
+              <span style={{background:'var(--sage)',color:'white',borderRadius:'50%',width:16,height:16,fontSize:10,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>{activeDietaryCount}</span>
             )}
             <span style={{fontSize:10,opacity:0.5,marginLeft:2}}>{showDietaryDropdown ? '▲' : '▾'}</span>
           </button>
@@ -2022,8 +2081,40 @@ function FeedTab({ healthGoals, onRecipeClick, onDieticianClick, saved, onToggle
                   </button>
                 );
               })}
-              {activeDietary.length > 0 && (
-                <button onClick={() => onDietaryChange([])} style={{width:'100%',padding:'6px 10px',border:'none',background:'none',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:11,color:'var(--text-light)',textAlign:'left',marginTop:2}}>
+              {activeDietaryCount > 0 && (
+                <button onClick={() => clearGroup(DIETARY_FILTERS)} style={{width:'100%',padding:'6px 10px',border:'none',background:'none',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:11,color:'var(--text-light)',textAlign:'left',marginTop:2}}>
+                  Clear all
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+        <div style={{position:'relative',flexShrink:0}}>
+          <button
+            className={`filter-chip ${activeCookingCount > 0 ? 'dietary-active' : ''}`}
+            onClick={() => setShowCookingDropdown(p => !p)}
+            style={{display:'flex',alignItems:'center',gap:6}}
+          >
+            <span>Cooking style</span>
+            {activeCookingCount > 0 && (
+              <span style={{background:'var(--sage)',color:'white',borderRadius:'50%',width:16,height:16,fontSize:10,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>{activeCookingCount}</span>
+            )}
+            <span style={{fontSize:10,opacity:0.5,marginLeft:2}}>{showCookingDropdown ? '▲' : '▾'}</span>
+          </button>
+          {showCookingDropdown && (
+            <div style={{position:'absolute',top:'calc(100% + 6px)',right:0,background:'var(--white)',border:'1.5px solid var(--border)',borderRadius:12,padding:6,minWidth:160,boxShadow:'0 4px 20px rgba(44,24,16,0.10)',zIndex:50}}>
+              {COOKING_STYLE_FILTERS.map(f => {
+                const on = activeDietary.includes(f.id);
+                return (
+                  <button key={f.id} onClick={() => toggleDietary(f.id)}
+                    style={{display:'flex',alignItems:'center',gap:10,width:'100%',padding:'8px 10px',borderRadius:8,border:'none',background: on ? 'var(--warm-beige)' : 'transparent',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:13,color: on ? 'var(--brown)' : 'var(--text-mid)',fontWeight: on ? 600 : 400,textAlign:'left'}}>
+                    <span style={{width:16,height:16,borderRadius:4,border:`1.5px solid ${on ? 'var(--sage)' : 'var(--border)'}`,background: on ? 'var(--sage)' : 'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:10,color:'white'}}>{on ? '✓' : ''}</span>
+                    {f.label}
+                  </button>
+                );
+              })}
+              {activeCookingCount > 0 && (
+                <button onClick={() => clearGroup(COOKING_STYLE_FILTERS)} style={{width:'100%',padding:'6px 10px',border:'none',background:'none',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:11,color:'var(--text-light)',textAlign:'left',marginTop:2}}>
                   Clear all
                 </button>
               )}
@@ -3610,6 +3701,35 @@ function ReferralCard({ user }) {
   );
 }
 
+function CookingPreferenceCard({ dietaryPreferences, onDietaryChange }) {
+  const active = dietaryPreferences || [];
+  const toggle = id => {
+    const next = active.includes(id) ? active.filter(x => x !== id) : [...active, id];
+    onDietaryChange(next);
+  };
+  return (
+    <div className="card-block">
+      <div className="card-block-title"><span>🍳 How you like to cook</span></div>
+      <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
+        {COOKING_STYLE_OPTIONS.map(o => {
+          const on = active.includes(o.id);
+          return (
+            <button key={o.id} onClick={() => toggle(o.id)} style={{
+              display:'flex', alignItems:'center', gap:6, padding:'8px 14px', borderRadius:50,
+              border: on ? '1.5px solid var(--brown)' : '1.5px solid var(--border)',
+              background: on ? 'var(--warm-beige)' : '#fff',
+              color: on ? 'var(--brown)' : 'var(--text-mid)',
+              fontFamily:'var(--font-body)', fontSize:13, fontWeight: on ? 600 : 400, cursor:'pointer',
+            }}>
+              <span>{o.icon}</span>{o.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function ChangePasswordLink({ onOpen }) {
   return (
     <div className="card-block" style={{cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'space-between'}} onClick={onOpen}>
@@ -3694,7 +3814,7 @@ function ChangePasswordPage({ user, onBack }) {
   );
 }
 
-function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician, supaDietitians, user, isPremium, onSubscribe, supaAllDietitians, onChangePassword }) {
+function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician, supaDietitians, user, isPremium, onSubscribe, supaAllDietitians, onChangePassword, dietaryPreferences, onDietaryChange }) {
   const goals = HEALTH_GOALS.filter(g => healthGoals.includes(g.id));
   const allKnownDs = [
     ...ALL_DIETICIANS,
@@ -3723,6 +3843,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
 
           <MySubscription user={user} isPremium={isPremium} onSubscribe={onSubscribe} />
           <ReferralCard user={user} />
+          <CookingPreferenceCard dietaryPreferences={dietaryPreferences} onDietaryChange={onDietaryChange} />
           <ChangePasswordLink onOpen={onChangePassword} />
 
           <div className="card-block">
@@ -4760,9 +4881,12 @@ function App() {
     // If user already went through onboarding before signing up, persist those goals
     if (window._pendingGoals?.length) {
       const goals = window._pendingGoals;
+      const cookingPrefs = window._pendingCookingPrefs || [];
       window._pendingGoals = null;
+      window._pendingCookingPrefs = null;
       setHealthGoals(goals);
-      await db.from('profiles').update({ health_goals: goals }).eq('id', u.id);
+      setDietaryPreferences(cookingPrefs);
+      await db.from('profiles').update({ health_goals: goals, dietary_preferences: cookingPrefs }).eq('id', u.id);
       setScreen('welcome_new');
     } else if (!profile?.health_goals?.length) {
       // Brand new user who skipped pre-auth onboarding — show condition picker then welcome
@@ -4843,15 +4967,17 @@ function App() {
     if (user) await db.from('comments').insert({ recipe_id: recipeId, user_id: user.id, name: comment.name, text: comment.text });
   };
 
-  const completeOnboarding = async (goals) => {
+  const completeOnboarding = async (goals, cookingPrefs = []) => {
     setHealthGoals(goals);
-    if (window._ph) window._ph.capture('onboarding_completed', { conditions: goals });
+    setDietaryPreferences(cookingPrefs);
+    if (window._ph) window._ph.capture('onboarding_completed', { conditions: goals, cooking_prefs: cookingPrefs });
     if (user) {
-      await db.from('profiles').update({ health_goals: goals }).eq('id', user.id);
+      await db.from('profiles').update({ health_goals: goals, dietary_preferences: cookingPrefs }).eq('id', user.id);
       setScreen('welcome_new');
     } else {
-      // Store goals temporarily so handleAuth can persist them after signup
+      // Store goals + cooking prefs temporarily so handleAuth can persist them after signup
       window._pendingGoals = goals;
+      window._pendingCookingPrefs = cookingPrefs;
       setScreen('app');
     }
   };
@@ -4920,7 +5046,7 @@ function App() {
       {tab === 'plan'    && <MealPlanTab user={user} onSignIn={() => setShowAuthModal('signup')} isPremium={isPremium} onSubscribe={() => { window._postPayRedirect = { tab: 'plan' }; setShowSubModal(true); }} healthGoals={healthGoals} onRecipeClick={r => navigate('recipe', r)} />}
       {tab === 'saved'   && <SavedTab {...sharedProps} isPremium={isPremium} onSubscribe={() => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } }} user={user} />}
       {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} supaDietitians={supaDietitians} />}
-      {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} user={user} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaAllDietitians={supaAllDietitians} onChangePassword={() => navigate('change_password')} />}
+      {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} user={user} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaAllDietitians={supaAllDietitians} onChangePassword={() => navigate('change_password')} dietaryPreferences={dietaryPreferences} onDietaryChange={setDietaryPreferences} />}
       {showApplyModal && <RDApplicationModal onClose={() => setShowApplyModal(false)} />}
       <button className="feedback-btn" onClick={() => setShowFeedback(true)}>✉️ Feedback</button>
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} user={user} />}
