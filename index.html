@@ -1,5 +1,4 @@
 
-
 <!-- v2 — July 10 2026 — explore page reorder (Alysse, Lyndsay, Claire Nanda, Mercy, Kelsey, Meredith, Claire Pettitt, Alice March); sort_order query bug fixed -->
 <!DOCTYPE html>
 <html lang="en">
@@ -200,8 +199,13 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .onboarding-step { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tan); margin-bottom: 10px; }
 .onboarding-title { font-family: var(--font-serif); font-size: 38px; font-style: italic; font-weight: 500; color: var(--text); margin-bottom: 10px; }
 .onboarding-sub { font-size: 15px; color: var(--text-light); }
-.onboarding-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 40px; }
-@media (max-width: 700px) { .onboarding-grid { grid-template-columns: repeat(2, 1fr); } }
+.onboarding-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+.onboarding-grid:last-of-type { margin-bottom: 40px; }
+.onboarding-grid-top { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 auto 12px; max-width: 75%; }
+@media (max-width: 700px) {
+  .onboarding-grid { grid-template-columns: repeat(2, 1fr); }
+  .onboarding-grid-top { grid-template-columns: repeat(2, 1fr); max-width: 100%; }
+}
 .goal-card { background: var(--white); border: 2px solid var(--border); border-radius: var(--radius); padding: 20px 14px; cursor: pointer; transition: all 0.18s; text-align: center; position: relative; overflow: hidden; }
 .goal-card:hover { border-color: var(--tan); transform: translateY(-2px); box-shadow: var(--shadow); }
 .goal-card.selected { border-color: var(--brown); }
@@ -974,7 +978,7 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
   /* Onboarding */
   .onboarding-wrap { padding: 32px 16px; }
   .onboarding-title { font-size: 26px; }
-  .onboarding-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .onboarding-grid, .onboarding-grid-top { grid-template-columns: repeat(2, 1fr); gap: 8px; max-width: 100%; }
   .goal-card { padding: 14px 10px; }
   .goal-icon { font-size: 22px; }
   .goal-label { font-size: 11px; }
@@ -1860,6 +1864,15 @@ function WelcomeSlide({ userName, healthGoals, onContinue }) {
 function Onboarding({ onComplete, userName }) {
   const [selected, setSelected] = useState([]);
   const toggle = id => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  const renderGoal = g => (
+    <div key={g.id} className={`goal-card ${selected.includes(g.id) ? 'selected' : ''}`} onClick={() => toggle(g.id)}>
+      <div className="goal-card-bg" style={{ background: g.color }} />
+      <div className="goal-icon">{g.icon}</div>
+      <div className="goal-label">{g.label}</div>
+      <div className="goal-desc">{g.description}</div>
+      <div className="goal-check">✓</div>
+    </div>
+  );
   return (
     <div className="onboarding-wrap">
       <div className="onboarding-head">
@@ -1867,16 +1880,14 @@ function Onboarding({ onComplete, userName }) {
         <h1 className="onboarding-title">What are you managing?</h1>
         <p className="onboarding-sub">Select all that feel relevant — we'll tailor your recipe feed to your condition.</p>
       </div>
+      <div className="onboarding-grid-top">
+        {HEALTH_GOALS.slice(0, 3).map(renderGoal)}
+      </div>
       <div className="onboarding-grid">
-        {HEALTH_GOALS.map(g => (
-          <div key={g.id} className={`goal-card ${selected.includes(g.id) ? 'selected' : ''}`} onClick={() => toggle(g.id)}>
-            <div className="goal-card-bg" style={{ background: g.color }} />
-            <div className="goal-icon">{g.icon}</div>
-            <div className="goal-label">{g.label}</div>
-            <div className="goal-desc">{g.description}</div>
-            <div className="goal-check">✓</div>
-          </div>
-        ))}
+        {HEALTH_GOALS.slice(3, 7).map(renderGoal)}
+      </div>
+      <div className="onboarding-grid">
+        {HEALTH_GOALS.slice(7, 11).map(renderGoal)}
       </div>
       <div className="onboarding-actions">
         <button className="onboarding-btn" onClick={() => onComplete(selected)} disabled={selected.length === 0}>
@@ -3599,7 +3610,16 @@ function ReferralCard({ user }) {
   );
 }
 
-function ChangePasswordCard({ user }) {
+function ChangePasswordLink({ onOpen }) {
+  return (
+    <div className="card-block" style={{cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'space-between'}} onClick={onOpen}>
+      <span style={{fontSize:14, fontWeight:600, color:'var(--text)', fontFamily:'var(--font-body)'}}>🔒 Change Password</span>
+      <span style={{color:'var(--text-light)', fontSize:16}}>→</span>
+    </div>
+  );
+}
+
+function ChangePasswordPage({ user, onBack }) {
   const [currentPassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
@@ -3630,36 +3650,51 @@ function ChangePasswordCard({ user }) {
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
-    setTimeout(() => setSuccess(false), 4000);
   };
 
   if (!user) return null;
 
   return (
-    <div className="card-block">
-      <div className="card-block-title"><span>🔒 Change Password</span></div>
-      {success && <p style={{color:'var(--green-dark)',fontSize:13,marginBottom:12}}>✅ Password updated successfully.</p>}
-      {error && <div className="auth-error">{error}</div>}
-      <div className="auth-field">
-        <label className="auth-label">Current password</label>
-        <input className="auth-input" type="password" placeholder="••••••••" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+    <div className="page-wrap">
+      <div className="page-hero" style={{position:'relative'}}>
+        <button className="back-btn" onClick={onBack}>← Back</button>
+        <div className="page-hero-script">account security</div>
+        <h1 className="page-hero-title">Change Password</h1>
       </div>
-      <div className="auth-field">
-        <label className="auth-label">New password</label>
-        <input className="auth-input" type="password" placeholder="At least 6 characters" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+      <div style={{maxWidth:420, margin:'0 auto'}}>
+        <div className="card-block">
+          {success ? (
+            <>
+              <p style={{color:'var(--green-dark)',fontSize:14,marginBottom:16}}>✅ Password updated successfully.</p>
+              <button className="auth-btn" onClick={onBack}>Back to your profile</button>
+            </>
+          ) : (
+            <>
+              {error && <div className="auth-error">{error}</div>}
+              <div className="auth-field">
+                <label className="auth-label">Current password</label>
+                <input className="auth-input" type="password" placeholder="••••••••" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+              </div>
+              <div className="auth-field">
+                <label className="auth-label">New password</label>
+                <input className="auth-input" type="password" placeholder="At least 6 characters" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+              </div>
+              <div className="auth-field">
+                <label className="auth-label">Confirm new password</label>
+                <input className="auth-input" type="password" placeholder="Repeat new password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChangePassword()} />
+              </div>
+              <button className="auth-btn" onClick={handleChangePassword} disabled={loading} style={{marginTop:8}}>
+                {loading ? 'Updating…' : 'Update password'}
+              </button>
+            </>
+          )}
+        </div>
       </div>
-      <div className="auth-field">
-        <label className="auth-label">Confirm new password</label>
-        <input className="auth-input" type="password" placeholder="Repeat new password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChangePassword()} />
-      </div>
-      <button className="auth-btn" onClick={handleChangePassword} disabled={loading} style={{marginTop:8}}>
-        {loading ? 'Updating…' : 'Update password'}
-      </button>
     </div>
   );
 }
 
-function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician, supaDietitians, user, isPremium, onSubscribe, supaAllDietitians }) {
+function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician, supaDietitians, user, isPremium, onSubscribe, supaAllDietitians, onChangePassword }) {
   const goals = HEALTH_GOALS.filter(g => healthGoals.includes(g.id));
   const allKnownDs = [
     ...ALL_DIETICIANS,
@@ -3688,7 +3723,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
 
           <MySubscription user={user} isPremium={isPremium} onSubscribe={onSubscribe} />
           <ReferralCard user={user} />
-          <ChangePasswordCard user={user} />
+          <ChangePasswordLink onOpen={onChangePassword} />
 
           <div className="card-block">
             <div className="card-block-title">
@@ -4870,6 +4905,13 @@ function App() {
     </>
   );
 
+  if (view?.type === 'change_password') return (
+    <>
+      <TopNav current={tab} onChange={t => { setView(null); setTab(t); }} {...navProps} />
+      <ChangePasswordPage user={user} onBack={goBack} />
+    </>
+  );
+
   return (
     <>
       <TopNav current={tab} onChange={setTab} {...navProps} />
@@ -4878,7 +4920,7 @@ function App() {
       {tab === 'plan'    && <MealPlanTab user={user} onSignIn={() => setShowAuthModal('signup')} isPremium={isPremium} onSubscribe={() => { window._postPayRedirect = { tab: 'plan' }; setShowSubModal(true); }} healthGoals={healthGoals} onRecipeClick={r => navigate('recipe', r)} />}
       {tab === 'saved'   && <SavedTab {...sharedProps} isPremium={isPremium} onSubscribe={() => { if (!user) { setShowAuthModal('signup'); } else { setShowSubModal(true); } }} user={user} />}
       {tab === 'about'   && <AboutTab onApply={() => setShowApplyModal(true)} supaDietitians={supaDietitians} />}
-      {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} user={user} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaAllDietitians={supaAllDietitians} />}
+      {tab === 'you'     && <YouTab healthGoals={healthGoals} followed={followed} saved={saved} tried={tried} triedPhotos={triedPhotos} onEditGoals={() => setScreen('onboarding')} onDieticianClick={d => navigate('profile', d)} onApply={() => setShowApplyModal(true)} onRecipeClick={r => navigate('recipe', r)} isRD={isRD} onToggleRD={() => setIsRD(p => !p)} rdDieticianId={rdDieticianId} onSetRDDietician={setRdDieticianId} supaDietitians={supaDietitians} user={user} isPremium={isPremium} onSubscribe={() => setShowSubModal(true)} supaAllDietitians={supaAllDietitians} onChangePassword={() => navigate('change_password')} />}
       {showApplyModal && <RDApplicationModal onClose={() => setShowApplyModal(false)} />}
       <button className="feedback-btn" onClick={() => setShowFeedback(true)}>✉️ Feedback</button>
       {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} user={user} />}
