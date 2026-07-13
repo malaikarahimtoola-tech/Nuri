@@ -1,5 +1,6 @@
 
-<!-- — July 12 2026 — explore page reorder (Alysse, Lyndsay, Claire Nanda, Mercy, Kelsey, Meredith, Claire Pettitt, Alice March); sort_order query bug fixed -->
+
+<!-- v2 — July 10 2026 — explore page reorder (Alysse, Lyndsay, Claire Nanda, Mercy, Kelsey, Meredith, Claire Pettitt, Alice March); sort_order query bug fixed -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3598,6 +3599,66 @@ function ReferralCard({ user }) {
   );
 }
 
+function ChangePasswordCard({ user }) {
+  const [currentPassword, setCurrentPassword] = React.useState('');
+  const [newPassword, setNewPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [success, setSuccess] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const db = window._supa;
+
+  const handleChangePassword = async () => {
+    setError('');
+    setSuccess(false);
+    if (!currentPassword || !newPassword || !confirmPassword) { setError('Please fill in all fields.'); return; }
+    if (newPassword.length < 6) { setError('New password must be at least 6 characters.'); return; }
+    if (newPassword !== confirmPassword) { setError('New passwords do not match.'); return; }
+    setLoading(true);
+    // Re-authenticate with the current password first so someone with an
+    // unattended logged-in session can't silently change it without knowing it.
+    const { error: signInError } = await db.auth.signInWithPassword({ email: user.email, password: currentPassword });
+    if (signInError) {
+      setLoading(false);
+      setError('Current password is incorrect.');
+      return;
+    }
+    const { error: updateError } = await db.auth.updateUser({ password: newPassword });
+    setLoading(false);
+    if (updateError) { setError(updateError.message); return; }
+    setSuccess(true);
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setTimeout(() => setSuccess(false), 4000);
+  };
+
+  if (!user) return null;
+
+  return (
+    <div className="card-block">
+      <div className="card-block-title"><span>🔒 Change Password</span></div>
+      {success && <p style={{color:'var(--green-dark)',fontSize:13,marginBottom:12}}>✅ Password updated successfully.</p>}
+      {error && <div className="auth-error">{error}</div>}
+      <div className="auth-field">
+        <label className="auth-label">Current password</label>
+        <input className="auth-input" type="password" placeholder="••••••••" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+      </div>
+      <div className="auth-field">
+        <label className="auth-label">New password</label>
+        <input className="auth-input" type="password" placeholder="At least 6 characters" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+      </div>
+      <div className="auth-field">
+        <label className="auth-label">Confirm new password</label>
+        <input className="auth-input" type="password" placeholder="Repeat new password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChangePassword()} />
+      </div>
+      <button className="auth-btn" onClick={handleChangePassword} disabled={loading} style={{marginTop:8}}>
+        {loading ? 'Updating…' : 'Update password'}
+      </button>
+    </div>
+  );
+}
+
 function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals, onDieticianClick, onApply, onRecipeClick, isRD, onToggleRD, rdDieticianId, onSetRDDietician, supaDietitians, user, isPremium, onSubscribe, supaAllDietitians }) {
   const goals = HEALTH_GOALS.filter(g => healthGoals.includes(g.id));
   const allKnownDs = [
@@ -3627,6 +3688,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
 
           <MySubscription user={user} isPremium={isPremium} onSubscribe={onSubscribe} />
           <ReferralCard user={user} />
+          <ChangePasswordCard user={user} />
 
           <div className="card-block">
             <div className="card-block-title">
