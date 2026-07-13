@@ -391,7 +391,7 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .page-hero-script { font-family: var(--font-body); font-size: 11px; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tan); margin-bottom: 4px; }
 .page-hero-title { font-family: var(--font-serif); font-size: 36px; font-style: italic; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .page-hero-sub { font-size: 14px; color: var(--text-light); }
-.you-grid { display: grid; grid-template-columns: 300px 1fr; gap: 40px; align-items: start; }
+.you-grid { display: grid; grid-template-columns: 1fr 300px; gap: 40px; align-items: start; }
 @media (max-width: 768px) { .you-grid { grid-template-columns: 1fr; } }
 .you-stats { background: var(--white); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; display: flex; gap: 0; }
 .you-stat { flex: 1; text-align: center; border-right: 1px solid var(--border); }
@@ -3841,11 +3841,6 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
             ))}
           </div>
 
-          <MySubscription user={user} isPremium={isPremium} onSubscribe={onSubscribe} />
-          <ReferralCard user={user} />
-          <CookingPreferenceCard dietaryPreferences={dietaryPreferences} onDietaryChange={onDietaryChange} />
-          <ChangePasswordLink onOpen={onChangePassword} />
-
           <div className="card-block">
             <div className="card-block-title">
               <span>Your health focus</span>
@@ -3968,6 +3963,10 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
         </div>
 
         <div>
+          <MySubscription user={user} isPremium={isPremium} onSubscribe={onSubscribe} />
+          <ReferralCard user={user} />
+          <CookingPreferenceCard dietaryPreferences={dietaryPreferences} onDietaryChange={onDietaryChange} />
+          <ChangePasswordLink onOpen={onChangePassword} />
           {isRD ? (
             <div className="card-block">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
