@@ -1,5 +1,5 @@
 
-<!-- v2 — July 14 2026 — explore page reorder (Alysse, Lyndsay, Claire Nanda, Mercy, Kelsey, Meredith, Claire Pettitt, Alice March); sort_order query bug fixed -->
+<!-- v2 — July 10 2026 — explore page reorder (Alysse, Lyndsay, Claire Nanda, Mercy, Kelsey, Meredith, Claire Pettitt, Alice March); sort_order query bug fixed -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -404,7 +404,7 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .rd-row:hover .rd-row-name { text-decoration: underline; }
 .rd-row-name { font-family: var(--font-serif); font-size: 15px; font-weight: 600; color: var(--text); }
 .rd-row-creds { font-size: 11px; color: var(--text-light); }
-.apply-block { padding: 20px 24px; background: var(--warm-beige); border-radius: var(--radius); border-left: 3px solid var(--tan); }
+.apply-block { padding: 20px 24px; background: var(--warm-beige); border-radius: var(--radius); border-left: 3px solid var(--tan); margin-bottom: 16px; }
 .apply-text { font-family: var(--font-serif); font-style: italic; font-size: 15px; color: var(--text-mid); line-height: 1.55; margin-bottom: 12px; }
 .apply-btn { padding: 10px 20px; background: transparent; border: 1.5px solid var(--brown); border-radius: 50px; font-size: 13px; font-weight: 600; color: var(--brown); cursor: pointer; font-family: var(--font-body); transition: all 0.18s; }
 .apply-btn:hover { background: var(--brown); color: white; }
@@ -3842,7 +3842,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
             ))}
           </div>
 
-          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, alignItems:'stretch'}} className="you-focus-row">
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, alignItems:'stretch', marginBottom:16}} className="you-focus-row">
             <div className="card-block" style={{marginBottom:0, boxSizing:'border-box', height:'100%'}}>
               <div className="card-block-title">
                 <span>Your health focus</span>
