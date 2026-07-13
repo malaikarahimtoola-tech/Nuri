@@ -203,8 +203,8 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
 .onboarding-grid:last-of-type { margin-bottom: 40px; }
 .onboarding-grid-top { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 auto 12px; max-width: 75%; }
 @media (max-width: 700px) {
-  .onboarding-grid { grid-template-columns: repeat(2, 1fr); }
-  .onboarding-grid-top { grid-template-columns: repeat(2, 1fr); max-width: 100%; }
+  .onboarding-grid { grid-template-columns: 1fr; }
+  .onboarding-grid-top { grid-template-columns: 1fr; max-width: 100%; }
 }
 .goal-card { background: var(--white); border: 2px solid var(--border); border-radius: var(--radius); padding: 20px 14px; cursor: pointer; transition: all 0.18s; text-align: center; position: relative; overflow: hidden; }
 .goal-card:hover { border-color: var(--tan); transform: translateY(-2px); box-shadow: var(--shadow); }
@@ -978,7 +978,7 @@ body { background: var(--cream); color: var(--text); font-family: var(--font-bod
   /* Onboarding */
   .onboarding-wrap { padding: 32px 16px; }
   .onboarding-title { font-size: 26px; }
-  .onboarding-grid, .onboarding-grid-top { grid-template-columns: repeat(2, 1fr); gap: 8px; max-width: 100%; }
+  .onboarding-grid, .onboarding-grid-top { grid-template-columns: 1fr; gap: 8px; max-width: 100%; }
   .goal-card { padding: 14px 10px; }
   .goal-icon { font-size: 22px; }
   .goal-label { font-size: 11px; }
