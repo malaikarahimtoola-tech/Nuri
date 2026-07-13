@@ -1,5 +1,5 @@
 
-<!-- v2 — July 10 2026 — explore page reorder (Alysse, Lyndsay, Claire Nanda, Mercy, Kelsey, Meredith, Claire Pettitt, Alice March); sort_order query bug fixed -->
+<!-- v2 — July 14 2026 — explore page reorder (Alysse, Lyndsay, Claire Nanda, Mercy, Kelsey, Meredith, Claire Pettitt, Alice March); sort_order query bug fixed -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3702,14 +3702,14 @@ function ReferralCard({ user }) {
   );
 }
 
-function CookingPreferenceCard({ dietaryPreferences, onDietaryChange }) {
+function CookingPreferenceCard({ dietaryPreferences, onDietaryChange, style }) {
   const active = dietaryPreferences || [];
   const toggle = id => {
     const next = active.includes(id) ? active.filter(x => x !== id) : [...active, id];
     onDietaryChange(next);
   };
   return (
-    <div className="card-block">
+    <div className="card-block" style={{ boxSizing: 'border-box', ...style }}>
       <div className="card-block-title"><span>🍳 How you like to cook</span></div>
       <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
         {COOKING_STYLE_OPTIONS.map(o => {
@@ -3842,8 +3842,8 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
             ))}
           </div>
 
-          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}} className="you-focus-row">
-            <div className="card-block" style={{marginBottom:0}}>
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, alignItems:'stretch'}} className="you-focus-row">
+            <div className="card-block" style={{marginBottom:0, boxSizing:'border-box', height:'100%'}}>
               <div className="card-block-title">
                 <span>Your health focus</span>
                 <button className="edit-link" onClick={onEditGoals}>Edit</button>
@@ -3856,9 +3856,7 @@ function YouTab({ healthGoals, followed, saved, tried, triedPhotos, onEditGoals,
                 <p style={{ fontSize: 13, color: 'var(--text-light)', fontStyle: 'italic', fontFamily: 'var(--font-serif)' }}>No goals set yet — tap Edit to personalise.</p>
               )}
             </div>
-            <div style={{marginBottom:0}}>
-              <CookingPreferenceCard dietaryPreferences={dietaryPreferences} onDietaryChange={onDietaryChange} />
-            </div>
+            <CookingPreferenceCard dietaryPreferences={dietaryPreferences} onDietaryChange={onDietaryChange} style={{marginBottom:0, height:'100%'}} />
           </div>
 
           {healthGoals.length > 0 && (
