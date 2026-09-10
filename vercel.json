@@ -2,7 +2,17 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/recipe-studio", "destination": "/recipe-studio.html" },
-    { "source": "/dietician-portal", "destination": "/dietician-portal.html" }
+    {
+      "source": "/recipe-studio",
+      "destination": "/recipe-studio.html"
+    },
+    {
+      "source": "/dietician-portal",
+      "destination": "/dietician-portal.html"
+    },
+    {
+      "source": "/chronically",
+      "destination": "/chronically.html"
+    }
   ]
 }
